@@ -1,45 +1,37 @@
 import postgres from 'postgres';
-import { demoFormConfiguration } from '@/components/form/DemoFormConfiguration';
 import * as fs from 'fs';
 import * as path from 'path';
+import { postgresConfig } from '@/configurations/postgresConfiguration';
 
 /**
- * Get PostgreSQL connection configuration from FormConfiguration
+ * Get PostgreSQL connection configuration from environment variables
+ * with fallbacks to default values
  */
 function getPostgresConfig() {
-  const { postgresConfig } = demoFormConfiguration;
-  
-  // Try to get password from multiple sources (in order of preference):
-  // 1. Environment variable POSTGRES_PASSWORD
-  // 2. Password file specified in config
-  // 3. Environment variable DATABASE_URL
-  let password = process.env.POSTGRES_PASSWORD || '';
-  
+  const passwordPath = path.resolve(process.cwd(), 'postgres_password.txt');
+  const password = fs.readFileSync(passwordPath, 'utf8').trim();
+
   if (!password) {
-    try {
-      const passwordPath = path.resolve(process.cwd(), postgresConfig.passwordFile || 'postgres_password.txt');
-      password = fs.readFileSync(passwordPath, 'utf8').trim();
-    } catch {
-      console.warn('Warning: Could not read password file. Trying DATABASE_URL or empty password.');
-    }
+    console.warn(
+      'Warning: Could not read password file. Trying DATABASE_URL or empty password.',
+    );
   }
-  
+
   // If DATABASE_URL is provided, use it directly
   if (process.env.DATABASE_URL && !password) {
     return process.env.DATABASE_URL;
   }
-  
+
   return {
-    host: process.env.POSTGRES_HOST || postgresConfig.host || '127.0.0.1',
-    port: parseInt(process.env.POSTGRES_PORT || postgresConfig.port?.toString() || '5432'),
-    database: process.env.POSTGRES_DB || postgresConfig.database,
-    username: process.env.POSTGRES_USER || postgresConfig.user,
+    host: postgresConfig.host || '127.0.0.1',
+    port: postgresConfig.port,
+    database: postgresConfig.database,
+    username: postgresConfig.user,
     password: password,
-    // Additional postgres.js options
     max: 10, // Maximum number of connections
     idle_timeout: 20, // Seconds before closing idle connections
     connect_timeout: 10, // Seconds before timing out connection attempts
-    ssl: process.env.NODE_ENV === 'production' ? 'require' as const : false,
+    ssl: process.env.NODE_ENV === 'production' ? ('require' as const) : false,
     transform: {
       undefined: null, // Transform undefined values to null
     },

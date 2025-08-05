@@ -1,8 +1,8 @@
-import sql from './postgres-js';
+import sql from '@/db/postgres-js';
 import {
   FormConfigurationType,
   generatePostgresSchema,
-} from '@/lib/generateSchema';
+} from '@/scripts/generate-schema';
 
 // Database record type
 interface DatabaseRecord {
@@ -85,6 +85,9 @@ export async function queryFormData(
   } = {},
 ): Promise<DatabaseRecord[]> {
   try {
+    // Ensure table exists first
+    await ensureTableExists(config);
+
     const {
       limit = 50,
       offset = 0,
@@ -124,6 +127,9 @@ export async function updateFormData(
   data: Record<string, unknown>,
 ): Promise<DatabaseRecord> {
   try {
+    // Ensure table exists first
+    await ensureTableExists(config);
+
     const updateData = {
       ...data,
       updated_at: new Date(),
@@ -158,11 +164,13 @@ export async function getFormData(
   } = {},
 ): Promise<{ data: DatabaseRecord[]; total: number }> {
   try {
+    // Ensure table exists first
+    await ensureTableExists(config);
+
     const {
       limit = 50,
       offset = 0,
       sortBy = 'created_at',
-      sortOrder = 'desc',
       filters = {},
     } = options;
 
@@ -180,8 +188,7 @@ export async function getFormData(
       dataQuery = sql`${dataQuery} WHERE ${sql(filters)}`;
     }
 
-    const orderDirection = sortOrder.toUpperCase() as 'ASC' | 'DESC';
-    dataQuery = sql`${dataQuery} ORDER BY ${sql(sortBy)} ${sql(orderDirection)} LIMIT ${limit} OFFSET ${offset}`;
+    dataQuery = sql`${dataQuery} ORDER BY ${sql(sortBy)} DESC LIMIT ${limit} OFFSET ${offset}`;
 
     const data = (await dataQuery) as unknown as DatabaseRecord[];
 
@@ -201,6 +208,9 @@ export async function deleteFormData(
   id: string,
 ): Promise<boolean> {
   try {
+    // Ensure table exists first
+    await ensureTableExists(config);
+
     const result = await sql`
       DELETE FROM ${sql(config.postgresTableName)} 
       WHERE id = ${id}

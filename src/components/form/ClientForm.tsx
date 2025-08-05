@@ -4,132 +4,10 @@ import React from 'react';
 import { useForm, FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { FormSectionTemplate, FormFieldConfig } from './FormSectionTemplate';
-import { z } from 'zod';
-import {
-  ClientFieldDefinition,
-  ClientSectionDefinition,
-} from '@/types/ClientForm';
-
-// Generate Zod schema from client-safe configuration
-function generateClientZodSchema(sections: ClientSectionDefinition[]) {
-  const schemaFields: Record<string, z.ZodTypeAny> = {};
-
-  sections.forEach((section) => {
-    section.fields.forEach((field) => {
-      schemaFields[field.name] = createClientZodFieldSchema(field);
-    });
-  });
-
-  return z.object(schemaFields);
-}
-
-// Helper function to create Zod schema for individual field (client-side version)
-function createClientZodFieldSchema(
-  field: ClientFieldDefinition,
-): z.ZodTypeAny {
-  let schema: z.ZodTypeAny;
-
-  switch (field.type) {
-    case 'text':
-    case 'email':
-      schema = z.string();
-      if (field.min !== undefined && typeof field.min === 'number') {
-        (schema as z.ZodString) = (schema as z.ZodString).min(field.min);
-      }
-      if (field.max !== undefined && typeof field.max === 'number') {
-        (schema as z.ZodString) = (schema as z.ZodString).max(field.max);
-      }
-      break;
-
-    case 'password':
-      schema = z.string();
-      if (field.min !== undefined && typeof field.min === 'number') {
-        (schema as z.ZodString) = (schema as z.ZodString).min(field.min);
-      }
-      break;
-
-    case 'number':
-      schema = z.coerce.number();
-      if (field.min !== undefined && typeof field.min === 'number') {
-        (schema as z.ZodNumber) = (schema as z.ZodNumber).min(field.min);
-      }
-      if (field.max !== undefined && typeof field.max === 'number') {
-        (schema as z.ZodNumber) = (schema as z.ZodNumber).max(field.max);
-      }
-      break;
-
-    case 'textarea':
-      schema = z.string();
-      if (field.min !== undefined && typeof field.min === 'number') {
-        (schema as z.ZodString) = (schema as z.ZodString).min(field.min);
-      }
-      if (field.max !== undefined && typeof field.max === 'number') {
-        (schema as z.ZodString) = (schema as z.ZodString).max(field.max);
-      }
-      break;
-
-    case 'select':
-      if (field.options && field.options.length > 0) {
-        if (typeof field.options[0] === 'string') {
-          schema = z.enum(field.options as [string, ...string[]]);
-        } else {
-          const values = (
-            field.options as { value: string; label: string }[]
-          ).map((opt) => opt.value);
-          schema = z.enum(values as [string, ...string[]]);
-        }
-      } else {
-        schema = z.string();
-      }
-      break;
-
-    case 'checkbox':
-      schema = z.boolean();
-      break;
-
-    case 'date':
-      schema = z.string().refine((val) => !isNaN(Date.parse(val)), {
-        message: 'Invalid date format',
-      });
-      break;
-
-    default:
-      schema = z.string();
-  }
-
-  // Apply required/optional
-  if (!field.required) {
-    schema = schema.optional();
-  }
-
-  return schema;
-}
-
-// Helper function to convert ClientFieldDefinition to FormFieldConfig
-function convertFieldDefinition(
-  field: ClientFieldDefinition,
-): FormFieldConfig<Record<string, unknown>> {
-  return {
-    label: field.label,
-    name: field.name as keyof Record<string, unknown>,
-    type: field.type,
-    placeholder: field.placeholder,
-    required: field.required,
-    step: field.step,
-    min: field.min,
-    max: field.max,
-    rows: field.rows,
-    options: field.options as
-      | string[]
-      | { value: string; label: string }[]
-      | undefined,
-    className: field.className,
-    disabled: field.disabled,
-    description: field.description,
-  };
-}
+import { Button } from '@radix-ui/themes';
+import { FormSectionTemplate } from './FormSectionTemplate';
+import z from 'zod';
+import { FormSectionDefinition } from '../../types/globalFormTypes';
 
 // Helper function to convert errors
 function convertErrors(
@@ -146,9 +24,10 @@ function convertErrors(
 }
 
 export interface ClientFormProps {
+  schema: z.ZodTypeAny;
   title: string;
   description?: string;
-  sections: ClientSectionDefinition[];
+  sections: FormSectionDefinition[];
   submitButtonText?: string;
   resetButtonText?: string;
   showResetButton?: boolean;
@@ -157,9 +36,13 @@ export interface ClientFormProps {
   className?: string;
   isLoading?: boolean;
   autoSaveToDatabase?: boolean;
+  serverAction?: (
+    data: Record<string, unknown>,
+  ) => Promise<{ success: boolean; data?: unknown; error?: string }>;
 }
 
 export function ClientForm({
+  schema,
   title,
   description,
   sections,
@@ -171,32 +54,52 @@ export function ClientForm({
   className = '',
   isLoading = false,
   autoSaveToDatabase = true,
+  serverAction,
 }: ClientFormProps) {
   // Generate schema client-side from the sanitized sections
-  const schema = generateClientZodSchema(sections);
-  
-  // TODO: Get the tRPC mutation for the book router when tRPC is properly configured
-  // const createMutation = trpc.book.create.useMutation();
 
   const {
     control,
     handleSubmit,
     reset,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<Record<string, unknown>>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(schema as any),
     defaultValues: defaultValues,
+    mode: 'onChange', // Validate on every change
+    reValidateMode: 'onChange', // Re-validate on every change
+    shouldFocusError: true, // Focus on first error field
   });
 
+  // Trigger validation on mount to show initial validation state
+  React.useEffect(() => {
+    trigger(); // This will validate all fields immediately
+  }, [trigger]);
+
+  const handleReset = () => {
+    reset(defaultValues);
+    toast.info('Form has been reset');
+  };
+
+  // Create submission handler that works with React Hook Form data
   const handleFormSubmit = async (data: Record<string, unknown>) => {
     try {
-      // Auto-save to database if enabled (temporarily disabled until tRPC is properly configured)
-      if (autoSaveToDatabase) {
-        // TODO: Enable when tRPC is properly configured
-        // const result = await createMutation.mutateAsync(data);
-        console.log('Data would be saved via tRPC:', data);
-        toast.success('Form submitted successfully! (Demo mode - no actual save)');
+      // Auto-save to database if enabled
+      if (autoSaveToDatabase && serverAction) {
+        const result = await serverAction(data);
+
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to submit form');
+        }
+
+        toast.success('Form submitted successfully!');
+      } else if (autoSaveToDatabase && !serverAction) {
+        console.warn(
+          'autoSaveToDatabase is enabled but no serverAction provided',
+        );
+        toast.warning('Server action not available');
       }
 
       // Call custom onSubmit handler if provided
@@ -204,16 +107,13 @@ export function ClientForm({
         await onSubmit(data);
       }
 
-      toast.success('Form submitted successfully!');
+      if (!autoSaveToDatabase) {
+        toast.success('Form submitted successfully!');
+      }
     } catch (error) {
       toast.error('Failed to submit form. Please try again.');
       console.error('Form submission error:', error);
     }
-  };
-
-  const handleReset = () => {
-    reset(defaultValues);
-    toast.info('Form has been reset');
   };
 
   return (
@@ -222,9 +122,11 @@ export function ClientForm({
       {(title || description) && (
         <div className='space-y-2 text-center'>
           {title && (
-            <h1 className='text-2xl font-bold text-gray-900'>{title}</h1>
+            <h1 className='text-foreground text-2xl font-bold'>{title}</h1>
           )}
-          {description && <p className='text-gray-600'>{description}</p>}
+          {description && (
+            <p className='text-muted-foreground'>{description}</p>
+          )}
         </div>
       )}
 
@@ -237,7 +139,7 @@ export function ClientForm({
             title={section.title}
             description={section.description}
             control={control}
-            fields={section.fields.map(convertFieldDefinition)}
+            fields={section.fields}
             errors={convertErrors(errors)}
             gridCols={section.gridCols}
             spacing={section.spacing}
@@ -245,24 +147,24 @@ export function ClientForm({
         ))}
 
         {/* Form Actions */}
-        <div className='flex justify-end space-x-4 border-t pt-6'>
+        <div className='border-border flex justify-end space-x-4 border-t pt-6'>
           {showResetButton && (
-            <Button
+            <button
               type='button'
-              variant='outline'
+              className='bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded px-4 py-2 outline disabled:cursor-not-allowed disabled:opacity-50'
               onClick={handleReset}
               disabled={isSubmitting || isLoading}
             >
               {resetButtonText}
-            </Button>
+            </button>
           )}
-          <Button
+          <button
             type='submit'
             disabled={isSubmitting || isLoading}
-            className='min-w-32'
+            className='bg-primary text-primary-foreground hover:bg-primary/90 min-w-32 rounded px-4 py-2 outline disabled:cursor-not-allowed disabled:opacity-50'
           >
             {isSubmitting || isLoading ? 'Submitting...' : submitButtonText}
-          </Button>
+          </button>
         </div>
       </form>
     </div>

@@ -1,4 +1,3 @@
-import { trpc } from '@/utils/trpc';
 import { Theme } from '@radix-ui/themes';
 import React from 'react';
 
@@ -18,4 +17,4 @@ const HomePage = () => {
   );
 };
 
-export default trpc.withTRPC(HomePage);
+export default HomePage;

@@ -1,103 +1,4 @@
-// Field type definitions for schema generation
-export interface FieldDefinition {
-  label: string;
-  name: string;
-  type:
-    | 'text'
-    | 'email'
-    | 'password'
-    | 'number'
-    | 'date'
-    | 'textarea'
-    | 'select'
-    | 'checkbox';
-  required?: boolean;
-  placeholder?: string;
-  step?: string;
-  min?: string | number;
-  max?: string | number;
-  rows?: number;
-  options?: Array<string | { value: string; label: string }>;
-  className?: string;
-  disabled?: boolean;
-  description?: string;
-  // Zod schema configuration
-  zodConfig?: {
-    minLength?: number;
-    maxLength?: number;
-    email?: boolean;
-    uuid?: boolean;
-    int?: boolean;
-    positive?: boolean;
-    regex?: RegExp;
-    date?: boolean;
-    min?: number;
-    max?: number;
-    refine?: {
-      check: (value: unknown) => boolean;
-      message: string;
-    };
-  };
-  // PostgreSQL column configuration
-  pgConfig?: {
-    type?:
-      | 'VARCHAR'
-      | 'TEXT'
-      | 'INTEGER'
-      | 'BIGINT'
-      | 'DECIMAL'
-      | 'DATE'
-      | 'TIMESTAMP'
-      | 'BOOLEAN'
-      | 'UUID';
-    length?: number;
-    nullable?: boolean;
-    unique?: boolean;
-    index?: boolean;
-    default?: string | number | boolean;
-  };
-}
-
-export interface FormSectionDefinition {
-  title: string;
-  description?: string;
-  gridCols?: '1' | '2' | '3' | '4';
-  spacing?: 'sm' | 'md' | 'lg';
-  fields: FieldDefinition[];
-}
-
-export interface PostgresConfig {
-  host?: string;
-  port?: number;
-  database: string;
-  user: string;
-  passwordFile?: string; // Path to password file for Docker secrets
-  containerName?: string;
-  image?: string;
-  backupEnabled?: boolean;
-  backupInterval?: string; // e.g., '6h', '24h'
-  backupRetentionDays?: number;
-  memoryLimit?: string; // e.g., '1G', '512M'
-  memoryReservation?: string;
-}
-
-export interface FormConfiguration {
-  title: string;
-  description?: string;
-  // PostgreSQL configuration for database generation
-  postgresConfig: PostgresConfig;
-  postgresTableName: string;
-  submitButtonText?: string;
-  resetButtonText?: string;
-  showResetButton?: boolean;
-  sections: FormSectionDefinition[];
-  styles?: {
-    primaryColor?: string;
-    secondaryColor?: string;
-    borderRadius?: string;
-    spacing?: string;
-  };
-}
+import { FormConfiguration } from '@/types/globalFormTypes';
 
 /* 
 DEFINE YOUR FORM SCHEMA, ZOD VALIDATION PREFERENCES, AND POSTGRESQL TABLE CONFIGURATION HERE
@@ -108,23 +9,6 @@ This is the single source of truth for both frontend and backend.
 export const demoFormConfiguration: FormConfiguration = {
   title: 'Reading List (Basic Form Example)',
   description: 'Simple form configuration for demonstration purposes',
-  
-  // PostgreSQL Database Configuration
-  postgresConfig: {
-    host: '127.0.0.1',
-    port: 7778,
-    database: 'formscaffold_db',
-    user: 'formscaffold_user',
-    passwordFile: 'postgres_password.txt',
-    containerName: 'formscaffold-postgres',
-    image: 'postgres:17-alpine3.22',
-    backupEnabled: true,
-    backupInterval: '6h',
-    backupRetentionDays: 7,
-    memoryLimit: '1G',
-    memoryReservation: '512M',
-  },
-  
   postgresTableName: 'books',
   submitButtonText: 'Create Book',
   resetButtonText: 'Reset Form',
@@ -144,12 +28,11 @@ export const demoFormConfiguration: FormConfiguration = {
           placeholder: 'Enter book ISBN',
           zodConfig: {
             minLength: 10,
-            maxLength: 13,
-            regex: /^(?:\d{9}[\dX]|\d{13})$/,
+            maxLength: 20,
           },
           pgConfig: {
             type: 'VARCHAR',
-            length: 13,
+            length: 20,
             unique: true,
             index: true,
           },
@@ -202,8 +85,21 @@ export const demoFormConfiguration: FormConfiguration = {
           },
         },
         {
+          label: 'Date Read',
+          name: 'date_read',
+          type: 'date',
+          required: false,
+          zodConfig: {
+            date: true,
+          },
+          pgConfig: {
+            type: 'DATE',
+          },
+        },
+
+        {
           label: 'Published Date',
-          name: 'publishedDate',
+          name: 'date_published',
           type: 'date',
           required: true,
           zodConfig: {

@@ -1,17 +1,32 @@
 import { z } from 'zod';
-import {
-  FormConfiguration,
-  FieldDefinition,
-} from '@/components/form/DemoFormConfiguration';
+import { FormConfiguration, FieldDefinition } from '@/types/globalFormTypes';
+import { FieldValues } from 'react-hook-form';
 
 // Utility function to generate Zod schema from form configuration
 export function generateZodSchema(config: FormConfiguration) {
   const schemaFields: Record<string, z.ZodTypeAny> = {};
 
-  // Add standard fields
+  // DO NOT add database-generated fields (id, created_at, updated_at)
+  // These are handled by the database automatically
+
+  // Generate fields from form configuration
+  config.sections.forEach((section) => {
+    section.fields.forEach((field) => {
+      schemaFields[field.name] = createZodFieldSchema(field);
+    });
+  });
+
+  return z.object(schemaFields);
+}
+
+// Utility function to generate complete Zod schema including database fields (for type generation)
+export function generateCompleteZodSchema(config: FormConfiguration) {
+  const schemaFields: Record<string, z.ZodTypeAny> = {};
+
+  // Add database-generated fields for complete type definitions
   schemaFields.id = z.string().uuid();
-  schemaFields.createdAt = z.date();
-  schemaFields.updatedAt = z.date();
+  schemaFields.created_at = z.date();
+  schemaFields.updated_at = z.date();
 
   // Generate fields from form configuration
   config.sections.forEach((section) => {
@@ -24,7 +39,9 @@ export function generateZodSchema(config: FormConfiguration) {
 }
 
 // Helper function to create Zod schema for individual field
-function createZodFieldSchema(field: FieldDefinition): z.ZodTypeAny {
+function createZodFieldSchema(
+  field: FieldDefinition<FieldValues>,
+): z.ZodTypeAny {
   let schema: z.ZodTypeAny;
 
   switch (field.type) {
@@ -64,7 +81,9 @@ function createZodFieldSchema(field: FieldDefinition): z.ZodTypeAny {
       break;
 
     case 'date':
-      schema = z.date();
+      schema = z.string().refine((val) => !isNaN(Date.parse(val)), {
+        message: 'Invalid date format',
+      });
       break;
 
     case 'checkbox':
@@ -96,12 +115,6 @@ function createZodFieldSchema(field: FieldDefinition): z.ZodTypeAny {
   // Make field optional if not required
   if (!field.required) {
     schema = schema.optional();
-  }
-
-  if (field.zodConfig?.date) {
-    schema = schema.refine((value) => value instanceof Date, {
-      message: 'Invalid date',
-    });
   }
 
   return schema;
@@ -153,7 +166,9 @@ CREATE TRIGGER update_${tableName}_updated_at
 }
 
 // Helper function to create PostgreSQL column definition
-function createPostgresColumnDefinition(field: FieldDefinition): string {
+function createPostgresColumnDefinition(
+  field: FieldDefinition<FieldValues>,
+): string {
   const pgConfig = field.pgConfig;
   let columnType: string;
 
@@ -253,11 +268,11 @@ export type GeneratedFormType = z.infer<ReturnType<typeof generateZodSchema>>;
 
 // For backward compatibility - you can remove these if not needed
 export const genericDataSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   title: z.string().min(1).max(255),
   text: z.string().min(1),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+  created_at: z.date(),
+  updated_at: z.date(),
 });
 
 export type GenericDataType = z.infer<typeof genericDataSchema>;

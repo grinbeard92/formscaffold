@@ -3,16 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack -p 3799",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:setup": "tsx scripts/setup-database.ts",
-    "db:test": "tsx scripts/test-database.ts",
+    "db:terminal": "docker exec -it formscaffold-postgres psql -U formscaffold_user -d formscaffold_db",
+    "db:setup": "tsx src/scripts/setup-database.ts",
+    "db:test": "tsx src/scripts/test-database.ts",
+    "db:init": "tsx src/scripts/generate-db-init.ts",
     "db:start": "docker-compose -f .docker/docker-compose.yml up -d",
     "db:stop": "docker-compose -f .docker/docker-compose.yml down",
     "db:restart": "npm run db:stop && npm run db:start",
-    "db:logs": "docker-compose -f .docker/docker-compose.yml logs -f postgres"
+    "db:logs": "docker-compose -f .docker/docker-compose.yml logs -f",
+    "db:reset": "docker exec -i formscaffold-postgres psql -U formscaffold_user -d formscaffold_db < init-scripts/01-init-tables.sql",
+    "generate:all": "tsx src/scripts/generate-all.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
