@@ -34,11 +34,43 @@ CREATE TABLE ${postgresTableName} (
 
       let columnDef = `\n  ${field.name} `;
 
-      // Add column type
-      if (pgConfig.type === 'VARCHAR' && pgConfig.length) {
-        columnDef += `VARCHAR(${pgConfig.length})`;
-      } else {
-        columnDef += pgConfig.type;
+      // Add column type with proper formatting
+      switch (pgConfig.type) {
+        case 'VARCHAR':
+          columnDef += pgConfig.length
+            ? `VARCHAR(${pgConfig.length})`
+            : 'VARCHAR(255)';
+          break;
+
+        case 'DECIMAL':
+        case 'NUMERIC':
+          if (pgConfig.precision && pgConfig.scale) {
+            columnDef += `${pgConfig.type}(${pgConfig.precision}, ${pgConfig.scale})`;
+          } else if (pgConfig.precision) {
+            columnDef += `${pgConfig.type}(${pgConfig.precision})`;
+          } else {
+            columnDef += pgConfig.type;
+          }
+          break;
+
+        case 'ARRAY':
+          if (pgConfig.arrayType) {
+            columnDef += `${pgConfig.arrayType}[]`;
+          } else {
+            columnDef += 'TEXT[]'; // Default to text array
+          }
+          break;
+
+        case 'TIMESTAMP WITH TIME ZONE':
+          columnDef += 'TIMESTAMP WITH TIME ZONE';
+          break;
+
+        case 'DOUBLE PRECISION':
+          columnDef += 'DOUBLE PRECISION';
+          break;
+
+        default:
+          columnDef += pgConfig.type || 'TEXT';
       }
 
       // Add nullable/not null
@@ -46,12 +78,60 @@ CREATE TABLE ${postgresTableName} (
         columnDef += ' NOT NULL';
       }
 
-      // Add default value
-      if (pgConfig.default !== undefined) {
-        if (typeof pgConfig.default === 'string') {
-          columnDef += ` DEFAULT '${pgConfig.default}'`;
-        } else {
-          columnDef += ` DEFAULT ${pgConfig.default}`;
+      // Add unique constraint
+      if (pgConfig.unique) {
+        columnDef += ' UNIQUE';
+      }
+
+      // Add default value with proper type handling
+      if (pgConfig.default !== undefined && pgConfig.default !== null) {
+        switch (pgConfig.type) {
+          case 'BOOLEAN':
+            columnDef += ` DEFAULT ${pgConfig.default}`;
+            break;
+          case 'INTEGER':
+          case 'BIGINT':
+          case 'DECIMAL':
+          case 'NUMERIC':
+          case 'REAL':
+          case 'DOUBLE PRECISION':
+            columnDef += ` DEFAULT ${pgConfig.default}`;
+            break;
+          case 'JSON':
+          case 'JSONB':
+            columnDef += ` DEFAULT '${JSON.stringify(pgConfig.default)}'::${pgConfig.type}`;
+            break;
+          case 'ARRAY':
+            if (Array.isArray(pgConfig.default)) {
+              const arrayValues = pgConfig.default
+                .map((val) => `'${val}'`)
+                .join(',');
+              columnDef += ` DEFAULT ARRAY[${arrayValues}]`;
+            } else {
+              columnDef += ` DEFAULT '{}'`;
+            }
+            break;
+          case 'TIMESTAMP':
+          case 'TIMESTAMP WITH TIME ZONE':
+            if (
+              pgConfig.default === 'now' ||
+              pgConfig.default === 'CURRENT_TIMESTAMP'
+            ) {
+              columnDef += ' DEFAULT CURRENT_TIMESTAMP';
+            } else {
+              columnDef += ` DEFAULT '${pgConfig.default}'`;
+            }
+            break;
+          case 'UUID':
+            if (pgConfig.default === 'gen_random_uuid()') {
+              columnDef += ' DEFAULT gen_random_uuid()';
+            } else {
+              columnDef += ` DEFAULT '${pgConfig.default}'`;
+            }
+            break;
+          default:
+            // String types (VARCHAR, TEXT, etc.)
+            columnDef += ` DEFAULT '${pgConfig.default}'`;
         }
       }
 

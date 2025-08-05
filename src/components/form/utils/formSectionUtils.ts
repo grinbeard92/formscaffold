@@ -1,11 +1,10 @@
-import { ControllerRenderProps, FieldPath, FieldValues } from 'react-hook-form';
-import { FormFieldConfig, SelectOption } from '../../../types/formSectionTypes';
-import { FieldDefinition } from '@/types/globalFormTypes';
+import { FieldValues } from 'react-hook-form';
+import { FieldDefinition, SelectOption } from '@/types/globalFormTypes';
 
 // Helper function to create field configurations with type safety
 export const createField = <T extends FieldValues>(
-  config: FormFieldConfig<T>,
-): FormFieldConfig<T> => config;
+  config: FieldDefinition<T>,
+): FieldDefinition<T> => config;
 
 // Helper function to create select options from simple strings
 export const createSelectOptions = (

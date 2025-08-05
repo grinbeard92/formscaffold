@@ -14,21 +14,107 @@ export async function generateTypes(
     section.fields.forEach((field) => {
       let fieldType: string;
 
+      // Determine TypeScript type based on field type and pgConfig
       switch (field.type) {
         case 'number':
+        case 'range':
           fieldType = field.required ? 'number' : 'number | null';
           break;
+
         case 'checkbox':
+        case 'toggle':
           fieldType = 'boolean';
           break;
+
         case 'date':
-          fieldType = field.required ? 'string' : 'string | null'; // ISO date string
+        case 'time':
+        case 'datetime-local':
+        case 'month':
+        case 'week':
+          fieldType = field.required ? 'string' : 'string | null'; // ISO date/time string
           break;
+
+        case 'file':
+          // File type depends on pgConfig
+          if (field.pgConfig?.type === 'BYTEA') {
+            fieldType = field.required ? 'string' : 'string | null'; // Base64 encoded data
+          } else {
+            fieldType = field.required ? 'string' : 'string | null'; // File URL/path
+          }
+          break;
+
+        case 'color':
+          fieldType = field.required ? 'string' : 'string | null'; // Hex color string
+          break;
+
+        case 'radio':
+        case 'select':
+          if (field.options && field.options.length > 0) {
+            const values = field.options.map((option) =>
+              typeof option === 'string' ? `'${option}'` : `'${option.value}'`,
+            );
+            fieldType = field.required
+              ? values.join(' | ')
+              : `${values.join(' | ')} | null`;
+          } else {
+            fieldType = field.required ? 'string' : 'string | null';
+          }
+          break;
+
+        case 'hidden':
+          fieldType = field.required ? 'string' : 'string | null';
+          break;
+
+        case 'text':
+        case 'email':
+        case 'url':
+        case 'tel':
+        case 'search':
+        case 'password':
         case 'textarea':
-          fieldType = field.required ? 'string' : 'string | null';
-          break;
         default:
-          fieldType = field.required ? 'string' : 'string | null';
+          // Handle special PostgreSQL types
+          if (
+            field.pgConfig?.type === 'JSON' ||
+            field.pgConfig?.type === 'JSONB'
+          ) {
+            fieldType = field.required ? 'object' : 'object | null'; // JSON object
+          } else if (field.pgConfig?.type === 'ARRAY') {
+            fieldType = field.required ? 'string[]' : 'string[] | null'; // Array type
+          } else if (field.pgConfig?.type === 'BOOLEAN') {
+            fieldType = 'boolean';
+          } else if (
+            field.pgConfig?.type === 'INTEGER' ||
+            field.pgConfig?.type === 'BIGINT' ||
+            field.pgConfig?.type === 'DECIMAL' ||
+            field.pgConfig?.type === 'NUMERIC' ||
+            field.pgConfig?.type === 'REAL' ||
+            field.pgConfig?.type === 'DOUBLE PRECISION'
+          ) {
+            fieldType = field.required ? 'number' : 'number | null';
+          } else if (field.pgConfig?.type === 'BYTEA') {
+            fieldType = field.required ? 'string' : 'string | null'; // Base64 encoded binary data
+          } else if (field.pgConfig?.type === 'UUID') {
+            fieldType = field.required ? 'string' : 'string | null'; // UUID string
+          } else if (
+            field.pgConfig?.type === 'TIMESTAMP' ||
+            field.pgConfig?.type === 'TIMESTAMP WITH TIME ZONE' ||
+            field.pgConfig?.type === 'DATE' ||
+            field.pgConfig?.type === 'TIME'
+          ) {
+            fieldType = field.required ? 'string' : 'string | null'; // ISO date/time string
+          } else if (
+            field.pgConfig?.type === 'INET' ||
+            field.pgConfig?.type === 'CIDR' ||
+            field.pgConfig?.type === 'MACADDR'
+          ) {
+            fieldType = field.required ? 'string' : 'string | null'; // Network address string
+          } else if (field.pgConfig?.type === 'XML') {
+            fieldType = field.required ? 'string' : 'string | null'; // XML string
+          } else {
+            // Default to string for TEXT, VARCHAR, etc.
+            fieldType = field.required ? 'string' : 'string | null';
+          }
       }
 
       const optionalMarker = field.required ? '' : '?';

@@ -1,5 +1,10 @@
-import { FieldPath, FieldValues } from 'react-hook-form';
-import { SelectOption } from './formSectionTypes';
+import { Control, FieldPath, FieldValues } from 'react-hook-form';
+
+// Select option type for dropdowns and radio buttons
+export interface SelectOption {
+  value: string;
+  label: string;
+}
 
 // Field type definitions for schema generation
 export interface FieldDefinition<T extends FieldValues> {
@@ -13,7 +18,21 @@ export interface FieldDefinition<T extends FieldValues> {
     | 'date'
     | 'textarea'
     | 'select'
-    | 'checkbox';
+    | 'checkbox'
+    | 'file'
+    | 'radio'
+    | 'toggle'
+    | 'hidden'
+    | 'color'
+    | 'range'
+    | 'time'
+    | 'datetime-local'
+    | 'month'
+    | 'week'
+    | 'url'
+    | 'tel'
+    | 'search';
+
   required?: boolean;
   placeholder?: string;
   step?: string;
@@ -24,8 +43,30 @@ export interface FieldDefinition<T extends FieldValues> {
   className?: string;
   disabled?: boolean;
   description?: string;
+  // File input specific properties
+  accept?:
+    | 'image/*' // All image types
+    | 'video/*' // All video types
+    | 'audio/*' // All audio types
+    | 'text/*' // All text types
+    | 'application/*' // All application types
+    | '.pdf' // PDF files
+    | '.doc,.docx' // Word documents
+    | '.xls,.xlsx' // Excel files
+    | '.ppt,.pptx' // PowerPoint files
+    | '.txt' // Text files
+    | '.csv' // CSV files
+    | '.json' // JSON files
+    | '.xml' // XML files
+    | '.zip,.rar,.7z' // Archive files
+    | '.jpg,.jpeg,.png,.gif,.webp' // Common image formats
+    | '.mp4,.avi,.mov,.wmv' // Common video formats
+    | '.mp3,.wav,.ogg,.m4a' // Common audio formats
+    | string; // Custom accept string for specific needs
+  multiple?: boolean; // Allow multiple file selection
   // Zod schema configuration
   zodConfig?: {
+    url?: boolean;
     minLength?: number;
     maxLength?: number;
     email?: boolean;
@@ -49,15 +90,31 @@ export interface FieldDefinition<T extends FieldValues> {
       | 'INTEGER'
       | 'BIGINT'
       | 'DECIMAL'
+      | 'NUMERIC'
+      | 'REAL'
+      | 'DOUBLE PRECISION'
       | 'DATE'
+      | 'TIME'
       | 'TIMESTAMP'
+      | 'TIMESTAMP WITH TIME ZONE'
       | 'BOOLEAN'
-      | 'UUID';
+      | 'UUID'
+      | 'BYTEA'
+      | 'JSON'
+      | 'JSONB'
+      | 'ARRAY'
+      | 'INET'
+      | 'CIDR'
+      | 'MACADDR'
+      | 'XML';
     length?: number;
+    precision?: number; // For NUMERIC/DECIMAL
+    scale?: number; // For NUMERIC/DECIMAL
     nullable?: boolean;
     unique?: boolean;
     index?: boolean;
-    default?: string | number | boolean;
+    default?: string | number | boolean | null;
+    arrayType?: string; // For ARRAY types, specify the base type
   };
 }
 
@@ -67,6 +124,18 @@ export interface FormSectionDefinition<T extends FieldValues = FieldValues> {
   gridCols?: '1' | '2' | '3' | '4';
   spacing?: 'sm' | 'md' | 'lg';
   fields: FieldDefinition<T>[];
+}
+
+// Props interface for FormSectionTemplate component
+export interface FormSectionTemplateProps<T extends FieldValues> {
+  title: string;
+  description?: string;
+  control: Control<T>;
+  fields: FieldDefinition<T>[];
+  errors: Record<string, { message?: string }>;
+  contentClassName?: string;
+  gridCols?: '1' | '2' | '3' | '4'; // Grid layout
+  spacing?: 'sm' | 'md' | 'lg'; // Spacing between fields
 }
 
 export interface PostgresConfig {

@@ -5,7 +5,7 @@
  * Do not edit manually - regenerate using: npm run generate:all
  * 
  * Generated from 1 configuration(s):
- * - booksFormConfiguration.ts (demoFormConfiguration)
+ * - demoFormConfiguration.ts (demoFormConfiguration)
  */
 
 // Server action result types (shared across all forms)
@@ -20,4 +20,4 @@ export interface PaginatedResult<T = any> extends ServerActionResult<T[]> {
 }
 
 // Re-export all generated types
-export type { Books, BooksFormData, UpdateBooksData } from './booksTypes';
+export type { Demo, DemoFormData, UpdateDemoData } from './demoTypes';

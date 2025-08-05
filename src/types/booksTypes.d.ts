@@ -9,12 +9,12 @@ export interface Books {
   id: string;
   created_at: string;
   updated_at: string;
-  isbn: string;
+  isbn?: string | null;
   title: string;
   author: string;
   genre: string;
   date_read?: string | null;
-  date_published: string;
+  date_published?: string | null;
   notes?: string | null;
   rating?: number | null;
   progress?: number | null;

@@ -3,15 +3,11 @@
 import * as Select from '@radix-ui/react-select';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import { ChevronDownIcon, CheckIcon } from '@radix-ui/react-icons';
-import {
-  ControllerRenderProps,
-  FieldPath,
-  FieldValues,
-} from 'react-hook-form';
+import { ControllerRenderProps, FieldPath, FieldValues } from 'react-hook-form';
 
 import React from 'react';
 import { cn } from '@/utils/utils';
-import { SelectOption } from '@/types/formSectionTypes';
+import { SelectOption } from '@/types/globalFormTypes';
 import { FieldDefinition } from '@/types/globalFormTypes';
 
 export const renderInput = <T extends FieldValues>(
@@ -20,7 +16,7 @@ export const renderInput = <T extends FieldValues>(
     field: controllerField,
   }: {
     field: ControllerRenderProps<T, FieldPath<T>>;
-  }
+  },
 ) => {
   const baseInputProps = {
     placeholder: field.placeholder,
@@ -127,9 +123,7 @@ export const renderInput = <T extends FieldValues>(
           value={controllerField.value ?? ''} // Default to empty string for number inputs
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             const value = e.target.value;
-            controllerField.onChange(
-              value === '' ? undefined : Number(value),
-            );
+            controllerField.onChange(value === '' ? undefined : Number(value));
           }}
           className={cn(
             'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
@@ -139,11 +133,15 @@ export const renderInput = <T extends FieldValues>(
       );
 
     case 'date':
+    case 'time':
+    case 'datetime-local':
+    case 'month':
+    case 'week':
       return (
         <input
           {...controlledFieldProps}
           {...baseInputProps}
-          type='date'
+          type={field.type}
           min={field.min}
           max={field.max}
           className={cn(
@@ -153,6 +151,140 @@ export const renderInput = <T extends FieldValues>(
         />
       );
 
+    case 'range':
+      return (
+        <div className='flex items-center space-x-4'>
+          <input
+            {...controlledFieldProps}
+            {...baseInputProps}
+            type='range'
+            min={field.min}
+            max={field.max}
+            step={field.step}
+            className={cn(
+              'h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-200',
+              field.className,
+            )}
+          />
+          <span className='min-w-[3rem] text-sm text-gray-600'>
+            {controllerField.value ?? field.min ?? 0}
+          </span>
+        </div>
+      );
+
+    case 'color':
+      return (
+        <div className='flex items-center space-x-2'>
+          <input
+            {...controlledFieldProps}
+            {...baseInputProps}
+            type='color'
+            className={cn(
+              'border-input bg-background h-10 w-16 cursor-pointer rounded-md border disabled:cursor-not-allowed disabled:opacity-50',
+              field.className,
+            )}
+          />
+          <span className='text-sm text-gray-600'>
+            {controllerField.value || '#000000'}
+          </span>
+        </div>
+      );
+
+    case 'file':
+      return (
+        <input
+          {...baseInputProps}
+          type='file'
+          accept={field.accept}
+          multiple={field.multiple}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            const files = e.target.files;
+            if (files) {
+              if (field.multiple) {
+                controllerField.onChange(Array.from(files));
+              } else {
+                controllerField.onChange(files[0] || null);
+              }
+            }
+          }}
+          className={cn(
+            'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+            field.className,
+          )}
+        />
+      );
+
+    case 'radio':
+      // Normalize options to SelectOption format
+      const radioOptions =
+        field.options?.map((option: string | SelectOption) =>
+          typeof option === 'string'
+            ? { value: option, label: option }
+            : { value: option.value, label: option.label },
+        ) || [];
+
+      return (
+        <div className='space-y-2'>
+          {radioOptions.map((option: SelectOption) => (
+            <div key={option.value} className='flex items-center space-x-2'>
+              <input
+                type='radio'
+                id={`${String(field.name)}-${option.value}`}
+                name={String(field.name)}
+                value={option.value}
+                checked={controllerField.value === option.value}
+                onChange={() => controllerField.onChange(option.value)}
+                disabled={field.disabled}
+                className='text-primary focus:ring-primary h-4 w-4 border-gray-300'
+              />
+              <label
+                htmlFor={`${String(field.name)}-${option.value}`}
+                className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+              >
+                {option.label}
+              </label>
+            </div>
+          ))}
+        </div>
+      );
+
+    case 'toggle':
+      return (
+        <div className='flex items-center space-x-2'>
+          <button
+            type='button'
+            role='switch'
+            aria-checked={controllerField.value ?? false}
+            onClick={() => controllerField.onChange(!controllerField.value)}
+            disabled={field.disabled}
+            className={cn(
+              'focus:ring-primary relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none',
+              controllerField.value ? 'bg-primary' : 'bg-gray-200',
+              field.disabled && 'cursor-not-allowed opacity-50',
+            )}
+          >
+            <span
+              className={cn(
+                'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                controllerField.value ? 'translate-x-6' : 'translate-x-1',
+              )}
+            />
+          </button>
+          <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'>
+            {field.label}
+          </label>
+        </div>
+      );
+
+    case 'hidden':
+      return <input {...controlledFieldProps} type='hidden' />;
+
+    case 'email':
+    case 'url':
+    case 'tel':
+    case 'search':
+    case 'password':
+    case 'text':
     default:
       return (
         <input
