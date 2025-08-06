@@ -1,12 +1,10 @@
 import { Control, FieldPath, FieldValues } from 'react-hook-form';
-
-// Select option type for dropdowns and radio buttons
 export interface SelectOption {
   value: string;
   label: string;
+  data?: Record<string, unknown>;
 }
 
-// Field type definitions for schema generation
 export interface FieldDefinition<T extends FieldValues> {
   label: string;
   name: FieldPath<T>;
@@ -31,7 +29,8 @@ export interface FieldDefinition<T extends FieldValues> {
     | 'week'
     | 'url'
     | 'tel'
-    | 'search';
+    | 'search'
+    | 'signature';
 
   required?: boolean;
   placeholder?: string;
@@ -43,28 +42,28 @@ export interface FieldDefinition<T extends FieldValues> {
   className?: string;
   disabled?: boolean;
   description?: string;
-  // File input specific properties
+  default: string | number | boolean | Date | File[] | null;
+
   accept?:
-    | 'image/*' // All image types
-    | 'video/*' // All video types
-    | 'audio/*' // All audio types
-    | 'text/*' // All text types
-    | 'application/*' // All application types
-    | '.pdf' // PDF files
-    | '.doc,.docx' // Word documents
-    | '.xls,.xlsx' // Excel files
-    | '.ppt,.pptx' // PowerPoint files
-    | '.txt' // Text files
-    | '.csv' // CSV files
-    | '.json' // JSON files
-    | '.xml' // XML files
-    | '.zip,.rar,.7z' // Archive files
-    | '.jpg,.jpeg,.png,.gif,.webp' // Common image formats
-    | '.mp4,.avi,.mov,.wmv' // Common video formats
-    | '.mp3,.wav,.ogg,.m4a' // Common audio formats
-    | string; // Custom accept string for specific needs
-  multiple?: boolean; // Allow multiple file selection
-  // Zod schema configuration
+    | 'image/*'
+    | 'video/*'
+    | 'audio/*'
+    | 'text/*'
+    | 'application/*'
+    | '.pdf'
+    | '.doc,.docx'
+    | '.xls,.xlsx'
+    | '.ppt,.pptx'
+    | '.txt'
+    | '.csv'
+    | '.json'
+    | '.xml'
+    | '.zip,.rar,.7z'
+    | '.jpg,.jpeg,.png,.gif,.webp'
+    | '.mp4,.avi,.mov,.wmv'
+    | '.mp3,.wav,.ogg,.m4a'
+    | string;
+  multiple?: boolean;
   zodConfig?: {
     url?: boolean;
     minLength?: number;
@@ -82,7 +81,6 @@ export interface FieldDefinition<T extends FieldValues> {
       message: string;
     };
   };
-  // PostgreSQL column configuration
   pgConfig?: {
     type?:
       | 'VARCHAR'
@@ -108,13 +106,13 @@ export interface FieldDefinition<T extends FieldValues> {
       | 'MACADDR'
       | 'XML';
     length?: number;
-    precision?: number; // For NUMERIC/DECIMAL
-    scale?: number; // For NUMERIC/DECIMAL
+    precision?: number;
+    scale?: number;
     nullable?: boolean;
     unique?: boolean;
     index?: boolean;
     default?: string | number | boolean | null;
-    arrayType?: string; // For ARRAY types, specify the base type
+    arrayType?: string;
   };
 }
 
@@ -126,7 +124,6 @@ export interface FormSectionDefinition<T extends FieldValues = FieldValues> {
   fields: FieldDefinition<T>[];
 }
 
-// Props interface for FormSectionTemplate component
 export interface FormSectionTemplateProps<T extends FieldValues> {
   title: string;
   description?: string;
@@ -134,8 +131,8 @@ export interface FormSectionTemplateProps<T extends FieldValues> {
   fields: FieldDefinition<T>[];
   errors: Record<string, { message?: string }>;
   contentClassName?: string;
-  gridCols?: '1' | '2' | '3' | '4'; // Grid layout
-  spacing?: 'sm' | 'md' | 'lg'; // Spacing between fields
+  gridCols?: '1' | '2' | '3' | '4';
+  spacing?: 'sm' | 'md' | 'lg';
 }
 
 export interface PostgresConfig {
@@ -143,13 +140,13 @@ export interface PostgresConfig {
   port?: number;
   database: string;
   user: string;
-  passwordFile?: string; // Path to password file for Docker secrets
+  passwordFile?: string;
   containerName?: string;
   image?: string;
   backupEnabled?: boolean;
-  backupInterval?: string; // e.g., '6h', '24h'
+  backupInterval?: string;
   backupRetentionDays?: number;
-  memoryLimit?: string; // e.g., '1G', '512M'
+  memoryLimit?: string;
   memoryReservation?: string;
 }
 
@@ -158,6 +155,8 @@ export interface FormConfiguration {
   description?: string;
   postgresTableName: string;
   submitButtonText?: string;
+  saveDraftButtonText?: string;
+  showDraftButton?: boolean;
   resetButtonText?: string;
   showResetButton?: boolean;
   sections: FormSectionDefinition[];
@@ -166,6 +165,5 @@ export interface FormConfiguration {
     secondaryColor?: string;
     borderRadius?: string;
     spacing?: string;
-    //Add other styles as desired
   };
 }

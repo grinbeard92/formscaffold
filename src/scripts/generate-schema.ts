@@ -150,39 +150,13 @@ function createZodFieldSchema(
       break;
 
     case 'file':
-      // For file uploads, we typically store the file path or URL as a string
-      // Or if using BYTEA, we might store base64 encoded data
-      if (typeof window !== 'undefined' && typeof File !== 'undefined') {
-        // In browser: validate File object
-        schema = z
-          .instanceof(File, { message: 'Expected a file upload' })
-          .or(
-            z
-              .any()
-              .refine(
-                (val) =>
-                  val &&
-                  typeof val === 'object' &&
-                  'name' in val &&
-                  'size' in val &&
-                  'type' in val,
-                { message: 'Expected a file-like object' },
-              ),
-          );
-      } else if (field.pgConfig?.type === 'BYTEA') {
-        // Expect a base64-encoded string for BYTEA storage (server-side)
-        schema = z
-          .string()
-          .regex(
-            /^[A-Za-z0-9+/]*={0,2}$/,
-            'Invalid file data format (must be base64)',
-          );
+      // File inputs can have File objects or be empty
+      if (field.multiple) {
+        // Multiple files - expect array of Files (empty array is valid)
+        schema = z.array(z.file('Expected a file upload')).default([]);
       } else {
-        // Standard file path/URL storage (server-side)
-        schema = z
-          .string()
-          .min(1, 'File path required')
-          .or(z.string().url('Invalid file URL'));
+        // Single file - can be File or null/undefined
+        schema = z.file('Expected a file upload').nullable().optional();
       }
       break;
 
@@ -206,6 +180,11 @@ function createZodFieldSchema(
       } else {
         schema = z.string();
       }
+      break;
+
+    case 'signature':
+      // Signature fields store base64 encoded image data as strings
+      schema = z.string().min(1, 'Signature is required');
       break;
 
     default:
@@ -408,6 +387,173 @@ export function createFormSchemas(config: FormConfiguration) {
     postgresSchema,
     tableName: config.postgresTableName,
   };
+}
+
+// Generate Zod schema as TypeScript code string
+export function generateZodSchemaCode(config: FormConfiguration): string {
+  let schemaCode = `import { z } from 'zod';\n\n`;
+  schemaCode += `export const ${config.postgresTableName}Schema = z.object({\n`;
+
+  config.sections.forEach((section) => {
+    section.fields.forEach((field) => {
+      let fieldSchemaCode = '';
+
+      switch (field.type) {
+        case 'text':
+        case 'search':
+        case 'hidden':
+          fieldSchemaCode = 'z.string()';
+          break;
+
+        case 'email':
+          fieldSchemaCode = field.zodConfig?.email
+            ? "z.string().email('Invalid email format')"
+            : 'z.string()';
+          break;
+
+        case 'url':
+          fieldSchemaCode = field.zodConfig?.url
+            ? "z.string().url('Invalid URL format')"
+            : 'z.string()';
+          break;
+
+        case 'tel':
+          fieldSchemaCode =
+            "z.string().regex(/^[+]?[\\d\\s\\-\\(\\)]+$/, 'Invalid phone number format')";
+          break;
+
+        case 'password':
+          fieldSchemaCode = 'z.string()';
+          break;
+
+        case 'textarea':
+          fieldSchemaCode = 'z.string()';
+          break;
+
+        case 'number':
+        case 'range':
+          fieldSchemaCode = 'z.coerce.number()';
+          if (field.zodConfig?.int) fieldSchemaCode += '.int()';
+          if (field.zodConfig?.positive) fieldSchemaCode += '.positive()';
+          if (field.zodConfig?.min !== undefined)
+            fieldSchemaCode += `.min(${field.zodConfig.min})`;
+          if (field.zodConfig?.max !== undefined)
+            fieldSchemaCode += `.max(${field.zodConfig.max})`;
+          if (field.min !== undefined) fieldSchemaCode += `.min(${field.min})`;
+          if (field.max !== undefined) fieldSchemaCode += `.max(${field.max})`;
+          break;
+
+        case 'date':
+          fieldSchemaCode =
+            "z.string().refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid date format' })";
+          break;
+
+        case 'time':
+          fieldSchemaCode =
+            "z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format (HH:MM)')";
+          break;
+
+        case 'datetime-local':
+          fieldSchemaCode =
+            "z.string().refine((val) => { const date = new Date(val); return !isNaN(date.getTime()) && val.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}$/); }, { message: 'Invalid datetime format (YYYY-MM-DDTHH:MM)' })";
+          break;
+
+        case 'month':
+          fieldSchemaCode =
+            "z.string().regex(/^\\d{4}-\\d{2}$/, 'Invalid month format (YYYY-MM)')";
+          break;
+
+        case 'week':
+          fieldSchemaCode =
+            "z.string().regex(/^\\d{4}-W\\d{2}$/, 'Invalid week format (YYYY-WNN)')";
+          break;
+
+        case 'color':
+          fieldSchemaCode =
+            "z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Invalid color format (must be hex: #RRGGBB)')";
+          break;
+
+        case 'checkbox':
+        case 'toggle':
+          fieldSchemaCode = 'z.boolean()';
+          break;
+
+        case 'file':
+          if (field.multiple) {
+            fieldSchemaCode = 'z.array(z.instanceof(File)).default([])';
+          } else {
+            fieldSchemaCode = 'z.instanceof(File).nullable().optional()';
+          }
+          break;
+
+        case 'radio':
+        case 'select':
+          if (field.options && field.options.length > 0) {
+            const values = field.options.map((option) =>
+              typeof option === 'string' ? `"${option}"` : `"${option.value}"`,
+            );
+            fieldSchemaCode = `z.enum([${values.join(', ')}])`;
+          } else {
+            fieldSchemaCode = 'z.string()';
+          }
+          break;
+
+        case 'signature':
+          fieldSchemaCode = "z.string().min(1, 'Signature is required')";
+          break;
+
+        default:
+          fieldSchemaCode = 'z.string()';
+      }
+
+      // Apply string-specific configurations
+      if (
+        [
+          'text',
+          'email',
+          'url',
+          'tel',
+          'password',
+          'textarea',
+          'search',
+          'hidden',
+        ].includes(field.type)
+      ) {
+        if (field.zodConfig?.minLength) {
+          fieldSchemaCode += `.min(${field.zodConfig.minLength})`;
+        }
+        if (field.zodConfig?.maxLength) {
+          fieldSchemaCode += `.max(${field.zodConfig.maxLength})`;
+        }
+        if (field.zodConfig?.regex) {
+          fieldSchemaCode += `.regex(${field.zodConfig.regex})`;
+        }
+      }
+
+      // Handle special JSON field types
+      if (field.pgConfig?.type === 'JSON' || field.pgConfig?.type === 'JSONB') {
+        fieldSchemaCode =
+          "z.string().refine((val) => { try { JSON.parse(val); return true; } catch { return false; } }, { message: 'Invalid JSON format' })";
+      }
+
+      // Apply custom refinements
+      if (field.zodConfig?.refine) {
+        fieldSchemaCode += `.refine(${field.zodConfig.refine.check}, { message: '${field.zodConfig.refine.message}' })`;
+      }
+
+      // Make field optional if not required
+      if (!field.required) {
+        fieldSchemaCode += '.optional()';
+      }
+
+      schemaCode += `  ${field.name}: ${fieldSchemaCode},\n`;
+    });
+  });
+
+  schemaCode += '});\n\n';
+  schemaCode += `export type ${config.postgresTableName.charAt(0).toUpperCase() + config.postgresTableName.slice(1)}Data = z.infer<typeof ${config.postgresTableName}Schema>;`;
+
+  return schemaCode;
 }
 
 // Type exports

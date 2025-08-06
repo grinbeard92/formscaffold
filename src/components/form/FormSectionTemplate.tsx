@@ -9,6 +9,8 @@ import { FormSectionTemplateProps } from '@/types/globalFormTypes';
 import { FieldDefinition } from '@/types/globalFormTypes';
 import { getFieldRequirements } from './utils/formSectionUtils';
 import { renderInput } from './utils/renderInputSection';
+import SignaturePanel from '@/components/SignaturePanel';
+import { defaultOverrides } from 'next/dist/server/require-hook';
 
 // Main FormSectionTemplate component
 export const FormSectionTemplate = <T extends FieldValues>({
@@ -81,6 +83,7 @@ const renderFormField = <T extends FieldValues>(
       <Controller
         name={field.name}
         control={control}
+        defaultValue={field.default as T[keyof T]} // Use the required default value from field configuration
         render={(controllerProps) => renderInput(field, controllerProps)}
       />
 

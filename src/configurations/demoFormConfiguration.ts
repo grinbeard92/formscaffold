@@ -36,6 +36,7 @@ export const demoFormConfiguration: FormConfiguration = {
             length: 100,
             index: true,
           },
+          default: null,
         },
         {
           label: 'Email Address',
@@ -52,6 +53,7 @@ export const demoFormConfiguration: FormConfiguration = {
             unique: true,
             index: true,
           },
+          default: null,
         },
         {
           label: 'Website URL',
@@ -67,6 +69,7 @@ export const demoFormConfiguration: FormConfiguration = {
             type: 'VARCHAR',
             length: 500,
           },
+          default: null,
         },
         {
           label: 'Phone Number',
@@ -78,6 +81,7 @@ export const demoFormConfiguration: FormConfiguration = {
             type: 'VARCHAR',
             length: 20,
           },
+          default: null,
         },
         {
           label: 'Search Keywords',
@@ -88,6 +92,7 @@ export const demoFormConfiguration: FormConfiguration = {
           pgConfig: {
             type: 'TEXT',
           },
+          default: null,
         },
         {
           label: 'Secret Code',
@@ -103,6 +108,7 @@ export const demoFormConfiguration: FormConfiguration = {
             type: 'VARCHAR',
             length: 255, // Encrypted storage
           },
+          default: null,
         },
       ],
     },
@@ -128,6 +134,7 @@ export const demoFormConfiguration: FormConfiguration = {
             type: 'INTEGER',
             index: true,
           },
+          default: null,
         },
         {
           label: 'Salary Range',
@@ -145,6 +152,7 @@ export const demoFormConfiguration: FormConfiguration = {
             precision: 10,
             scale: 2,
           },
+          default: null,
         },
         {
           label: 'Experience Level (1-10)',
@@ -160,6 +168,7 @@ export const demoFormConfiguration: FormConfiguration = {
             type: 'INTEGER',
             default: 5,
           },
+          default: null,
         },
         {
           label: 'Satisfaction Rating',
@@ -175,6 +184,7 @@ export const demoFormConfiguration: FormConfiguration = {
             type: 'INTEGER',
             default: 50,
           },
+          default: null,
         },
       ],
     },
@@ -196,6 +206,7 @@ export const demoFormConfiguration: FormConfiguration = {
             type: 'DATE',
             index: true,
           },
+          default: null,
         },
         {
           label: 'Appointment Time',
@@ -205,6 +216,7 @@ export const demoFormConfiguration: FormConfiguration = {
           pgConfig: {
             type: 'TIME',
           },
+          default: null,
         },
         {
           label: 'Event Date & Time',
@@ -214,6 +226,7 @@ export const demoFormConfiguration: FormConfiguration = {
           pgConfig: {
             type: 'TIMESTAMP',
           },
+          default: null,
         },
         {
           label: 'Target Month',
@@ -224,6 +237,7 @@ export const demoFormConfiguration: FormConfiguration = {
             type: 'VARCHAR',
             length: 7, // YYYY-MM format
           },
+          default: null,
         },
         {
           label: 'Target Week',
@@ -234,6 +248,7 @@ export const demoFormConfiguration: FormConfiguration = {
             type: 'VARCHAR',
             length: 8, // YYYY-W## format
           },
+          default: null,
         },
       ],
     },
@@ -260,6 +275,7 @@ export const demoFormConfiguration: FormConfiguration = {
             length: 5,
             index: true,
           },
+          default: null,
         },
         {
           label: 'Skill Level',
@@ -272,6 +288,7 @@ export const demoFormConfiguration: FormConfiguration = {
             length: 20,
             index: true,
           },
+          default: null,
         },
         {
           label: 'Newsletter Subscription',
@@ -282,6 +299,7 @@ export const demoFormConfiguration: FormConfiguration = {
             type: 'BOOLEAN',
             default: false,
           },
+          default: null,
         },
         {
           label: 'Enable Notifications',
@@ -292,6 +310,7 @@ export const demoFormConfiguration: FormConfiguration = {
             type: 'BOOLEAN',
             default: true,
           },
+          default: null,
         },
       ],
     },
@@ -310,6 +329,7 @@ export const demoFormConfiguration: FormConfiguration = {
             type: 'VARCHAR',
             length: 7, // Hex color format
           },
+          default: null,
         },
         {
           label: 'Profile Picture',
@@ -319,6 +339,7 @@ export const demoFormConfiguration: FormConfiguration = {
           pgConfig: {
             type: 'BYTEA', // Binary data storage
           },
+          default: null,
         },
         {
           label: 'Resume/CV',
@@ -329,6 +350,7 @@ export const demoFormConfiguration: FormConfiguration = {
             type: 'VARCHAR',
             length: 500, // File path/URL storage
           },
+          default: null,
         },
         {
           label: 'Biography',
@@ -343,6 +365,7 @@ export const demoFormConfiguration: FormConfiguration = {
           pgConfig: {
             type: 'TEXT',
           },
+          default: null,
         },
       ],
     },
@@ -361,6 +384,7 @@ export const demoFormConfiguration: FormConfiguration = {
           pgConfig: {
             type: 'JSON',
           },
+          default: null,
         },
         {
           label: 'Skills Array',
@@ -371,6 +395,7 @@ export const demoFormConfiguration: FormConfiguration = {
           pgConfig: {
             type: 'ARRAY',
           },
+          default: null,
         },
         {
           label: 'User ID',
@@ -381,6 +406,7 @@ export const demoFormConfiguration: FormConfiguration = {
             type: 'UUID',
             default: 'gen_random_uuid()',
           },
+          default: null,
         },
         {
           label: 'Metadata',
@@ -395,6 +421,7 @@ export const demoFormConfiguration: FormConfiguration = {
           pgConfig: {
             type: 'JSONB', // Optimized JSON storage
           },
+          default: null,
         },
       ],
     },

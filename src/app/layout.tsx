@@ -30,7 +30,7 @@ function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
-        <Toaster />
+        <Toaster closeButton={true} expand={true} richColors={true} />
       </body>
     </html>
   );

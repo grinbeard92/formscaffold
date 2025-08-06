@@ -9,6 +9,7 @@ import React from 'react';
 import { cn } from '@/utils/utils';
 import { SelectOption } from '@/types/globalFormTypes';
 import { FieldDefinition } from '@/types/globalFormTypes';
+import SignaturePanel from '@/components/SignaturePanel';
 
 export const renderInput = <T extends FieldValues>(
   field: FieldDefinition<T>,
@@ -192,26 +193,100 @@ export const renderInput = <T extends FieldValues>(
 
     case 'file':
       return (
-        <input
-          {...baseInputProps}
-          type='file'
-          accept={field.accept}
-          multiple={field.multiple}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            const files = e.target.files;
-            if (files) {
-              if (field.multiple) {
-                controllerField.onChange(Array.from(files));
+        <div className='space-y-2'>
+          <input
+            {...baseInputProps}
+            type='file'
+            accept={field.accept}
+            multiple={field.multiple}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              const files = e.target.files;
+              if (files && files.length > 0) {
+                if (field.multiple) {
+                  const fileArray = Array.from(files);
+                  controllerField.onChange(fileArray);
+                } else {
+                  const singleFile = files[0];
+                  controllerField.onChange(singleFile);
+                }
               } else {
-                controllerField.onChange(files[0] || null);
+                controllerField.onChange(field.multiple ? [] : undefined);
               }
-            }
-          }}
-          className={cn(
-            'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
-            field.className,
+            }}
+            className={cn(
+              'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+              field.className,
+            )}
+          />
+
+          {/* Display thumbnails for uploaded files */}
+          {controllerField.value && (
+            <div className='mt-2 flex flex-wrap gap-2'>
+              {field.multiple ? (
+                // Multiple files: value should be an array
+                Array.isArray(controllerField.value) &&
+                controllerField.value.length > 0 ? (
+                  controllerField.value.map((file: File, index: number) => (
+                    <div key={index} className='relative'>
+                      {file.type && file.type.startsWith('image/') ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt={file.name}
+                          className='h-20 w-20 rounded border object-cover'
+                        />
+                      ) : (
+                        <div className='flex h-20 w-20 items-center justify-center rounded border bg-gray-100 p-1 text-center text-xs'>
+                          {file.name}
+                        </div>
+                      )}
+                      <div className='mt-1 max-w-20 truncate text-xs text-gray-600'>
+                        {file.name}
+                      </div>
+                    </div>
+                  ))
+                ) : null
+              ) : // Single file: value should be a File object
+              controllerField.value &&
+                typeof controllerField.value === 'object' &&
+                'name' in controllerField.value &&
+                'type' in controllerField.value ? (
+                <div className='relative'>
+                  {(controllerField.value as File).type &&
+                  (controllerField.value as File).type.startsWith('image/') ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={URL.createObjectURL(controllerField.value as File)}
+                      alt={(controllerField.value as File).name}
+                      className='h-20 w-20 rounded border object-cover'
+                    />
+                  ) : (
+                    <div className='flex h-20 w-20 items-center justify-center rounded border bg-gray-100 p-1 text-center text-xs'>
+                      {(controllerField.value as File).name}
+                    </div>
+                  )}
+                  <div className='mt-1 max-w-20 truncate text-xs text-gray-600'>
+                    {(controllerField.value as File).name}
+                  </div>
+                </div>
+              ) : null}
+            </div>
           )}
-        />
+        </div>
+      );
+
+    case 'signature':
+      // Handle signature input using SignaturePanel
+      return (
+        <div className='space-y-2'>
+          {/* This will be handled by the parent component using SignaturePanel */}
+          <div className='text-sm text-gray-500'>
+            <SignaturePanel
+              onSignatureChange={controllerField.onChange}
+              onReset={() => controllerField.onChange('')}
+            />
+          </div>
+        </div>
       );
 
     case 'radio':

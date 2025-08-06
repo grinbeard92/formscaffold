@@ -74,19 +74,19 @@
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #292929;
+    --background: #222222;
     --foreground: #ededed;
     --card: #2e2e2e;
     --card-foreground: #ededed;
     --popover: #1a1a1a;
     --popover-foreground: #ededed;
-    --primary: #00257c;
+    --primary: #004cff;
     --primary-foreground: #ffffff;
-    --secondary: #262626;
+    --secondary: #979797;
     --secondary-foreground: #fafafa;
     --muted: #262626;
     --muted-foreground: #a1a1aa;
-    --accent: #262626;
+    --accent: #3500af;
     --accent-foreground: #fafafa;
     --destructive: #dc2626;
     --destructive-foreground: #ffffff;

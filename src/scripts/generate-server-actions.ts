@@ -5,37 +5,53 @@
  * Creates CRUD operations for the specified table
  */
 import { FormConfiguration } from '@/types/globalFormTypes';
-import * as fs from 'fs/promises';
-import * as path from 'path';
 
 /**
- * Generates server actions file for a form configuration
+ * Generate file field overrides for database schema
  */
-export async function generateServerActions(
+function generateFileFieldOverrides(config: FormConfiguration): string {
+  const fileFields: string[] = [];
+
+  config.sections.forEach((section) => {
+    section.fields.forEach((field) => {
+      if (field.type === 'file') {
+        fileFields.push(`  ${field.name}: z.string().nullable().optional()`);
+      }
+    });
+  });
+
+  return fileFields.length > 0 ? '\n' + fileFields.join(',\n') + '\n' : '';
+}
+
+/**
+ * Generate file processing logic for specific form fields
+ */
+function generateFileProcessingLogic(
   config: FormConfiguration,
-  projectRoot: string = process.cwd(),
-  configMetadata?: { fileName: string; exportName: string },
-): Promise<void> {
-  const tableName = config.postgresTableName;
-  const actionsDir = path.join(projectRoot, 'src', 'actions');
-  const actionsFile = path.join(actionsDir, `${tableName}.ts`);
+  tableName: string,
+): string {
+  const fileFields: string[] = [];
 
-  // Ensure actions directory exists
-  await fs.mkdir(actionsDir, { recursive: true });
+  config.sections.forEach((section) => {
+    section.fields.forEach((field) => {
+      if (field.type === 'file') {
+        fileFields.push(`
+  // Process ${field.name}
+  if (data.${field.name} instanceof File || Array.isArray(data.${field.name})) {
+    const filePaths = await saveUploadedFiles(data.${field.name} as File | File[], '${tableName}');
+    processedData.${field.name} = filePathsToString(filePaths);
+  }`);
+      }
+    });
+  });
 
-  // Generate the server actions content
-  const actionsContent = generateServerActionsContent(config, configMetadata);
-
-  // Write the actions file
-  await fs.writeFile(actionsFile, actionsContent, 'utf8');
-
-  console.log(`✅ Generated server actions: src/actions/${tableName}.ts`);
+  return fileFields.join('');
 }
 
 /**
  * Generates the content for the server actions file
  */
-function generateServerActionsContent(
+export function generateServerActionsContent(
   config: FormConfiguration,
   configMetadata?: { fileName: string; exportName: string },
 ): string {
@@ -77,11 +93,25 @@ import {
 import { ${configVariableName} } from '${configImportPath}';
 import { generateZodSchema } from '@/scripts/generate-schema';
 import { ${capitalizedTableName}FormData, Update${capitalizedTableName}Data, ${capitalizedTableName} } from '@/types/${tableName}Types';
+import { saveUploadedFiles, filePathsToString } from '@/utils/fileUpload';
 
-// Generate the Zod schema from form configuration
-const ${tableName}Schema = generateZodSchema(${configVariableName});
-const create${capitalizedTableName}Schema = ${tableName}Schema; // Schema already excludes database fields
+// Generate schemas
+const ${tableName}FormSchema = generateZodSchema(${configVariableName}); // For form validation (with File objects)
+
+// Create database schema (files converted to strings)
+const ${tableName}DatabaseSchema = ${tableName}FormSchema.extend({${generateFileFieldOverrides(config)}});
+
+const create${capitalizedTableName}Schema = ${tableName}DatabaseSchema;
 const update${capitalizedTableName}Schema = create${capitalizedTableName}Schema.partial();
+
+/**
+ * Process file uploads and convert File objects to file paths
+ */
+async function processFileUploads(data: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const processedData = { ...data };
+  ${generateFileProcessingLogic(config, tableName)}
+  return processedData;
+}
 
 
 /**
@@ -91,8 +121,11 @@ export async function create${capitalizedTableName}(
   data: ${capitalizedTableName}FormData
 ): Promise<{ success: boolean; data?: ${capitalizedTableName}; error?: string }> {
   try {
-    // Validate the input data
-    const validatedData = create${capitalizedTableName}Schema.parse(data);
+    // Process file uploads first (convert File objects to file paths)
+    const processedData = await processFileUploads(data as Record<string, unknown>);
+    
+    // Validate the processed data
+    const validatedData = create${capitalizedTableName}Schema.parse(processedData);
     
     // Insert data using the database function
     const result = await insertFormData(${configVariableName}, validatedData);
@@ -267,10 +300,73 @@ export async function submit${capitalizedTableName}Form(
   formData: FormData
 ): Promise<void> {
   try {
-    // Convert FormData to object
+    // Convert FormData to object, handling files properly
     const data: Record<string, unknown> = {};
+    
+    // Get field configurations to determine file handling
+    const fieldConfigs = new Map<string, { type: string; multiple?: boolean; pgConfig?: any }>();
+    ${configVariableName}.sections.forEach(section => {
+      section.fields.forEach(field => {
+        fieldConfigs.set(field.name, { 
+          type: field.type, 
+          multiple: field.multiple,
+          pgConfig: field.pgConfig 
+        });
+      });
+    });
+    
+    // Group all form entries by key to handle multiple files
+    const formEntries: Record<string, (string | File)[]> = {};
+    
     for (const [key, value] of formData.entries()) {
-      data[key] = value;
+      if (!formEntries[key]) {
+        formEntries[key] = [];
+      }
+      formEntries[key].push(value as string | File);
+    }
+    
+    // Process each field appropriately
+    for (const [fieldName, values] of Object.entries(formEntries)) {
+      if (values.length === 0) {
+        continue;
+      }
+      
+      const fieldConfig = fieldConfigs.get(fieldName);
+      const hasFiles = values.some(value => value instanceof File);
+      
+      if (hasFiles && fieldConfig?.type === 'file') {
+        // Handle file uploads using proper file processing
+        const files = values.filter(value => value instanceof File) as File[];
+        
+        if (fieldConfig.multiple) {
+          // Multiple file upload - save files and store paths as comma-separated string
+          const filePaths = await saveUploadedFiles(files, '${tableName}');
+          data[fieldName] = filePathsToString(filePaths);
+        } else {
+          // Single file upload - save file and store path as string
+          if (files.length > 0) {
+            const filePath = await saveUploadedFiles(files[0], '${tableName}');
+            data[fieldName] = filePath;
+          }
+        }
+      } else if (hasFiles && fieldConfig?.type === 'signature') {
+        // Handle signature fields - always single, convert to base64
+        const files = values.filter(value => value instanceof File) as File[];
+        if (files.length > 0) {
+          const file = files[0];
+          const buffer = await file.arrayBuffer();
+          const base64 = Buffer.from(buffer).toString('base64');
+          data[fieldName] = \`data:\${file.type};base64,\${base64}\`;
+        }
+      } else {
+        // Handle regular form data
+        if (values.length === 1) {
+          data[fieldName] = values[0];
+        } else {
+          // Multiple values for same field name (e.g., checkboxes)
+          data[fieldName] = values;
+        }
+      }
     }
 
     // Create the ${tableName}
@@ -281,7 +377,7 @@ export async function submit${capitalizedTableName}Form(
     }
     
     // Redirect to success page or back to form
-    redirect('/demo?success=true');
+    redirect('/${tableName}?success=true');
   } catch (error) {
     console.error('Error in submit${capitalizedTableName}Form:', error);
     // In a real app, you might want to handle errors differently
@@ -289,4 +385,14 @@ export async function submit${capitalizedTableName}Form(
   }
 }
 `;
+}
+
+/**
+ * Generate server actions code as a string (for UI display)
+ */
+export function generateServerActionsCode(
+  config: FormConfiguration,
+  configMetadata?: { fileName: string; exportName: string },
+): string {
+  return generateServerActionsContent(config, configMetadata);
 }

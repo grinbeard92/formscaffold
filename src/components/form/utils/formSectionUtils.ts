@@ -30,7 +30,9 @@ export const getFieldRequirements = <T extends FieldValues>(
   }
 
   if (field.zodConfig?.maxLength) {
-    requirements.push(`Max ${field.zodConfig.maxLength} characters`);
+    requirements.push(
+      `Max ${field.zodConfig.maxLength} ${field.type == 'file' ? 'attachments' : 'characters'}`,
+    );
   }
 
   if (field.zodConfig?.min !== undefined) {

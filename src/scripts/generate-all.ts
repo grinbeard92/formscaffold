@@ -17,7 +17,7 @@
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { createDockerComposeFiles } from './generate-docker-compose';
-import { createDatabaseInitFiles } from './generate-db-init';
+import { createDatabaseInitFiles } from './db-init';
 import { generateServerActions } from './generate-server-actions';
 import { createFormSchemas } from './generate-schema';
 import { generateTypes } from './generate-types';
@@ -57,13 +57,13 @@ ${configurations.map(({ fileName, exportName }) => ` * - ${fileName} (${exportNa
  */
 
 // Server action result types (shared across all forms)
-export interface ServerActionResult<T = any> {
+export interface ServerActionResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
 }
 
-export interface PaginatedResult<T = any> extends ServerActionResult<T[]> {
+export interface PaginatedResult<T = unknown> extends ServerActionResult<T[]> {
   total?: number;
 }
 
@@ -123,7 +123,9 @@ async function main() {
 
       console.log(`   🔧 Generating database initialization...`);
       await createDatabaseInitFiles(config, projectRoot);
-      generatedFiles.push(`init-scripts/01-init-tables.sql`);
+      generatedFiles.push(
+        `init-scripts/${config.postgresTableName}-init-tables.sql`,
+      );
 
       // 2. Generate database schema
       console.log(`   🔧 Generating database schema...`);
