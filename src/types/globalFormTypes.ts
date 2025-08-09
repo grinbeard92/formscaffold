@@ -5,33 +5,81 @@ export interface ISelectOption {
   data?: Record<string, unknown>;
 }
 
+export enum EPostgresTypes {
+  VARCHAR = 'VARCHAR',
+  TEXT = 'TEXT',
+  INTEGER = 'INTEGER',
+  BIGINT = 'BIGINT',
+  DECIMAL = 'DECIMAL',
+  NUMERIC = 'NUMERIC',
+  REAL = 'REAL',
+  DOUBLE_PRECISION = 'DOUBLE PRECISION',
+  DATE = 'DATE',
+  TIME = 'TIME',
+  TIMESTAMP = 'TIMESTAMP',
+  TIMESTAMP_WITH_TIME_ZONE = 'TIMESTAMP WITH TIME ZONE',
+  BOOLEAN = 'BOOLEAN',
+  UUID = 'UUID',
+  BYTEA = 'BYTEA',
+  JSON = 'JSON',
+  JSONB = 'JSONB',
+  ARRAY = 'ARRAY',
+  INET = 'INET',
+  CIDR = 'CIDR',
+  MACADDR = 'MACADDR',
+  XML = 'XML',
+}
+
+export enum EAcceptFileTypes {
+  IMAGE = 'image/*',
+  VIDEO = 'video/*',
+  AUDIO = 'audio/*',
+  TEXT = 'text/*',
+  APPLICATION = 'application/*',
+  PDF = '.pdf',
+  DOC = '.doc,.docx',
+  XLS = '.xls,.xlsx',
+  PPT = '.ppt,.pptx',
+  TXT = '.txt',
+  CSV = '.csv',
+  JSON = '.json',
+  XML = '.xml',
+  ZIP = '.zip,.rar,.7z',
+  JPG = '.jpg,.jpeg,.png,.gif,.webp',
+  MP4 = '.mp4,.avi,.mov,.wmv',
+  MP3 = '.mp3,.wav,.ogg,.m4a',
+  OTHER = 'string',
+}
+
+export enum EFormFieldTypes {
+  TEXT = 'text',
+  EMAIL = 'email',
+  PASSWORD = 'password',
+  NUMBER = 'number',
+  DATE = 'date',
+  TEXTAREA = 'textarea',
+  SELECT = 'select',
+  CHECKBOX = 'checkbox',
+  FILE = 'file',
+  RADIO = 'radio',
+  TOGGLE = 'toggle',
+  HIDDEN = 'hidden',
+  COLOR = 'color',
+  RANGE = 'range',
+  TIME = 'time',
+  DATETIME_LOCAL = 'datetime-local',
+  MONTH = 'month',
+  WEEK = 'week',
+  URL = 'url',
+  TEL = 'tel',
+  SEARCH = 'search',
+  SIGNATURE = 'signature',
+}
+
 export interface IFieldDefinition<T extends FieldValues> {
   label: string;
   name: FieldPath<T>;
-  type:
-    | 'text'
-    | 'email'
-    | 'password'
-    | 'number'
-    | 'date'
-    | 'textarea'
-    | 'select'
-    | 'checkbox'
-    | 'file'
-    | 'radio'
-    | 'toggle'
-    | 'hidden'
-    | 'color'
-    | 'range'
-    | 'time'
-    | 'datetime-local'
-    | 'month'
-    | 'week'
-    | 'url'
-    | 'tel'
-    | 'search'
-    | 'signature';
-
+  type: EFormFieldTypes;
   required?: boolean;
   placeholder?: string;
   step?: string;
@@ -45,25 +93,8 @@ export interface IFieldDefinition<T extends FieldValues> {
   default: string | number | boolean | Date | File[] | null;
   customErrorMessage?: string;
 
-  accept?:
-    | 'image/*'
-    | 'video/*'
-    | 'audio/*'
-    | 'text/*'
-    | 'application/*'
-    | '.pdf'
-    | '.doc,.docx'
-    | '.xls,.xlsx'
-    | '.ppt,.pptx'
-    | '.txt'
-    | '.csv'
-    | '.json'
-    | '.xml'
-    | '.zip,.rar,.7z'
-    | '.jpg,.jpeg,.png,.gif,.webp'
-    | '.mp4,.avi,.mov,.wmv'
-    | '.mp3,.wav,.ogg,.m4a'
-    | string;
+  accept?: EAcceptFileTypes | string;
+
   multiple?: boolean;
   zodConfig?: {
     url?: boolean;
@@ -83,29 +114,7 @@ export interface IFieldDefinition<T extends FieldValues> {
     };
   };
   pgConfig?: {
-    type?:
-      | 'VARCHAR'
-      | 'TEXT'
-      | 'INTEGER'
-      | 'BIGINT'
-      | 'DECIMAL'
-      | 'NUMERIC'
-      | 'REAL'
-      | 'DOUBLE PRECISION'
-      | 'DATE'
-      | 'TIME'
-      | 'TIMESTAMP'
-      | 'TIMESTAMP WITH TIME ZONE'
-      | 'BOOLEAN'
-      | 'UUID'
-      | 'BYTEA'
-      | 'JSON'
-      | 'JSONB'
-      | 'ARRAY'
-      | 'INET'
-      | 'CIDR'
-      | 'MACADDR'
-      | 'XML';
+    type?: EPostgresTypes;
     length?: number;
     precision?: number;
     scale?: number;

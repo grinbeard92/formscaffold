@@ -3,7 +3,12 @@
 import * as Select from '@radix-ui/react-select';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import { ChevronDownIcon, CheckIcon } from '@radix-ui/react-icons';
-import { ControllerRenderProps, FieldPath, FieldValues } from 'react-hook-form';
+import {
+  ControllerRenderProps,
+  FieldPath,
+  FieldValues,
+  useFormState,
+} from 'react-hook-form';
 
 import React from 'react';
 import { cn } from '@/utils/utils';
@@ -19,6 +24,7 @@ export const renderInput = <T extends FieldValues>(
     field: ControllerRenderProps<T, FieldPath<T>>;
   },
 ) => {
+  const { errors } = useFormState();
   const baseInputProps = {
     placeholder: field.placeholder,
     disabled: field.disabled,
@@ -41,6 +47,8 @@ export const renderInput = <T extends FieldValues>(
           className={cn(
             'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
             field.className,
+            errors &&
+              'border-destructive focus:border-destructive focus:ring-destructive',
           )}
         />
       );
@@ -74,7 +82,11 @@ export const renderInput = <T extends FieldValues>(
                   <Select.Item
                     key={option.value}
                     value={option.value}
-                    className='focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50'
+                    className={cn(
+                      'focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+                      errors &&
+                        'border-destructive focus:border-destructive focus:ring-destructive',
+                    )}
                   >
                     <span className='absolute left-2 flex h-3.5 w-3.5 items-center justify-center'>
                       <Select.ItemIndicator>
@@ -98,7 +110,11 @@ export const renderInput = <T extends FieldValues>(
             checked={controllerField.value ?? false}
             onCheckedChange={controllerField.onChange}
             disabled={field.disabled}
-            className='border-primary focus-visible:ring-ring data-[state=checked]:bg-primary data-[state=checked]:text-primary flex h-[25px] w-[25px] rounded-sm border-1 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
+            className={cn(
+              'border-primary focus-visible:ring-ring data-[state=checked]:bg-primary data-[state=checked]:text-primary flex h-[25px] w-[25px] rounded-sm border-1 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+              errors &&
+                'border-destructive focus:border-destructive focus:ring-destructive',
+            )}
           >
             <Checkbox.Indicator className='flex'>
               <CheckIcon className='flex h-[25px] w-[25px]' />
@@ -129,6 +145,8 @@ export const renderInput = <T extends FieldValues>(
           className={cn(
             'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
             field.className,
+            errors &&
+              'border-destructive focus:border-destructive focus:ring-destructive',
           )}
         />
       );
@@ -148,6 +166,8 @@ export const renderInput = <T extends FieldValues>(
           className={cn(
             'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
             field.className,
+            errors &&
+              'border-destructive focus:border-destructive focus:ring-destructive',
           )}
         />
       );
@@ -166,6 +186,8 @@ export const renderInput = <T extends FieldValues>(
             className={cn(
               'h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-200',
               field.className,
+              errors &&
+                'border-destructive focus:border-destructive focus:ring-destructive',
             )}
           />
           <span className='min-w-[3rem] text-sm text-gray-600'>
@@ -184,6 +206,8 @@ export const renderInput = <T extends FieldValues>(
             className={cn(
               'border-input bg-background h-10 w-16 cursor-pointer rounded-md border disabled:cursor-not-allowed disabled:opacity-50',
               field.className,
+              errors &&
+                'border-destructive focus:border-destructive focus:ring-destructive',
             )}
           />
           <span className='text-sm text-gray-600'>
@@ -217,6 +241,8 @@ export const renderInput = <T extends FieldValues>(
             className={cn(
               'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
               field.className,
+              errors &&
+                'border-destructive focus:border-destructive focus:ring-destructive',
             )}
           />
 
@@ -228,7 +254,7 @@ export const renderInput = <T extends FieldValues>(
                 Array.isArray(controllerField.value) &&
                 controllerField.value.length > 0 ? (
                   controllerField.value.map((file: File, index: number) => (
-                    <div key={index} className='relative'>
+                    <div key={index} className={cn('relative')}>
                       {file.type && file.type.startsWith('image/') ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -279,7 +305,13 @@ export const renderInput = <T extends FieldValues>(
     case 'signature':
       return (
         <div className='space-y-2'>
-          <div className='text-sm text-gray-500'>
+          <div
+            className={cn(
+              'text-sm text-gray-500',
+              errors &&
+                'border-destructive focus:border-destructive focus:ring-destructive',
+            )}
+          >
             <SignaturePanel
               onSignatureChange={controllerField.onChange}
               onReset={() => controllerField.onChange('')}
@@ -308,7 +340,11 @@ export const renderInput = <T extends FieldValues>(
                 checked={controllerField.value === option.value}
                 onChange={() => controllerField.onChange(option.value)}
                 disabled={field.disabled}
-                className='text-primary focus:ring-primary h-4 w-4 border-gray-300'
+                className={cn(
+                  'text-primary focus:ring-primary h-4 w-4 border-gray-300',
+                  errors &&
+                    'border-destructive focus:border-destructive focus:ring-destructive',
+                )}
               />
               <label
                 htmlFor={`${String(field.name)}-${option.value}`}
@@ -334,6 +370,8 @@ export const renderInput = <T extends FieldValues>(
               'focus:ring-primary relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none',
               controllerField.value ? 'bg-primary' : 'bg-gray-200',
               field.disabled && 'cursor-not-allowed opacity-50',
+              errors &&
+                'border-destructive focus:border-destructive focus:ring-destructive',
             )}
           >
             <span
@@ -367,6 +405,8 @@ export const renderInput = <T extends FieldValues>(
           className={cn(
             'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
             field.className,
+            errors &&
+              'border-destructive focus:border-destructive focus:ring-destructive',
           )}
         />
       );

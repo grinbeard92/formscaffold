@@ -6,16 +6,20 @@ import {
   IFormConfiguration,
   IFieldDefinition,
   IFormSectionDefinition,
+  EAcceptFileTypes,
+  EPostgresTypes,
 } from '@/types/globalFormTypes';
 import { FieldValues } from 'react-hook-form';
-import { FieldEditor } from './FieldEditor';
 import {
   createNewField,
   createNewSection,
-  GRID_COLUMN_OPTIONS,
-  SPACING_OPTIONS,
   isValidTableName,
 } from '@/utils/form-builder-utils';
+import {
+  FIELD_TYPES_ARRAY,
+  FILE_ACCEPT_TYPES_ARRAY,
+  POSTGRES_TYPES_ARRAY,
+} from '@/utils/field-type-options';
 
 interface FormBuilderProps {
   config: IFormConfiguration;
@@ -106,7 +110,7 @@ export function FormBuilder({
   };
 
   return (
-    <div className='grid gap-8 lg:grid-cols-2'>
+    <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
       <div className='space-y-6'>
         {/* Basic Settings */}
         <Card.Root>
@@ -264,30 +268,51 @@ export function FormBuilder({
           {config.sections.map((section, sectionIndex) => (
             <Card.Root key={sectionIndex}>
               <div className='p-4'>
-                <input
-                  type='text'
-                  value={section.title}
-                  onChange={(e) =>
-                    setConfig((prev) => ({
-                      ...prev,
-                      sections: prev.sections.map((s, i) =>
-                        i === sectionIndex
-                          ? { ...s, title: e.target.value }
-                          : s,
-                      ),
-                    }))
-                  }
-                  className='mb-2 w-full rounded border p-2 font-medium'
-                  placeholder='Section Title'
-                />
+                <div className='mb-3 flex items-start justify-between gap-3'>
+                  <div className='flex-1'>
+                    <label className='text-accent mb-1 block text-sm font-medium'>
+                      Section Title
+                    </label>
+                    <input
+                      type='text'
+                      value={section.title}
+                      onChange={(e) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          sections: prev.sections.map((s, i) =>
+                            i === sectionIndex
+                              ? { ...s, title: e.target.value }
+                              : s,
+                          ),
+                        }))
+                      }
+                      className='w-full rounded border p-2 font-medium'
+                      placeholder='Section Title'
+                    />
+                  </div>
+                  {config.sections.length > 1 && (
+                    <button
+                      onClick={() => removeSection(sectionIndex)}
+                      className='text-destructive hover:text-destructive/80 mt-6'
+                      title='Remove Section'
+                    >
+                      <TrashIcon className='h-4 w-4' />
+                    </button>
+                  )}
+                </div>
 
                 <div className='mb-4 flex items-center justify-between'>
-                  <span className='text-sm font-medium'>
-                    Fields ({section.fields.length})
-                  </span>
+                  <div>
+                    <label className='text-accent block text-sm font-medium'>
+                      Fields ({section.fields.length})
+                    </label>
+                    <span className='text-muted-foreground text-xs'>
+                      Add and configure form fields for this section
+                    </span>
+                  </div>
                   <button
                     onClick={() => addField(sectionIndex)}
-                    className='bg-secondary text-secondary-foreground rounded px-2 py-1 text-xs'
+                    className='bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded px-3 py-1 text-xs transition-colors'
                   >
                     <PlusIcon className='mr-1 inline h-3 w-3' />
                     Add Field
@@ -297,104 +322,153 @@ export function FormBuilder({
                 {section.fields.map((field, fieldIndex) => (
                   <div
                     key={fieldIndex}
-                    className='bg-muted/50 mb-2 rounded border p-3'
+                    className='bg-muted/50 mx-5 my-7 rounded border p-3'
                   >
-                    <div className='mb-2 flex items-center justify-between'>
-                      <input
-                        type='text'
-                        value={field.label}
-                        onChange={(e) =>
-                          updateField(sectionIndex, fieldIndex, {
-                            label: e.target.value,
-                          })
-                        }
-                        className='border-none bg-transparent text-sm font-medium outline-none'
-                        placeholder='Field Label'
-                      />
+                    <div className='mb-3 flex items-start justify-between gap-3'>
+                      <div className='flex-1'>
+                        <label className='text-accent mb-1 block text-xs font-medium'>
+                          Field Label
+                        </label>
+                        <input
+                          type='text'
+                          value={field.label}
+                          onChange={(e) =>
+                            updateField(sectionIndex, fieldIndex, {
+                              label: e.target.value,
+                            })
+                          }
+                          className='w-full rounded border p-1 text-sm'
+                          placeholder='Field Label'
+                        />
+                      </div>
                       <button
                         onClick={() => removeField(sectionIndex, fieldIndex)}
-                        className='text-destructive hover:text-destructive/80'
+                        className='text-destructive hover:text-destructive/80 mt-5'
+                        title='Remove Field'
                       >
-                        <TrashIcon className='h-3 w-3' />
+                        <TrashIcon className='h-4 w-4' />
                       </button>
                     </div>
 
-                    <div className='grid grid-cols-2 gap-2 text-xs'>
-                      <input
-                        type='text'
-                        value={field.name}
-                        onChange={(e) =>
-                          updateField(sectionIndex, fieldIndex, {
-                            name: e.target.value,
-                          })
-                        }
-                        className='rounded border p-1'
-                        placeholder='field_name'
-                      />
-                      <select
-                        value={field.type}
-                        onChange={(e) => {
-                          const newType = e.target
-                            .value as IFieldDefinition<FieldValues>['type'];
-                          updateField(sectionIndex, fieldIndex, {
-                            type: newType,
-                            default:
-                              newType === 'file'
-                                ? []
-                                : newType === 'checkbox' || newType === 'toggle'
-                                  ? false
-                                  : newType === 'number'
-                                    ? 0
-                                    : '',
-                          });
-                        }}
-                        className='rounded border p-1'
-                      >
-                        <option value='text'>Text</option>
-                        <option value='email'>Email</option>
-                        <option value='number'>Number</option>
-                        <option value='textarea'>Textarea</option>
-                        <option value='select'>Select</option>
-                        <option value='checkbox'>Checkbox</option>
-                        <option value='file'>File</option>
-                        <option value='date'>Date</option>
-                        <option value='url'>URL</option>
-                        <option value='tel'>Phone</option>
-                      </select>
-                      <label className='flex items-center gap-1'>
-                        <input
-                          type='checkbox'
-                          checked={field.required}
-                          onChange={(e) =>
-                            updateField(sectionIndex, fieldIndex, {
-                              required: e.target.checked,
-                            })
-                          }
-                          className='h-3 w-3'
-                        />
-                        <span>Required</span>
-                      </label>
-                      {field.type !== 'file' && (
+                    <div className='grid grid-cols-1 gap-3 text-xs md:grid-cols-2'>
+                      <div>
+                        <label className='text-accent mb-1 block text-xs font-medium'>
+                          Field Name
+                        </label>
                         <input
                           type='text'
-                          value={String(field.default || '')}
-                          onChange={(e) => {
-                            let value: string | number | boolean =
-                              e.target.value;
-                            if (field.type === 'number')
-                              value = parseFloat(e.target.value) || 0;
-                            if (
-                              field.type === 'checkbox' ||
-                              field.type === 'toggle'
-                            )
-                              value = e.target.value === 'true';
+                          value={field.name}
+                          onChange={(e) =>
                             updateField(sectionIndex, fieldIndex, {
-                              default: value,
+                              name: e.target.value,
+                            })
+                          }
+                          className='w-full rounded border p-1'
+                          placeholder='field_name'
+                        />
+                      </div>
+
+                      <div>
+                        <label className='text-accent mb-1 block text-xs font-medium'>
+                          Field Type
+                        </label>
+                        <select
+                          value={field.type}
+                          onChange={(e) => {
+                            const newType = e.target
+                              .value as IFieldDefinition<FieldValues>['type'];
+                            updateField(sectionIndex, fieldIndex, {
+                              type: newType,
+                              default:
+                                newType === 'file'
+                                  ? []
+                                  : newType === 'checkbox' ||
+                                      newType === 'toggle'
+                                    ? false
+                                    : newType === 'number'
+                                      ? 0
+                                      : '',
                             });
                           }}
-                          className='rounded border p-1'
-                          placeholder='Default form value'
-                        />
+                          className='w-full rounded border p-1'
+                        >
+                          {FIELD_TYPES_ARRAY.map((obj, i) => (
+                            <option key={i} value={obj[1]}>
+                              {obj[1]}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {field.type == 'file' && (
+                        <div className='md:col-span-2'>
+                          <label className='text-accent mb-1 block text-xs font-medium'>
+                            Accepted File Types
+                          </label>
+                          <select
+                            value={field.accept}
+                            onChange={(e) => {
+                              const newAccept = e.target
+                                .value as IFieldDefinition<FieldValues>['accept'];
+                              updateField(sectionIndex, fieldIndex, {
+                                accept: newAccept,
+                              });
+                            }}
+                            className='w-full rounded border p-1'
+                          >
+                            {FILE_ACCEPT_TYPES_ARRAY.map((obj, i) => (
+                              <option key={i} value={obj}>
+                                {obj}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      <div className='flex items-center'>
+                        <label className='flex items-center gap-2 text-sm'>
+                          <input
+                            type='checkbox'
+                            checked={field.required}
+                            onChange={(e) =>
+                              updateField(sectionIndex, fieldIndex, {
+                                required: e.target.checked,
+                              })
+                            }
+                            className='h-3 w-3'
+                          />
+                          <span className='text-accent font-medium'>
+                            Required Field
+                          </span>
+                        </label>
+                      </div>
+
+                      {field.type !== 'file' && (
+                        <div>
+                          <label className='text-accent mb-1 block text-xs font-medium'>
+                            Default Value
+                          </label>
+                          <input
+                            type='text'
+                            value={String(field.default || '')}
+                            onChange={(e) => {
+                              let value: string | number | boolean =
+                                e.target.value;
+                              if (field.type === 'number')
+                                value = parseFloat(e.target.value) || 0;
+                              if (
+                                field.type === 'checkbox' ||
+                                field.type === 'toggle'
+                              )
+                                value = e.target.value === 'true';
+                              updateField(sectionIndex, fieldIndex, {
+                                default: value,
+                              });
+                            }}
+                            className='w-full rounded border p-1'
+                            placeholder='Default form value'
+                          />
+                        </div>
                       )}
                     </div>
 
@@ -420,309 +494,373 @@ export function FormBuilder({
                       <div className='mt-3 space-y-3 border-t pt-3'>
                         {/* Zod Configuration */}
                         <div>
-                          <h5 className='mb-2 text-xs font-medium'>
+                          <h5 className='text-accent mb-2 text-xs font-medium'>
                             Zod Validation
                           </h5>
-                          <div className='grid grid-cols-2 gap-2 text-xs'>
+                          <div className='grid grid-cols-1 gap-3 text-xs md:grid-cols-2'>
                             {(field.type === 'text' ||
                               field.type === 'textarea' ||
                               field.type === 'email' ||
                               field.type === 'url') && (
                               <>
-                                <input
-                                  type='number'
-                                  placeholder='Min length'
-                                  value={field.zodConfig?.minLength || ''}
-                                  onChange={(e) =>
-                                    updateField(sectionIndex, fieldIndex, {
-                                      zodConfig: {
-                                        ...field.zodConfig,
-                                        minLength:
-                                          parseInt(e.target.value) || undefined,
-                                      },
-                                    })
-                                  }
-                                  className='rounded border p-1'
-                                />
-                                <input
-                                  type='number'
-                                  placeholder='Max length'
-                                  value={field.zodConfig?.maxLength || ''}
-                                  onChange={(e) =>
-                                    updateField(sectionIndex, fieldIndex, {
-                                      zodConfig: {
-                                        ...field.zodConfig,
-                                        maxLength:
-                                          parseInt(e.target.value) || undefined,
-                                      },
-                                    })
-                                  }
-                                  className='rounded border p-1'
-                                />
+                                <div>
+                                  <label className='text-accent mb-1 block text-xs font-medium'>
+                                    Min Length
+                                  </label>
+                                  <input
+                                    type='number'
+                                    placeholder='Minimum characters'
+                                    value={field.zodConfig?.minLength || ''}
+                                    onChange={(e) =>
+                                      updateField(sectionIndex, fieldIndex, {
+                                        zodConfig: {
+                                          ...field.zodConfig,
+                                          minLength:
+                                            parseInt(e.target.value) ||
+                                            undefined,
+                                        },
+                                      })
+                                    }
+                                    className='w-full rounded border p-1'
+                                  />
+                                </div>
+                                <div>
+                                  <label className='text-accent mb-1 block text-xs font-medium'>
+                                    Max Length
+                                  </label>
+                                  <input
+                                    type='number'
+                                    placeholder='Maximum characters'
+                                    value={field.zodConfig?.maxLength || ''}
+                                    onChange={(e) =>
+                                      updateField(sectionIndex, fieldIndex, {
+                                        zodConfig: {
+                                          ...field.zodConfig,
+                                          maxLength:
+                                            parseInt(e.target.value) ||
+                                            undefined,
+                                        },
+                                      })
+                                    }
+                                    className='w-full rounded border p-1'
+                                  />
+                                </div>
                               </>
                             )}
                             {field.type === 'number' && (
                               <>
-                                <input
-                                  type='number'
-                                  placeholder='Min value'
-                                  value={field.zodConfig?.min || ''}
-                                  onChange={(e) =>
-                                    updateField(sectionIndex, fieldIndex, {
-                                      zodConfig: {
-                                        ...field.zodConfig,
-                                        min:
-                                          parseFloat(e.target.value) ||
-                                          undefined,
-                                      },
-                                    })
-                                  }
-                                  className='rounded border p-1'
-                                />
-                                <input
-                                  type='number'
-                                  placeholder='Max value'
-                                  value={field.zodConfig?.max || ''}
-                                  onChange={(e) =>
-                                    updateField(sectionIndex, fieldIndex, {
-                                      zodConfig: {
-                                        ...field.zodConfig,
-                                        max:
-                                          parseFloat(e.target.value) ||
-                                          undefined,
-                                      },
-                                    })
-                                  }
-                                  className='rounded border p-1'
-                                />
-                                <label className='col-span-2 flex items-center gap-1'>
+                                <div>
+                                  <label className='text-accent mb-1 block text-xs font-medium'>
+                                    Min Value
+                                  </label>
                                   <input
-                                    type='checkbox'
-                                    checked={field.zodConfig?.int || false}
+                                    type='number'
+                                    placeholder='Minimum value'
+                                    value={field.zodConfig?.min || ''}
                                     onChange={(e) =>
                                       updateField(sectionIndex, fieldIndex, {
                                         zodConfig: {
                                           ...field.zodConfig,
-                                          int: e.target.checked,
+                                          min:
+                                            parseFloat(e.target.value) ||
+                                            undefined,
                                         },
                                       })
                                     }
-                                    className='h-3 w-3'
+                                    className='w-full rounded border p-1'
                                   />
-                                  <span>Integer only</span>
-                                </label>
-                                <label className='col-span-2 flex items-center gap-1'>
+                                </div>
+                                <div>
+                                  <label className='text-accent mb-1 block text-xs font-medium'>
+                                    Max Value
+                                  </label>
                                   <input
-                                    type='checkbox'
-                                    checked={field.zodConfig?.positive || false}
+                                    type='number'
+                                    placeholder='Maximum value'
+                                    value={field.zodConfig?.max || ''}
                                     onChange={(e) =>
                                       updateField(sectionIndex, fieldIndex, {
                                         zodConfig: {
                                           ...field.zodConfig,
-                                          positive: e.target.checked,
+                                          max:
+                                            parseFloat(e.target.value) ||
+                                            undefined,
                                         },
                                       })
                                     }
-                                    className='h-3 w-3'
+                                    className='w-full rounded border p-1'
                                   />
-                                  <span>Positive numbers only</span>
-                                </label>
+                                </div>
+                                <div className='flex items-center md:col-span-2'>
+                                  <label className='flex items-center gap-2 text-sm'>
+                                    <input
+                                      type='checkbox'
+                                      checked={field.zodConfig?.int || false}
+                                      onChange={(e) =>
+                                        updateField(sectionIndex, fieldIndex, {
+                                          zodConfig: {
+                                            ...field.zodConfig,
+                                            int: e.target.checked,
+                                          },
+                                        })
+                                      }
+                                      className='h-3 w-3'
+                                    />
+                                    <span className='text-accent font-medium'>
+                                      Integer only
+                                    </span>
+                                  </label>
+                                </div>
+                                <div className='flex items-center md:col-span-2'>
+                                  <label className='flex items-center gap-2 text-sm'>
+                                    <input
+                                      type='checkbox'
+                                      checked={
+                                        field.zodConfig?.positive || false
+                                      }
+                                      onChange={(e) =>
+                                        updateField(sectionIndex, fieldIndex, {
+                                          zodConfig: {
+                                            ...field.zodConfig,
+                                            positive: e.target.checked,
+                                          },
+                                        })
+                                      }
+                                      className='h-3 w-3'
+                                    />
+                                    <span className='text-accent font-medium'>
+                                      Positive numbers only
+                                    </span>
+                                  </label>
+                                </div>
                               </>
                             )}
                             {field.type === 'email' && (
-                              <label className='col-span-2 flex items-center gap-1'>
-                                <input
-                                  type='checkbox'
-                                  checked={field.zodConfig?.email || false}
-                                  onChange={(e) =>
-                                    updateField(sectionIndex, fieldIndex, {
-                                      zodConfig: {
-                                        ...field.zodConfig,
-                                        email: e.target.checked,
-                                      },
-                                    })
-                                  }
-                                  className='h-3 w-3'
-                                />
-                                <span>Email validation</span>
-                              </label>
+                              <div className='flex items-center md:col-span-2'>
+                                <label className='flex items-center gap-2 text-sm'>
+                                  <input
+                                    type='checkbox'
+                                    checked={field.zodConfig?.email || false}
+                                    onChange={(e) =>
+                                      updateField(sectionIndex, fieldIndex, {
+                                        zodConfig: {
+                                          ...field.zodConfig,
+                                          email: e.target.checked,
+                                        },
+                                      })
+                                    }
+                                    className='h-3 w-3'
+                                  />
+                                  <span className='text-accent font-medium'>
+                                    Email validation
+                                  </span>
+                                </label>
+                              </div>
                             )}
                             {field.type === 'url' && (
-                              <label className='col-span-2 flex items-center gap-1'>
-                                <input
-                                  type='checkbox'
-                                  checked={field.zodConfig?.url || false}
-                                  onChange={(e) =>
-                                    updateField(sectionIndex, fieldIndex, {
-                                      zodConfig: {
-                                        ...field.zodConfig,
-                                        url: e.target.checked,
-                                      },
-                                    })
-                                  }
-                                  className='h-3 w-3'
-                                />
-                                <span>URL validation</span>
-                              </label>
+                              <div className='flex items-center md:col-span-2'>
+                                <label className='flex items-center gap-2 text-sm'>
+                                  <input
+                                    type='checkbox'
+                                    checked={field.zodConfig?.url || false}
+                                    onChange={(e) =>
+                                      updateField(sectionIndex, fieldIndex, {
+                                        zodConfig: {
+                                          ...field.zodConfig,
+                                          url: e.target.checked,
+                                        },
+                                      })
+                                    }
+                                    className='h-3 w-3'
+                                  />
+                                  <span className='text-accent font-medium'>
+                                    URL validation
+                                  </span>
+                                </label>
+                              </div>
                             )}
                           </div>
                         </div>
 
                         {/* PostgreSQL Configuration */}
                         <div>
-                          <h5 className='mb-2 text-xs font-medium'>
+                          <h5 className='text-accent mb-2 text-xs font-medium'>
                             PostgreSQL Schema
                           </h5>
-                          <div className='grid grid-cols-2 gap-2 text-xs'>
-                            <label className='flex items-center gap-1'>
-                              <input
-                                type='checkbox'
-                                checked={field.pgConfig?.nullable !== false}
+                          <div className='grid grid-cols-1 gap-3 text-xs md:grid-cols-2'>
+                            <div className='flex items-center'>
+                              <label className='flex items-center gap-2 text-sm'>
+                                <input
+                                  type='checkbox'
+                                  checked={field.pgConfig?.nullable !== false}
+                                  onChange={(e) =>
+                                    updateField(sectionIndex, fieldIndex, {
+                                      pgConfig: {
+                                        ...field.pgConfig,
+                                        nullable: e.target.checked,
+                                      },
+                                    })
+                                  }
+                                  className='h-3 w-3'
+                                />
+                                <span className='text-accent font-medium'>
+                                  Nullable
+                                </span>
+                              </label>
+                            </div>
+                            <div className='flex items-center'>
+                              <label className='flex items-center gap-2 text-sm'>
+                                <input
+                                  type='checkbox'
+                                  checked={field.pgConfig?.unique || false}
+                                  onChange={(e) =>
+                                    updateField(sectionIndex, fieldIndex, {
+                                      pgConfig: {
+                                        ...field.pgConfig,
+                                        unique: e.target.checked,
+                                      },
+                                    })
+                                  }
+                                  className='h-3 w-3'
+                                />
+                                <span className='text-accent font-medium'>
+                                  Unique
+                                </span>
+                              </label>
+                            </div>
+                            <div className='flex items-center'>
+                              <label className='flex items-center gap-2 text-sm'>
+                                <input
+                                  type='checkbox'
+                                  checked={field.pgConfig?.index || false}
+                                  onChange={(e) =>
+                                    updateField(sectionIndex, fieldIndex, {
+                                      pgConfig: {
+                                        ...field.pgConfig,
+                                        index: e.target.checked,
+                                      },
+                                    })
+                                  }
+                                  className='h-3 w-3'
+                                />
+                                <span className='text-accent font-medium'>
+                                  Index
+                                </span>
+                              </label>
+                            </div>
+                            <div>
+                              <label className='text-accent mb-1 block text-xs font-medium'>
+                                PostgreSQL Type
+                              </label>
+                              <select
+                                value={field.pgConfig?.type || 'VARCHAR'}
                                 onChange={(e) =>
                                   updateField(sectionIndex, fieldIndex, {
                                     pgConfig: {
                                       ...field.pgConfig,
-                                      nullable: e.target.checked,
+                                      type: e.target.value as EPostgresTypes,
                                     },
                                   })
                                 }
-                                className='h-3 w-3'
-                              />
-                              <span>Nullable</span>
-                            </label>
-                            <label className='flex items-center gap-1'>
-                              <input
-                                type='checkbox'
-                                checked={field.pgConfig?.unique || false}
-                                onChange={(e) =>
-                                  updateField(sectionIndex, fieldIndex, {
-                                    pgConfig: {
-                                      ...field.pgConfig,
-                                      unique: e.target.checked,
-                                    },
-                                  })
-                                }
-                                className='h-3 w-3'
-                              />
-                              <span>Unique</span>
-                            </label>
-                            <label className='flex items-center gap-1'>
-                              <input
-                                type='checkbox'
-                                checked={field.pgConfig?.index || false}
-                                onChange={(e) =>
-                                  updateField(sectionIndex, fieldIndex, {
-                                    pgConfig: {
-                                      ...field.pgConfig,
-                                      index: e.target.checked,
-                                    },
-                                  })
-                                }
-                                className='h-3 w-3'
-                              />
-                              <span>Index</span>
-                            </label>
-                            <select
-                              value={field.pgConfig?.type || 'VARCHAR'}
-                              onChange={(e) =>
-                                updateField(sectionIndex, fieldIndex, {
-                                  pgConfig: {
-                                    ...field.pgConfig,
-                                    type: e.target.value as
-                                      | 'VARCHAR'
-                                      | 'TEXT'
-                                      | 'INTEGER'
-                                      | 'BIGINT'
-                                      | 'DECIMAL'
-                                      | 'BOOLEAN'
-                                      | 'DATE'
-                                      | 'TIMESTAMP'
-                                      | 'UUID'
-                                      | 'JSON'
-                                      | 'JSONB',
-                                  },
-                                })
-                              }
-                              className='rounded border p-1'
-                            >
-                              <option value='VARCHAR'>VARCHAR</option>
-                              <option value='TEXT'>TEXT</option>
-                              <option value='INTEGER'>INTEGER</option>
-                              <option value='BIGINT'>BIGINT</option>
-                              <option value='DECIMAL'>DECIMAL</option>
-                              <option value='BOOLEAN'>BOOLEAN</option>
-                              <option value='DATE'>DATE</option>
-                              <option value='TIMESTAMP'>TIMESTAMP</option>
-                              <option value='UUID'>UUID</option>
-                              <option value='JSON'>JSON</option>
-                              <option value='JSONB'>JSONB</option>
-                            </select>
+                                className='w-full rounded border p-1'
+                              >
+                                {POSTGRES_TYPES_ARRAY.map((obj, i) => (
+                                  <option key={i} value={obj[1]}>
+                                    {obj[1]}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
                             {(field.type === 'text' ||
                               field.type === 'textarea') && (
-                              <input
-                                type='number'
-                                placeholder='Length (VARCHAR)'
-                                value={field.pgConfig?.length || ''}
-                                onChange={(e) =>
-                                  updateField(sectionIndex, fieldIndex, {
-                                    pgConfig: {
-                                      ...field.pgConfig,
-                                      length:
-                                        parseInt(e.target.value) || undefined,
-                                    },
-                                  })
-                                }
-                                className='rounded border p-1'
-                              />
+                              <div>
+                                <label className='text-accent mb-1 block text-xs font-medium'>
+                                  Length (VARCHAR)
+                                </label>
+                                <input
+                                  type='number'
+                                  placeholder='Character limit'
+                                  value={field.pgConfig?.length || ''}
+                                  onChange={(e) =>
+                                    updateField(sectionIndex, fieldIndex, {
+                                      pgConfig: {
+                                        ...field.pgConfig,
+                                        length:
+                                          parseInt(e.target.value) || undefined,
+                                      },
+                                    })
+                                  }
+                                  className='w-full rounded border p-1'
+                                />
+                              </div>
                             )}
                             {field.type === 'number' && (
                               <>
-                                <input
-                                  type='number'
-                                  placeholder='Precision'
-                                  value={field.pgConfig?.precision || ''}
-                                  onChange={(e) =>
-                                    updateField(sectionIndex, fieldIndex, {
-                                      pgConfig: {
-                                        ...field.pgConfig,
-                                        precision:
-                                          parseInt(e.target.value) || undefined,
-                                      },
-                                    })
-                                  }
-                                  className='rounded border p-1'
-                                />
-                                <input
-                                  type='number'
-                                  placeholder='Scale'
-                                  value={field.pgConfig?.scale || ''}
-                                  onChange={(e) =>
-                                    updateField(sectionIndex, fieldIndex, {
-                                      pgConfig: {
-                                        ...field.pgConfig,
-                                        scale:
-                                          parseInt(e.target.value) || undefined,
-                                      },
-                                    })
-                                  }
-                                  className='rounded border p-1'
-                                />
+                                <div>
+                                  <label className='text-accent mb-1 block text-xs font-medium'>
+                                    Precision
+                                  </label>
+                                  <input
+                                    type='number'
+                                    placeholder='Total digits'
+                                    value={field.pgConfig?.precision || ''}
+                                    onChange={(e) =>
+                                      updateField(sectionIndex, fieldIndex, {
+                                        pgConfig: {
+                                          ...field.pgConfig,
+                                          precision:
+                                            parseInt(e.target.value) ||
+                                            undefined,
+                                        },
+                                      })
+                                    }
+                                    className='w-full rounded border p-1'
+                                  />
+                                </div>
+                                <div>
+                                  <label className='text-accent mb-1 block text-xs font-medium'>
+                                    Scale
+                                  </label>
+                                  <input
+                                    type='number'
+                                    placeholder='Decimal places'
+                                    value={field.pgConfig?.scale || ''}
+                                    onChange={(e) =>
+                                      updateField(sectionIndex, fieldIndex, {
+                                        pgConfig: {
+                                          ...field.pgConfig,
+                                          scale:
+                                            parseInt(e.target.value) ||
+                                            undefined,
+                                        },
+                                      })
+                                    }
+                                    className='w-full rounded border p-1'
+                                  />
+                                </div>
                               </>
                             )}
-                            <input
-                              type='text'
-                              placeholder='Default postgres value'
-                              value={field.pgConfig?.default?.toString() || ''}
-                              onChange={(e) =>
-                                updateField(sectionIndex, fieldIndex, {
-                                  pgConfig: {
-                                    ...field.pgConfig,
-                                    default: e.target.value || undefined,
-                                  },
-                                })
-                              }
-                              className='col-span-2 rounded border p-1'
-                            />
+                            <div className='md:col-span-2'>
+                              <label className='text-accent mb-1 block text-xs font-medium'>
+                                Default PostgreSQL Value
+                              </label>
+                              <input
+                                type='text'
+                                placeholder='Default database value'
+                                value={
+                                  field.pgConfig?.default?.toString() || ''
+                                }
+                                onChange={(e) =>
+                                  updateField(sectionIndex, fieldIndex, {
+                                    pgConfig: {
+                                      ...field.pgConfig,
+                                      default: e.target.value || undefined,
+                                    },
+                                  })
+                                }
+                                className='w-full rounded border p-1'
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -739,7 +877,7 @@ export function FormBuilder({
       <div>
         <Card.Root>
           <div className='p-6'>
-            <h3 className='mb-4 text-lg font-semibold'>Quick Preview</h3>
+            <h3 className='mb-4 text-lg font-semibold'>Form Tree</h3>
             <div className='space-y-4'>
               <div>
                 <h4 className='font-medium'>{config.title}</h4>

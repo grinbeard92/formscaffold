@@ -66,7 +66,7 @@ function createZodFieldSchema(
       break;
 
     case 'url':
-      schema = z.string().url('Invalid URL format');
+      schema = z.url('Invalid URL format');
       break;
 
     case 'tel':
@@ -94,16 +94,16 @@ function createZodFieldSchema(
     case 'range':
       schema = z.coerce.number();
       if (field.zodConfig?.int) {
-        schema = (schema as z.ZodNumber).int();
+        schema = z.number().int();
       }
       if (field.zodConfig?.positive) {
-        schema = (schema as z.ZodNumber).positive();
+        schema = z.number().positive();
       }
       if (field.min !== undefined) {
-        schema = (schema as z.ZodNumber).min(Number(field.min));
+        schema = z.number().min(Number(field.min));
       }
-      if (field.max !== undefined) {
-        schema = (schema as z.ZodNumber).max(Number(field.max));
+      if (field.max !== undefined && field.max !== null) {
+        schema = z.number().max(Number(field.max));
       }
       break;
 
@@ -219,17 +219,17 @@ function createZodFieldSchema(
     ].includes(field.type)
   ) {
     if (field.zodConfig?.minLength) {
-      schema = (schema as z.ZodString).min(field.zodConfig.minLength);
+      schema = z.string().min(field.zodConfig.minLength);
     }
     if (field.zodConfig?.maxLength) {
-      schema = (schema as z.ZodString).max(field.zodConfig.maxLength);
+      schema = z.string().max(field.zodConfig.maxLength);
     }
     if (field.zodConfig?.regex) {
-      schema = (schema as z.ZodString).regex(field.zodConfig.regex);
+      schema = z.string().regex(field.zodConfig.regex);
     }
   }
 
-  // Handle special JSON field type with custom validation
+  // Handlespecial JSON field type with custom validation
   if (field.pgConfig?.type === 'JSON' || field.pgConfig?.type === 'JSONB') {
     schema = z.string().refine(
       (val) => {

@@ -91,9 +91,21 @@ const renderFormField = <T extends FieldValues>(
         <p className='text-muted-foreground text-xs'>{field.description}</p>
       )}
       {error && field.customErrorMessage ? (
-        <p className='text-destructive text-sm'>{field.customErrorMessage}</p>
+        <p
+          className='text-sm text-red-500'
+          style={{ textShadow: '0 5px 10px rgba(255, 0, 0, 0.5)' }}
+        >
+          {field.customErrorMessage}
+        </p>
       ) : (
-        error && <p className='text-destructive text-sm'>{error.message}</p>
+        error && (
+          <p
+            className='text-sm text-red-500'
+            style={{ textShadow: '0 5px 10px rgba(255, 0, 0, 0.5)' }}
+          >
+            {error.message}
+          </p>
+        )
       )}
 
       {field.type !== 'hidden' && (

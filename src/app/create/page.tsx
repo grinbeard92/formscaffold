@@ -74,62 +74,64 @@ export default function CreateFormPage() {
   };
 
   return (
-    <div className='bg-background min-h-screen'>
+    <div className='bg-background grid min-h-screen grid-rows-[auto_1fr]'>
       <SubHeader title='Form Builder' subtitle='Create and manage your forms' />
 
-      <div className='container mx-auto px-4 py-8'>
+      <div className='mb-0 grid grid-cols-[60px_1fr] gap-4 md:grid-cols-[200px_1fr]'>
         <TabNavigation
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           onCodeGenerate={generateCode}
         />
-        {/* Builder Tab */}
-        {activeTab === 'builder' && (
-          <FormBuilder
-            config={config}
-            setConfig={setConfig}
-            expandedField={expandedField}
-            setExpandedField={setExpandedField}
-          />
-        )}
-        {/* Preview Tab */}
-        {activeTab === 'preview' && <PreviewTab config={config} />}
-        {/* Code Tab */}
-        {activeTab === 'code' && (
-          <CodeTab
-            generatedConfig={generatedConfig}
-            tableName={config.postgresTableName}
-          />
-        )}
-        {/* Zod Schema Tab */}
-        {activeTab === 'zod-schema' && (
-          <ZodSchemaTab
-            generateZodSchemaCode={() => generateZodSchemaCode(config)}
-            tableName={config.postgresTableName}
-          />
-        )}
-        {/* TypeScript Types Tab */}
-        {activeTab === 'types' && (
-          <TypesTab config={config} tableName={config.postgresTableName} />
-        )}
-        {/* Server Actions Tab */}
-        {activeTab === 'server-actions' && (
-          <ServerActionsTab
-            config={config}
-            tableName={config.postgresTableName}
-          />
-        )}
-        {/* PostgreSQL Init Tab */}
-        {activeTab === 'postgres-init' && (
-          <PostgreSQLTab
-            generatePostgreSQLInit={() => generatePostgreSQLInit(config)}
-            tableName={config.postgresTableName}
-          />
-        )}
-        {/* Export Tab */}
-        {activeTab === 'export' && (
-          <ExportTab formTitle={config.title} config={config} />
-        )}
+        <div className='container mx-auto px-4 py-4'>
+          {/* Builder Tab */}
+          {activeTab === 'builder' && (
+            <FormBuilder
+              config={config}
+              setConfig={setConfig}
+              expandedField={expandedField}
+              setExpandedField={setExpandedField}
+            />
+          )}
+          {/* Preview Tab */}
+          {activeTab === 'preview' && <PreviewTab config={config} />}
+          {/* Code Tab */}
+          {activeTab === 'code' && (
+            <CodeTab
+              generatedConfig={generatedConfig}
+              tableName={config.postgresTableName}
+            />
+          )}
+          {/* Zod Schema Tab */}
+          {activeTab === 'zod-schema' && (
+            <ZodSchemaTab
+              generateZodSchemaCode={() => generateZodSchemaCode(config)}
+              tableName={config.postgresTableName}
+            />
+          )}
+          {/* TypeScript Types Tab */}
+          {activeTab === 'types' && (
+            <TypesTab config={config} tableName={config.postgresTableName} />
+          )}
+          {/* Server Actions Tab */}
+          {activeTab === 'server-actions' && (
+            <ServerActionsTab
+              config={config}
+              tableName={config.postgresTableName}
+            />
+          )}
+          {/* PostgreSQL Init Tab */}
+          {activeTab === 'postgres-init' && (
+            <PostgreSQLTab
+              generatePostgreSQLInit={() => generatePostgreSQLInit(config)}
+              tableName={config.postgresTableName}
+            />
+          )}
+          {/* Export Tab */}
+          {activeTab === 'export' && (
+            <ExportTab formTitle={config.title} config={config} />
+          )}
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,8 @@ import {
   IFormSectionDefinition,
 } from '@/types/globalFormTypes';
 import { FieldValues } from 'react-hook-form';
+import { EPostgresTypes as pgT } from '@/types/globalFormTypes';
+import { EFormFieldTypes as fieldT } from '@/types/globalFormTypes';
 
 // Extract field types from the type definition - this will automatically include any new types
 type FieldType = IFieldDefinition<FieldValues>['type'];
@@ -32,31 +34,31 @@ export interface FieldTypeConfig {
 // This object will automatically stay in sync with the type definitions
 export const FIELD_TYPE_CONFIGS: FieldTypeConfig[] = [
   {
-    value: 'text',
+    value: fieldT.TEXT,
     label: 'Text',
     description: 'Single-line text input',
     defaultValue: '',
     supportsPlaceholder: true,
-    defaultPgType: 'VARCHAR',
+    defaultPgType: pgT.VARCHAR,
   },
   {
-    value: 'email',
+    value: fieldT.EMAIL,
     label: 'Email',
     description: 'Email address input with validation',
     defaultValue: '',
     supportsPlaceholder: true,
-    defaultPgType: 'VARCHAR',
+    defaultPgType: pgT.VARCHAR,
   },
   {
-    value: 'password',
+    value: fieldT.PASSWORD,
     label: 'Password',
     description: 'Password input field',
     defaultValue: '',
     supportsPlaceholder: true,
-    defaultPgType: 'VARCHAR',
+    defaultPgType: pgT.VARCHAR,
   },
   {
-    value: 'number',
+    value: fieldT.NUMBER,
     label: 'Number',
     description: 'Numeric input',
     defaultValue: 0,
@@ -64,45 +66,45 @@ export const FIELD_TYPE_CONFIGS: FieldTypeConfig[] = [
     supportsMax: true,
     supportsStep: true,
     supportsPlaceholder: true,
-    defaultPgType: 'INTEGER',
+    defaultPgType: pgT.INTEGER,
   },
   {
-    value: 'range',
+    value: fieldT.RANGE,
     label: 'Range Slider',
     description: 'Slider for numeric range selection',
     defaultValue: 0,
     supportsMin: true,
     supportsMax: true,
     supportsStep: true,
-    defaultPgType: 'INTEGER',
+    defaultPgType: pgT.INTEGER,
   },
   {
-    value: 'date',
+    value: fieldT.DATE,
     label: 'Date',
     description: 'Date picker',
     defaultValue: '',
-    defaultPgType: 'DATE',
+    defaultPgType: pgT.DATE,
   },
   {
-    value: 'time',
+    value: fieldT.TIME,
     label: 'Time',
     description: 'Time picker',
     defaultValue: '',
-    defaultPgType: 'TIME',
+    defaultPgType: pgT.TIME,
   },
   {
-    value: 'datetime-local',
+    value: fieldT.DATETIME_LOCAL,
     label: 'Date & Time',
     description: 'Date and time picker',
     defaultValue: '',
-    defaultPgType: 'TIMESTAMP',
+    defaultPgType: pgT.TIMESTAMP,
   },
   {
-    value: 'month',
+    value: fieldT.MONTH,
     label: 'Month',
     description: 'Month and year picker',
     defaultValue: '',
-    defaultPgType: 'VARCHAR',
+    defaultPgType: pgT.VARCHAR,
   },
   {
     value: 'week',

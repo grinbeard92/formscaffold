@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { Sunflower } from 'next/font/google';
 
-const ThemeSwitch = () => {
+const ThemeSwitch = ({ className }) => {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
 
@@ -18,7 +17,7 @@ const ThemeSwitch = () => {
   }
 
   return (
-    <div className='grid grid-rows-[1fr_1fr]'>
+    <div className={`grid grid-rows-[1fr_1fr] gap-2 ${className}`}>
       <label className='text-primary font-bold'>Theme Selection</label>
       <select value={theme} onChange={(e) => setTheme(e.target.value)}>
         <option value='system'>System</option>

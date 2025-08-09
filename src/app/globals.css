@@ -1,10 +1,6 @@
 @import 'tailwindcss';
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -30,6 +26,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-error-glow: var(--error-glow);
 }
 
 header,
@@ -37,11 +34,23 @@ header,
   @apply rounded-none;
 }
 
+.nav-btn {
+  @apply flex w-full flex-row justify-center rounded-md px-4 py-4 text-sm font-medium whitespace-nowrap;
+}
+
+.nav-txt {
+  @apply ml-2 hidden text-xs md:flex;
+}
+
+.nav-icn {
+}
+
 :root {
-  --radius: 0.5rem;
+  --radius: 0rem;
   --font-primary: 'Courier New', 'Monaco', 'Menlo', monospace;
   --font-secondary: ui-sans-serif, system-ui;
 
+  --error-glow: text-shadow: 0 5px 10px rgba(255, 0, 0, 0.5);
   /* Base colors - Dusty Desert Light Mode */
   --background: #f7f4ef;
   --foreground: #2d2520;
@@ -51,8 +60,8 @@ header,
   --primary-foreground: #f7f4ef;
   --secondary: #e6dcc6;
   --secondary-foreground: #3d3426;
-  --accent: #cd853f;
-  --accent-foreground: #2d2520;
+  --accent: #00434e;
+  --accent-foreground: #b4b4b4;
 
   /* UI colors - Desert Tones */
   --muted: #e8e0d1;
@@ -68,7 +77,7 @@ header,
   --ring: #8b4513;
 
   /* Status colors - Earthy */
-  --destructive: #a0522d;
+  --destructive: #ff0000;
   --destructive-foreground: #f7f4ef;
   --success: #6b8e23;
   --success-foreground: #f7f4ef;
@@ -89,7 +98,6 @@ header,
 }
 
 [data-theme='dark'] {
-  /* Dark desert night backgrounds */
   --background: #1a1611;
   --foreground: #e8dcc6;
   --card: #252017;
@@ -102,7 +110,7 @@ header,
   --primary-foreground: #1a1611;
   --secondary: #2a241a;
   --secondary-foreground: #e8dcc6;
-  --accent: #ff3399;
+  --accent: #ff0000;
   --accent-foreground: #1a1611;
 
   /* Dark UI with desert undertones */
@@ -185,7 +193,7 @@ header,
   --primary-foreground: #ffffff;
   --secondary: #f1f5f9;
   --secondary-foreground: #475569;
-  --accent: #7c3aed;
+  --accent: #9e04db;
   --accent-foreground: #ffffff;
 
   /* Modern UI - Enhanced contrast */
@@ -221,12 +229,12 @@ header,
 }
 
 [data-theme='retro-light'] {
-  --radius: 0.75rem;
+  --radius: 0rem;
   --font-primary: 'Courier New', 'Monaco', 'IBM Plex Mono', monospace;
   --font-secondary: 'Georgia', 'Times New Roman', serif;
 
   /* Warm Retro Light */
-  --background: #fef7e0;
+  --background: #fff8bc;
   --foreground: #451a03;
   --card: #fef3c7;
   --card-foreground: #451a03;
@@ -236,13 +244,13 @@ header,
   /* Retro brand colors */
   --primary: #dc2626;
   --primary-foreground: #fef7e0;
-  --secondary: #fed7aa;
-  --secondary-foreground: #9a3412;
-  --accent: #ea580c;
+  --secondary: #ffcc91;
+  --secondary-foreground: #741d00;
+  --accent: #693800;
   --accent-foreground: #fef7e0;
 
   /* Retro UI - Better contrast */
-  --muted: #fed7aa;
+  --muted: #fac383;
   --muted-foreground: #7c2d12;
   --border: #ea580c;
   --input: #fffbeb;
@@ -270,7 +278,7 @@ header,
 }
 
 [data-theme='retro-dark'] {
-  --radius: 0.25rem;
+  --radius: 0rem;
   --font-primary: 'Orbitron', 'JetBrains Mono', 'Courier New', monospace;
   --font-secondary: 'Orbitron', 'Arial', sans-serif;
 
@@ -283,11 +291,11 @@ header,
   --popover-foreground: #fef08a;
 
   /* Synthwave colors */
-  --primary: #ff00ff;
+  --primary: #b3ff00;
   --primary-foreground: #0a0a0a;
   --secondary: #1c1917;
   --secondary-foreground: #fef08a;
-  --accent: #00ffff;
+  --accent: #2bff00;
   --accent-foreground: #0a0a0a;
 
   /* Synthwave UI - High contrast */
@@ -345,7 +353,7 @@ header,
 }
 
 [data-theme='modern-dark'] {
-  --radius: 0.5rem;
+  --radius: 0.25rem;
   --font-primary: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-secondary: 'JetBrains Mono', monospace;
 
@@ -359,10 +367,10 @@ header,
 
   /* Modern dark colors */
   --primary: #3b82f6;
-  --primary-foreground: #f8fafc;
+  --primary-foreground: #003d7a;
   --secondary: #1e293b;
   --secondary-foreground: #cbd5e1;
-  --accent: #8b5cf6;
+  --accent: #72a3fd;
   --accent-foreground: #f8fafc;
 
   /* Modern dark UI - Enhanced contrast */
@@ -401,6 +409,7 @@ header,
 
 [data-theme='bubbly'] {
   --radius: 1rem;
+  --padding: 2rem;
   --font-primary: 'Comic Neue', 'Nunito', ui-sans-serif, sans-serif;
   --font-secondary: 'Nunito', ui-sans-serif, sans-serif;
 
@@ -417,7 +426,7 @@ header,
   --primary-foreground: #fef7ff;
   --secondary: #f3e8ff;
   --secondary-foreground: #7c3aed;
-  --accent: #f472b6;
+  --accent: #6e006e;
   --accent-foreground: #fef7ff;
 
   /* Bubbly UI - Better contrast */
@@ -479,12 +488,11 @@ body {
   color: var(--foreground);
   font-family: var(--font-primary, 'Courier New', 'Monaco', 'Menlo', monospace);
   letter-spacing: 0.025em;
-  border-radius: var(--radius);
 }
 
 /* Theme-specific styling adjustments */
 [data-theme] * {
-  border-radius: var(--radius);
+  border-radius: none;
 }
 
 [data-theme='modern-light'] body,
@@ -580,7 +588,7 @@ textarea {
 }
 
 [data-theme] * {
-  border-radius: var(--radius);
+  /* border-radius: var(--radius); */
 }
 
 /* Theme-specific input styling */

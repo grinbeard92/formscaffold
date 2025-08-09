@@ -5,7 +5,7 @@ import '@radix-ui/themes/styles.css';
 import { Toaster } from 'sonner';
 import { ThemeProvider } from 'next-themes';
 import ThemeSwitch from '@/components/ThemeSwitcher';
-import { PlusIcon } from '@radix-ui/react-icons';
+import { PlusCircledIcon, PlusIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
 
 const geistSans = Geist({
@@ -36,27 +36,27 @@ function RootLayout({
         <ThemeProvider>
           {/* Header */}
           <header className='border-border bg-card border-b'>
-            <div className='container mx-auto px-4 py-6'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <h1 className='text-foreground text-3xl font-bold'>
-                    formscaffold.io
-                  </h1>
-                  <p className='text-muted-foreground mt-1'>
-                    Generate full-stack forms with TypeScript, React Hook Form,
-                    Zod validation, and PostgreSQL
-                  </p>
-                </div>
-                <div className='flex gap-2'>
-                  <Link
-                    href='/create'
-                    className='bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors'
-                  >
-                    <PlusIcon className='h-4 w-4' />
-                    New Form
-                  </Link>
-                  <ThemeSwitch />
-                </div>
+            <div className='flex flex-row items-center justify-between p-2 md:p-10'>
+              <div>
+                <h1 className='text-foreground text-3xl font-bold'>
+                  formscaffold.io
+                </h1>
+                <p className='text-muted-foreground mt-1 hidden md:flex'>
+                  Generate full-stack forms with TypeScript, React Hook Form,
+                  Zod validation, and PostgreSQL
+                </p>
+              </div>
+              <div className='flex w-[50%] flex-row flex-nowrap items-end justify-end gap-5'>
+                <ThemeSwitch
+                  className={`flex text-xs md:text-base lg:text-xl`}
+                />
+                <Link
+                  href='/create'
+                  className='bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors md:text-xl'
+                >
+                  <PlusCircledIcon className='h-8 w-8' />
+                  New Form
+                </Link>
               </div>
             </div>
           </header>
