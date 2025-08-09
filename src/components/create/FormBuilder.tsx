@@ -1,13 +1,21 @@
 'use client';
 
 import { Card } from '@/components/ui/card';
-import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
+import { PlusIcon, TrashIcon, GearIcon } from '@radix-ui/react-icons';
 import {
   IFormConfiguration,
   IFieldDefinition,
   IFormSectionDefinition,
 } from '@/types/globalFormTypes';
 import { FieldValues } from 'react-hook-form';
+import { FieldEditor } from './FieldEditor';
+import {
+  createNewField,
+  createNewSection,
+  GRID_COLUMN_OPTIONS,
+  SPACING_OPTIONS,
+  isValidTableName,
+} from '@/utils/form-builder-utils';
 
 interface FormBuilderProps {
   config: IFormConfiguration;
@@ -22,14 +30,10 @@ export function FormBuilder({
   expandedField,
   setExpandedField,
 }: FormBuilderProps) {
+  const isTableNameValid = isValidTableName(config.postgresTableName);
+
   const addSection = () => {
-    const newSection: IFormSectionDefinition = {
-      title: 'New Section',
-      description: 'Section description',
-      gridCols: '2',
-      spacing: 'md',
-      fields: [],
-    };
+    const newSection = createNewSection();
     setConfig((prev) => ({
       ...prev,
       sections: [...prev.sections, newSection],
@@ -37,15 +41,7 @@ export function FormBuilder({
   };
 
   const addField = (sectionIndex: number) => {
-    const newField: IFieldDefinition<FieldValues> = {
-      label: 'New Field',
-      name: `field_${Date.now()}`,
-      type: 'text',
-      required: false,
-      default: '',
-      pgConfig: { type: 'VARCHAR', length: 255 },
-    };
-
+    const newField = createNewField();
     setConfig((prev) => ({
       ...prev,
       sections: prev.sections.map((section, i) =>
@@ -53,6 +49,25 @@ export function FormBuilder({
           ? { ...section, fields: [...section.fields, newField] }
           : section,
       ),
+    }));
+  };
+
+  const updateSection = (
+    sectionIndex: number,
+    updates: Partial<IFormSectionDefinition>,
+  ) => {
+    setConfig((prev) => ({
+      ...prev,
+      sections: prev.sections.map((section, i) =>
+        i === sectionIndex ? { ...section, ...updates } : section,
+      ),
+    }));
+  };
+
+  const removeSection = (sectionIndex: number) => {
+    setConfig((prev) => ({
+      ...prev,
+      sections: prev.sections.filter((_, i) => i !== sectionIndex),
     }));
   };
 
@@ -98,42 +113,137 @@ export function FormBuilder({
           <div className='p-6'>
             <h3 className='mb-4 text-lg font-semibold'>Form Settings</h3>
             <div className='space-y-4'>
-              <input
-                type='text'
-                value={config.title}
-                onChange={(e) =>
-                  setConfig((prev) => ({
-                    ...prev,
-                    title: e.target.value,
-                  }))
-                }
-                className='w-full rounded border p-2'
-                placeholder='Form Title'
-              />
-              <textarea
-                value={config.description || ''}
-                onChange={(e) =>
-                  setConfig((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
-                }
-                className='w-full rounded border p-2'
-                placeholder='Form Description'
-                rows={2}
-              />
-              <input
-                type='text'
-                value={config.postgresTableName}
-                onChange={(e) =>
-                  setConfig((prev) => ({
-                    ...prev,
-                    postgresTableName: e.target.value,
-                  }))
-                }
-                className='w-full rounded border p-2'
-                placeholder='table_name'
-              />
+              <div>
+                <label className='text-muted-foreground text-sm font-medium'>
+                  Form Title
+                </label>
+                <input
+                  type='text'
+                  value={config.title}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
+                  className='mt-1 w-full rounded border p-2'
+                  placeholder='Form Title'
+                />
+              </div>
+
+              <div>
+                <label className='text-muted-foreground text-sm font-medium'>
+                  Description
+                </label>
+                <textarea
+                  value={config.description || ''}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  className='mt-1 w-full rounded border p-2'
+                  placeholder='Form Description'
+                  rows={2}
+                />
+              </div>
+
+              <div>
+                <label className='text-muted-foreground text-sm font-medium'>
+                  Database Table Name
+                </label>
+                <input
+                  type='text'
+                  value={config.postgresTableName}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      postgresTableName: e.target.value,
+                    }))
+                  }
+                  className={`mt-1 w-full rounded border p-2 ${
+                    !isTableNameValid ? 'border-destructive' : ''
+                  }`}
+                  placeholder='table_name'
+                />
+                {!isTableNameValid && (
+                  <div className='text-destructive mt-1 text-xs'>
+                    Invalid table name. Use letters, numbers, and underscores
+                    only.
+                  </div>
+                )}
+              </div>
+
+              <div className='grid grid-cols-2 gap-3'>
+                <div>
+                  <label className='text-muted-foreground text-sm font-medium'>
+                    Submit Button Text
+                  </label>
+                  <input
+                    type='text'
+                    value={config.submitButtonText || ''}
+                    onChange={(e) =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        submitButtonText: e.target.value,
+                      }))
+                    }
+                    className='mt-1 w-full rounded border p-2'
+                    placeholder='Submit'
+                  />
+                </div>
+
+                <div>
+                  <label className='text-muted-foreground text-sm font-medium'>
+                    Reset Button Text
+                  </label>
+                  <input
+                    type='text'
+                    value={config.resetButtonText || ''}
+                    onChange={(e) =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        resetButtonText: e.target.value,
+                      }))
+                    }
+                    className='mt-1 w-full rounded border p-2'
+                    placeholder='Reset'
+                  />
+                </div>
+              </div>
+
+              <div className='flex items-center gap-4'>
+                <label className='flex items-center gap-2 text-sm'>
+                  <input
+                    type='checkbox'
+                    checked={config.showResetButton !== false}
+                    onChange={(e) =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        showResetButton: e.target.checked,
+                      }))
+                    }
+                    className='h-4 w-4'
+                  />
+                  <span>Show Reset Button</span>
+                </label>
+
+                <label className='flex items-center gap-2 text-sm'>
+                  <input
+                    type='checkbox'
+                    checked={config.showDraftButton || false}
+                    onChange={(e) =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        showDraftButton: e.target.checked,
+                      }))
+                    }
+                    className='h-4 w-4'
+                  />
+                  <span>Show Draft Button</span>
+                </label>
+              </div>
             </div>
           </div>
         </Card.Root>
@@ -297,7 +407,7 @@ export function FormBuilder({
                             : `${sectionIndex}-${fieldIndex}`,
                         )
                       }
-                      className='mt-2 text-xs text-blue-600 hover:text-blue-800'
+                      className='mt-2 text-xs'
                     >
                       {expandedField === `${sectionIndex}-${fieldIndex}`
                         ? '▼'

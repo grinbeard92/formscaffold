@@ -5,8 +5,10 @@ import { Control, Controller, FieldValues } from 'react-hook-form';
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/utils/utils';
-import { IFormSectionTemplateProps } from '@/types/globalFormTypes';
-import { IFieldDefinition } from '@/types/globalFormTypes';
+import {
+  IFormSectionTemplateProps,
+  IFieldDefinition,
+} from '@/types/globalFormTypes';
 import { getFieldRequirements } from './utils/formSectionUtils';
 import { renderInput } from './utils/renderInputSection';
 

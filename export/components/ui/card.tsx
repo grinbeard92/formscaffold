@@ -23,7 +23,7 @@ export const Card = {
       <div
         ref={ref}
         className={cn(
-          'bg-card text-card-foreground rounded-lg border p-10 shadow-sm',
+          'bg-card text-card-foreground rounded-lg border p-[var(--card-padding)] shadow-sm',
           className,
         )}
         {...props}

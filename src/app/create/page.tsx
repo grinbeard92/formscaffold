@@ -19,6 +19,7 @@ import {
   generatePostgreSQLInit,
   type TabType,
 } from '@/components/create';
+import SubHeader from '@/components/SubHeader';
 
 export default function CreateFormPage() {
   const [config, setConfig] = useState<IFormConfiguration>({
@@ -74,26 +75,7 @@ export default function CreateFormPage() {
 
   return (
     <div className='bg-background min-h-screen'>
-      <header className='border-border bg-card border-b'>
-        <div className='container mx-auto px-4 py-6'>
-          <div className='flex items-center gap-4'>
-            <Link
-              href='/'
-              className='text-muted-foreground hover:text-foreground'
-            >
-              <ArrowLeftIcon className='h-5 w-5' />
-            </Link>
-            <div>
-              <h1 className='text-foreground text-2xl font-bold'>
-                Form Builder
-              </h1>
-              <p className='text-muted-foreground'>
-                Design forms using existing components
-              </p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <SubHeader title='Form Builder' subtitle='Create and manage your forms' />
 
       <div className='container mx-auto px-4 py-8'>
         <TabNavigation
@@ -111,9 +93,7 @@ export default function CreateFormPage() {
           />
         )}
         {/* Preview Tab */}
-        {activeTab === 'preview' && (
-          <PreviewTab config={config} onSubmit={handleTestSubmit} />
-        )}
+        {activeTab === 'preview' && <PreviewTab config={config} />}
         {/* Code Tab */}
         {activeTab === 'code' && (
           <CodeTab
@@ -132,7 +112,7 @@ export default function CreateFormPage() {
         {activeTab === 'types' && (
           <TypesTab config={config} tableName={config.postgresTableName} />
         )}
-        i {/* Server Actions Tab */}
+        {/* Server Actions Tab */}
         {activeTab === 'server-actions' && (
           <ServerActionsTab
             config={config}

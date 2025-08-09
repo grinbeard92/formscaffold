@@ -230,7 +230,7 @@ export function ClientForm({
               }
             }}
             disabled={isSubmitting || isLoading}
-            className='bg-primary text-primary-foreground hover:bg-primary-foreground/80 hover:text-secondary min-w-32 rounded px-4 py-2 outline active:scale-98 disabled:cursor-not-allowed disabled:opacity-50'
+            className='bg-primary text-primary-foreground hover:bg-primary-foreground/80 hover:text-secondary min-w-32 rounded px-4 py-2 active:scale-98 disabled:cursor-not-allowed disabled:opacity-50'
           >
             {isSubmitting || isLoading ? 'Submitting...' : submitButtonText}
           </button>

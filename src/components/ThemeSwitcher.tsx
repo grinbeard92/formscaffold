@@ -1,5 +1,8 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
+import { Sunflower } from 'next/font/google';
 
 const ThemeSwitch = () => {
   const [mounted, setMounted] = useState(false);
@@ -15,11 +18,19 @@ const ThemeSwitch = () => {
   }
 
   return (
-    <select value={theme} onChange={(e) => setTheme(e.target.value)}>
-      <option value='system'>System</option>
-      <option value='dark'>Dark</option>
-      <option value='light'>Light</option>
-    </select>
+    <div className='grid grid-rows-[1fr_1fr]'>
+      <label className='text-primary font-bold'>Theme Selection</label>
+      <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+        <option value='system'>System</option>
+        <option value='dark'>Dark</option>
+        <option value='light'>Light</option>
+        <option value='modern-light'>Modern Light</option>
+        <option value='modern-dark'>Modern Dark</option>
+        <option value='retro-light'>Retro Light</option>
+        <option value='retro-dark'>Retro Dark</option>
+        <option value='bubbly'>Bubbly</option>
+      </select>
+    </div>
   );
 };
 

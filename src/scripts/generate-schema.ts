@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { email, z } from 'zod';
 import { IFormConfiguration, IFieldDefinition } from '@/types/globalFormTypes';
 import { FieldValues } from 'react-hook-form';
 
@@ -46,13 +46,23 @@ function createZodFieldSchema(
 
   switch (field.type) {
     case 'text':
+      if (field.required) {
+        schema = z.string().min(1, 'A value is required.');
+      } else {
+        schema = z.string().optional();
+      }
     case 'search':
     case 'hidden':
       schema = z.string();
       break;
 
     case 'email':
-      schema = z.string().email('Invalid email format');
+      const emailValidation = z.email('Invalid email format');
+      if (field.required) {
+        schema = emailValidation;
+      } else {
+        schema = emailValidation.optional();
+      }
       break;
 
     case 'url':
@@ -73,7 +83,11 @@ function createZodFieldSchema(
       break;
 
     case 'textarea':
-      schema = z.string();
+      if (field.required) {
+        schema = z.string().trim().min(1, 'A value is required.');
+      } else {
+        schema = z.string().optional();
+      }
       break;
 
     case 'number':
@@ -237,11 +251,6 @@ function createZodFieldSchema(
     schema = schema.refine(field.zodConfig.refine.check, {
       message: field.zodConfig.refine.message,
     });
-  }
-
-  // Make field optional if not required
-  if (!field.required) {
-    schema = schema.optional();
   }
 
   return schema;
