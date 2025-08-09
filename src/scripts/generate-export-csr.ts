@@ -56,12 +56,19 @@ export async function generateExportCSR(
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+      const errorData = await response
+        .json()
+        .catch(() => ({ error: 'Unknown error' }));
+      throw new Error(
+        errorData.error || `HTTP ${response.status}: ${response.statusText}`,
+      );
     }
 
     // Check if response is a streaming response
-    if (response.body && response.headers.get('content-type')?.includes('text/plain')) {
+    if (
+      response.body &&
+      response.headers.get('content-type')?.includes('text/plain')
+    ) {
       // Handle streaming response with progress updates
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -91,7 +98,7 @@ export async function generateExportCSR(
     } else {
       // Handle regular JSON response
       const result = await response.json();
-      
+
       updateStatus({
         step: 'artifacts',
         message: 'Generating all FormScaffold artifacts...',
@@ -175,7 +182,7 @@ export async function downloadExportZip(): Promise<void> {
 
     // Create blob from response
     const blob = await response.blob();
-    
+
     // Create download link
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -183,7 +190,7 @@ export async function downloadExportZip(): Promise<void> {
     a.download = `formscaffold-export-${new Date().toISOString().split('T')[0]}.zip`;
     document.body.appendChild(a);
     a.click();
-    
+
     // Cleanup
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
@@ -220,14 +227,14 @@ export function generateFormExportPreview(config: FormConfiguration): {
       description: 'Form utility functions',
       type: 'component' as const,
     },
-    
+
     // Types
     {
       path: `types/${tableName}Types.d.ts`,
       description: 'TypeScript type definitions',
       type: 'type' as const,
     },
-    
+
     // Schemas
     {
       path: `schemas/${tableName}-zod.ts`,
@@ -239,21 +246,21 @@ export function generateFormExportPreview(config: FormConfiguration): {
       description: 'PostgreSQL database schema',
       type: 'schema' as const,
     },
-    
+
     // Actions
     {
       path: `actions/${tableName}.ts`,
       description: 'Server actions for CRUD operations',
       type: 'action' as const,
     },
-    
+
     // Pages
     {
       path: `pages/${tableName}/page.tsx`,
       description: 'Demo page implementation',
       type: 'page' as const,
     },
-    
+
     // Configuration
     {
       path: `configurations/${tableName}FormConfiguration.ts`,
@@ -293,22 +300,29 @@ export function validateExportPrerequisites(config: FormConfiguration): {
   }
 
   // Check for fields in sections
-  const hasFields = config.sections?.some(section => section.fields?.length > 0);
+  const hasFields = config.sections?.some(
+    (section) => section.fields?.length > 0,
+  );
   if (!hasFields) {
     errors.push('At least one field is required in the form');
   }
 
   // Validate table name format
-  if (config.postgresTableName && !/^[a-z][a-z0-9_]*$/i.test(config.postgresTableName)) {
-    errors.push('Table name must start with a letter and contain only letters, numbers, and underscores');
+  if (
+    config.postgresTableName &&
+    !/^[a-z][a-z0-9_]*$/i.test(config.postgresTableName)
+  ) {
+    errors.push(
+      'Table name must start with a letter and contain only letters, numbers, and underscores',
+    );
   }
 
   // Check for duplicate field names
   const fieldNames = new Set<string>();
   const duplicateFields: string[] = [];
-  
-  config.sections?.forEach(section => {
-    section.fields?.forEach(field => {
+
+  config.sections?.forEach((section) => {
+    section.fields?.forEach((field) => {
       if (fieldNames.has(field.name)) {
         duplicateFields.push(field.name);
       } else {
@@ -326,7 +340,11 @@ export function validateExportPrerequisites(config: FormConfiguration): {
     warnings.push('Large number of sections might affect performance');
   }
 
-  const totalFields = config.sections?.reduce((acc, section) => acc + (section.fields?.length || 0), 0) || 0;
+  const totalFields =
+    config.sections?.reduce(
+      (acc, section) => acc + (section.fields?.length || 0),
+      0,
+    ) || 0;
   if (totalFields > 50) {
     warnings.push('Large number of fields might affect form performance');
   }

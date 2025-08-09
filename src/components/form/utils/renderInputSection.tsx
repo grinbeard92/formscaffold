@@ -95,10 +95,10 @@ export const renderInput = <T extends FieldValues>(
         <div className='flex items-center space-x-2'>
           <Checkbox.Root
             id={String(field.name)}
-            checked={controllerField.value ?? false} // Default to false instead of undefined
+            checked={controllerField.value ?? false}
             onCheckedChange={controllerField.onChange}
             disabled={field.disabled}
-            className='border-primary ring-offset-background focus-visible:ring-ring data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground flex h-4 w-4 items-center justify-center rounded-sm border focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
+            className='border-primary ring-offset-background focus-visible:ring-ring data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground flex h-4 w-full items-center justify-center rounded-sm border focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
           >
             <Checkbox.Indicator className='flex items-center justify-center text-current'>
               <CheckIcon className='h-4 w-4' />

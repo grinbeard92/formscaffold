@@ -18,7 +18,7 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import { createDockerComposeFiles } from './generate-docker-compose';
 import { createDatabaseInitFiles } from './db-init';
-import { generateServerActions } from './generate-server-actions';
+import { generateServerActions } from './generate-server-actions-ssr';
 import { createFormSchemas } from './generate-schema';
 import { generateTypes } from './generate-types';
 import { generateDemoPage } from './generate-demo-pages';
