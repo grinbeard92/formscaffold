@@ -1,7 +1,7 @@
-import { PostgresConfig } from '@/types/globalFormTypes';
+import { IPostgresConfig } from '@/types/globalFormTypes';
 
 // PostgreSQL Database Configuration
-export const postgresConfig: PostgresConfig = {
+export const postgresConfig: IPostgresConfig = {
   host: '127.0.0.1',
   port: 7799,
   database: 'formscaffold_db',

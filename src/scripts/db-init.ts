@@ -1,6 +1,6 @@
 import {
-  FormConfiguration,
-  FormSectionDefinition,
+  IFormConfiguration,
+  IFormSectionDefinition,
 } from '../types/globalFormTypes';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -10,7 +10,7 @@ import sql from '@/db/postgres-js';
 /**
  * Generates the SQL initialization script for database setup
  */
-export function generateInitScript(config: FormConfiguration): string {
+export function generateInitScript(config: IFormConfiguration): string {
   const { postgresTableName, sections } = config;
 
   let sqlContent = `-- Database initialization script
@@ -182,7 +182,7 @@ GRANT USAGE, SELECT ON SEQUENCE ${postgresTableName}_id_seq TO ${postgresConfig.
  * Executes the initialization SQL against the database
  */
 export async function executeInitScript(
-  config: FormConfiguration,
+  config: IFormConfiguration,
 ): Promise<void> {
   const initSql = generateInitScript(config);
 
@@ -210,7 +210,7 @@ export async function executeInitScript(
  * Creates database initialization files based on the provided FormConfiguration
  */
 export async function createDatabaseInitFiles(
-  config: FormConfiguration,
+  config: IFormConfiguration,
   projectRoot: string,
 ): Promise<void> {
   // Ensure init-scripts directory exists
@@ -261,7 +261,7 @@ export async function main(executeDatabase: boolean = true): Promise<void> {
       console.log(`   Database: ${postgresConfig.database}`);
       console.log(`   Table: ${config.postgresTableName}`);
       console.log(
-        `   Fields: ${config.sections.flatMap((s: FormSectionDefinition) => s.fields).length}`,
+        `   Fields: ${config.sections.flatMap((s: IFormSectionDefinition) => s.fields).length}`,
       );
 
       // Generate SQL files

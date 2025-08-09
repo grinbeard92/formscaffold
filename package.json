@@ -17,8 +17,8 @@
     "db:logs": "docker-compose -f .docker/docker-compose.yml logs -f",
     "db:reset": "docker exec -i formscaffold-postgres bash -c 'for file in /docker-entrypoint-initdb.d/*.sql; do psql -U formscaffold_user -d formscaffold_db < \"$file\"; done'",
     "export": "tsx src/scripts/generate-export.ts",
-    "generate:all": "tsx src/scripts/generate-all.ts",
-    "generate:export": "tsx src/scripts/generate-all.ts; tsx src/scripts/generate-export.ts",
+    "generate:demo": "tsx src/scripts/generate-all-demo.ts",
+    "generate:export": "tsx src/scripts/generate-all-prod.ts && tsx src/scripts/generate-export-files.ts",
     "regenerate": "npm run generate:all && npm run db:stop && npm run db:start && npm run db:init && npm run dev"
   },
   "dependencies": {
@@ -36,6 +36,7 @@
     "@types/react-signature-canvas": "^1.0.7",
     "clsx": "^2.1.1",
     "next": "15.4.5",
+    "next-themes": "^0.4.6",
     "postgres": "^3.4.7",
     "prettier": "^3.6.2",
     "radix-ui": "^1.4.2",

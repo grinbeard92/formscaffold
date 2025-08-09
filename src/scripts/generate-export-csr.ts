@@ -8,9 +8,9 @@
  * This is safe to import and use in client-side React components.
  */
 
-import { FormConfiguration } from '../types/globalFormTypes';
+import { IFormConfiguration } from '../types/globalFormTypes';
 
-export interface ExportStatus {
+export interface IExportStatus {
   step: string;
   message: string;
   isComplete: boolean;
@@ -18,7 +18,7 @@ export interface ExportStatus {
   progress?: number;
 }
 
-export type ExportStatusCallback = (status: ExportStatus) => void;
+export type ExportStatusCallback = (status: IExportStatus) => void;
 
 /**
  * Client-side export generation function
@@ -27,7 +27,7 @@ export type ExportStatusCallback = (status: ExportStatus) => void;
 export async function generateExportCSR(
   onStatusUpdate?: ExportStatusCallback,
 ): Promise<void> {
-  const updateStatus = (status: Partial<ExportStatus>) => {
+  const updateStatus = (status: Partial<IExportStatus>) => {
     onStatusUpdate?.({
       step: status.step || '',
       message: status.message || '',
@@ -204,7 +204,7 @@ export async function downloadExportZip(): Promise<void> {
  * Generate export for a specific form configuration (client-side safe)
  * This creates a preview/simulation of what would be exported
  */
-export function generateFormExportPreview(config: FormConfiguration): {
+export function generateFormExportPreview(config: IFormConfiguration): {
   packageName: string;
   files: Array<{
     path: string;
@@ -278,7 +278,7 @@ export function generateFormExportPreview(config: FormConfiguration): {
 /**
  * Validate export prerequisites (client-side checks)
  */
-export function validateExportPrerequisites(config: FormConfiguration): {
+export function validateExportPrerequisites(config: IFormConfiguration): {
   isValid: boolean;
   errors: string[];
   warnings: string[];

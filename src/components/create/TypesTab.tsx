@@ -3,10 +3,10 @@
 import { Card } from '@/components/ui/card';
 import { useState, useEffect } from 'react';
 import { generateTypeDefinitions } from './codeGenerators';
-import { FormConfiguration } from '@/types/globalFormTypes';
+import { IFormConfiguration } from '@/types/globalFormTypes';
 
 interface TypesTabProps {
-  config: FormConfiguration;
+  config: IFormConfiguration;
   tableName: string;
 }
 

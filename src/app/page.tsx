@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import {
@@ -7,6 +9,7 @@ import {
   CodeIcon,
   FileIcon,
 } from '@radix-ui/react-icons';
+import ThemeSwitch from '@/components/ThemeSwitcher';
 
 // Get available form configurations
 async function getFormConfigurations() {
@@ -50,6 +53,7 @@ export default async function HomePage() {
                 Generate full-stack forms with TypeScript, React Hook Form, Zod
                 validation, and PostgreSQL
               </p>
+              <ThemeSwitch />
             </div>
             <div className='flex gap-2'>
               <Link

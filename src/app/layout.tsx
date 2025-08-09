@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import '@radix-ui/themes/styles.css';
 import { Toaster } from 'sonner';
+import { ThemeProvider } from 'next-themes';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -29,8 +30,10 @@ function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
-        <Toaster closeButton={true} expand={true} richColors={true} />
+        <ThemeProvider attribute={'class'} defaultTheme='system'>
+          {children}
+          <Toaster closeButton={true} expand={true} richColors={true} />
+        </ThemeProvider>
       </body>
     </html>
   );

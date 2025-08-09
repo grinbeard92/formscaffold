@@ -13,13 +13,13 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import type { FormConfiguration } from '../types/globalFormTypes';
+import type { IFormConfiguration } from '../types/globalFormTypes';
 
 /**
  * Generates a demo page for a form configuration
  */
 export async function generateDemoPage(
-  config: FormConfiguration,
+  config: IFormConfiguration,
   projectRoot: string = process.cwd(),
   configMetadata?: { fileName: string; exportName: string },
 ): Promise<void> {
@@ -43,7 +43,7 @@ export async function generateDemoPage(
  * Generates the page.tsx content for a form configuration
  */
 function generatePageContent(
-  config: FormConfiguration,
+  config: IFormConfiguration,
   configMetadata?: { fileName: string; exportName: string },
 ): string {
   const tableName = config.postgresTableName;

@@ -35,70 +35,129 @@
 :root {
   --radius: 0.5rem;
 
-  /* Base colors */
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Base colors - Dusty Desert Light Mode */
+  --background: #f7f4ef;
+  --foreground: #2d2520;
 
-  /* Brand colors */
-  --primary: #03336b;
-  --primary-foreground: #ffffff;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #0a0a0a;
-  --accent: #ff4081;
-  --accent-foreground: #ffffff;
+  /* Brand colors - Frontier Tech */
+  --primary: #8b4513;
+  --primary-foreground: #f7f4ef;
+  --secondary: #e6dcc6;
+  --secondary-foreground: #3d3426;
+  --accent: #cd853f;
+  --accent-foreground: #2d2520;
 
-  /* UI colors */
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --card: #ffffff;
-  --card-foreground: #0a0a0a;
-  --popover: #ffffff;
-  --popover-foreground: #0a0a0a;
+  /* UI colors - Desert Tones */
+  --muted: #e8e0d1;
+  --muted-foreground: #6b5b47;
+  --card: #f2ede3;
+  --card-foreground: #2d2520;
+  --popover: #f7f4ef;
+  --popover-foreground: #2d2520;
 
   /* Border and input */
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #0070f3;
+  --border: #d4c4a8;
+  --input: #e8e0d1;
+  --ring: #8b4513;
 
-  /* Status colors */
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --success: #22c55e;
-  --success-foreground: #ffffff;
-  --warning: #f59e0b;
-  --warning-foreground: #ffffff;
-  --info: #3b82f6;
-  --info-foreground: #ffffff;
+  /* Status colors - Earthy */
+  --destructive: #a0522d;
+  --destructive-foreground: #f7f4ef;
+  --success: #6b8e23;
+  --success-foreground: #f7f4ef;
+  --warning: #daa520;
+  --warning-foreground: #2d2520;
+  --info: #4682b4;
+  --info-foreground: #f7f4ef;
+
+  /* Gradient colors for light mode */
+  --gradient-primary: linear-gradient(135deg, #8b4513 0%, #cd853f 100%);
+  --gradient-accent: linear-gradient(
+    135deg,
+    #6b8e23 0%,
+    #4682b4 50%,
+    #8b4513 100%
+  );
+  --gradient-success: linear-gradient(135deg, #6b8e23 0%, #9acd32 100%);
 }
 
-/* Dark mode */
+/* Dark mode - Nighttime Desert with Neon Sci-Fi */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #222222;
-    --foreground: #ededed;
-    --card: #2e2e2e;
-    --card-foreground: #ededed;
-    --popover: #1a1a1a;
-    --popover-foreground: #ededed;
-    --primary: #004cff;
-    --primary-foreground: #ffffff;
-    --secondary: #979797;
-    --secondary-foreground: #fafafa;
-    --muted: #262626;
-    --muted-foreground: #a1a1aa;
-    --accent: #3500af;
-    --accent-foreground: #fafafa;
-    --destructive: #dc2626;
-    --destructive-foreground: #ffffff;
-    --success: #16a34a;
-    --success-foreground: #ffffff;
-    --warning: #d97706;
-    --warning-foreground: #ffffff;
-    --info: #2563eb;
-    --info-foreground: #ffffff;
-    --border: #262626;
-    --input: #262626;
-    --ring: #2563eb;
+    /* Dark desert night backgrounds */
+    --background: #1a1611;
+    --foreground: #e8dcc6;
+    --card: #252017;
+    --card-foreground: #e8dcc6;
+    --popover: #2a241a;
+    --popover-foreground: #e8dcc6;
+
+    /* Neon tech colors - Firefly inspired */
+    --primary: #00ff99;
+    --primary-foreground: #1a1611;
+    --secondary: #2a241a;
+    --secondary-foreground: #e8dcc6;
+    --accent: #ff3399;
+    --accent-foreground: #1a1611;
+
+    /* Dark UI with desert undertones */
+    --muted: #2a241a;
+    --muted-foreground: #8a7a65;
+    --border: #3d352a;
+    --input: #2a241a;
+    --ring: #00ff99;
+
+    /* Status colors - Neon bright */
+    --destructive: #ff4466;
+    --destructive-foreground: #1a1611;
+    --success: #00ff99;
+    --success-foreground: #1a1611;
+    --warning: #ffaa00;
+    --warning-foreground: #1a1611;
+    --info: #00ccff;
+    --info-foreground: #1a1611;
+
+    /* Sci-fi gradient combinations */
+    --gradient-primary: linear-gradient(
+      135deg,
+      #00ff99 0%,
+      #00ccff 50%,
+      #ff3399 100%
+    );
+    --gradient-accent: linear-gradient(
+      135deg,
+      #ff3399 0%,
+      #9933ff 50%,
+      #0099ff 100%
+    );
+    --gradient-success: linear-gradient(135deg, #00ff99 0%, #33ff99 100%);
+    --gradient-firefly: linear-gradient(
+      135deg,
+      #ffaa00 0%,
+      #ff6600 25%,
+      #ff3399 50%,
+      #9933ff 75%,
+      #00ccff 100%
+    );
+    --gradient-desert: linear-gradient(
+      135deg,
+      #8b4513 0%,
+      #00ff99 50%,
+      #ff3399 100%
+    );
+
+    /* Glassy tech effects */
+    --glass-bg: rgba(42, 36, 26, 0.3);
+    --glass-border: rgba(0, 255, 153, 0.2);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --glass-glow: 0 0 20px rgba(0, 255, 153, 0.3);
+
+    /* Neon glow effects */
+    --neon-green: #00ff99;
+    --neon-blue: #00ccff;
+    --neon-pink: #ff3399;
+    --neon-purple: #9933ff;
+    --neon-orange: #ff6600;
   }
 }
 
@@ -111,14 +170,172 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    'Helvetica Neue',
-    Arial,
-    'Noto Sans',
-    sans-serif;
+    'Courier New', 'Monaco', 'Menlo', monospace, ui-sans-serif, system-ui;
+  letter-spacing: 0.025em;
+}
+
+/* Firefly-inspired glassy tech buttons */
+button {
+  @apply relative overflow-hidden transition-all duration-300;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  text-shadow: 0 0 8px currentColor;
+}
+
+@media (prefers-color-scheme: dark) {
+  button {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow), var(--glass-glow);
+  }
+
+  button:hover {
+    background: rgba(0, 255, 153, 0.1);
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.8),
+      0 0 30px var(--neon-green),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(-3px);
+    text-shadow: 0 0 12px currentColor;
+  }
+
+  button:active {
+    transform: translateY(-1px);
+  }
+}
+
+/* Neon gradient text classes */
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 20px var(--neon-green);
+}
+
+.gradient-firefly {
+  background: var(--gradient-firefly);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: firefly-glow 4s ease-in-out infinite;
+}
+
+.gradient-desert {
+  background: var(--gradient-desert);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: desert-tech 3s ease-in-out infinite;
+}
+
+@keyframes firefly-glow {
+  0%,
+  100% {
+    filter: hue-rotate(0deg) brightness(1);
+    text-shadow: 0 0 20px var(--neon-green);
+  }
+  25% {
+    filter: hue-rotate(90deg) brightness(1.2);
+    text-shadow: 0 0 25px var(--neon-blue);
+  }
+  50% {
+    filter: hue-rotate(180deg) brightness(1.1);
+    text-shadow: 0 0 30px var(--neon-pink);
+  }
+  75% {
+    filter: hue-rotate(270deg) brightness(1.3);
+    text-shadow: 0 0 25px var(--neon-purple);
+  }
+}
+
+@keyframes desert-tech {
+  0%,
+  100% {
+    filter: sepia(20%) hue-rotate(0deg);
+    text-shadow: 0 0 15px var(--neon-orange);
+  }
+  50% {
+    filter: sepia(0%) hue-rotate(120deg);
+    text-shadow: 0 0 20px var(--neon-green);
+  }
+}
+
+/* Tech-enhanced form inputs */
+input,
+select,
+textarea {
+  @apply transition-all duration-300;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.05em;
+}
+
+@media (prefers-color-scheme: dark) {
+  input,
+  select,
+  textarea {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    background: rgba(0, 255, 153, 0.05);
+    box-shadow:
+      0 0 25px var(--neon-green),
+      inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    border-color: var(--neon-green);
+    text-shadow: 0 0 8px currentColor;
+  }
+}
+
+/* Firefly-style card enhancements */
+@media (prefers-color-scheme: dark) {
+  [data-card] {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    box-shadow:
+      var(--glass-shadow),
+      0 0 15px rgba(0, 255, 153, 0.1);
+  }
+
+  [data-card]:hover {
+    box-shadow:
+      var(--glass-shadow),
+      0 0 25px rgba(0, 255, 153, 0.2);
+  }
+}
+
+/* Neon accent utilities */
+.neon-green {
+  color: var(--neon-green);
+  text-shadow: 0 0 10px currentColor;
+}
+.neon-blue {
+  color: var(--neon-blue);
+  text-shadow: 0 0 10px currentColor;
+}
+.neon-pink {
+  color: var(--neon-pink);
+  text-shadow: 0 0 10px currentColor;
+}
+.neon-purple {
+  color: var(--neon-purple);
+  text-shadow: 0 0 10px currentColor;
+}
+.neon-orange {
+  color: var(--neon-orange);
+  text-shadow: 0 0 10px currentColor;
+}
+
+pre {
+  @apply bg-secondary text-secondary-foreground rounded-lg p-4;
+  font-family: 'Courier New', monospace;
+  border: 1px solid var(--border);
 }

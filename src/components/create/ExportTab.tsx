@@ -2,17 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { FormConfiguration } from '@/types/globalFormTypes';
+import { IFormConfiguration } from '@/types/globalFormTypes';
 import {
   generateExportCSR,
   generateExportPreview,
   downloadExportZip,
   validateExportPrerequisites,
-  type ExportStatus,
+  type IExportStatus,
 } from '@/scripts/generate-export-csr';
 
 interface ExportTabProps {
-  config: FormConfiguration;
+  config: IFormConfiguration;
   formTitle: string;
 }
 
@@ -46,7 +46,7 @@ export function ExportTab({ config, formTitle }: ExportTabProps) {
     setExportStatus('Starting export process...');
 
     try {
-      await generateExportCSR((status: ExportStatus) => {
+      await generateExportCSR((status: IExportStatus) => {
         setExportStatus(status.message);
       });
     } catch (error) {

@@ -4,12 +4,12 @@
  * Generates Next.js Server Actions based on FormConfiguration
  * Creates CRUD operations for the specified table
  */
-import { FormConfiguration } from '@/types/globalFormTypes';
+import { IFormConfiguration } from '@/types/globalFormTypes';
 
 /**
  * Generate file field overrides for database schema
  */
-function generateFileFieldOverrides(config: FormConfiguration): string {
+function generateFileFieldOverrides(config: IFormConfiguration): string {
   const fileFields: string[] = [];
 
   config.sections.forEach((section) => {
@@ -27,7 +27,7 @@ function generateFileFieldOverrides(config: FormConfiguration): string {
  * Generate file processing logic for specific form fields
  */
 function generateFileProcessingLogic(
-  config: FormConfiguration,
+  config: IFormConfiguration,
   tableName: string,
 ): string {
   const fileFields: string[] = [];
@@ -52,7 +52,7 @@ function generateFileProcessingLogic(
  * Generates the content for the server actions file
  */
 export function generateServerActionsContent(
-  config: FormConfiguration,
+  config: IFormConfiguration,
   configMetadata?: { fileName: string; exportName: string },
 ): string {
   const tableName = config.postgresTableName;
@@ -391,7 +391,7 @@ export async function submit${capitalizedTableName}Form(
  * Generate server actions code as a string (for UI display)
  */
 export function generateServerActionsCode(
-  config: FormConfiguration,
+  config: IFormConfiguration,
   configMetadata?: { fileName: string; exportName: string },
 ): string {
   return generateServerActionsContent(config, configMetadata);

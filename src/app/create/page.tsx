@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeftIcon } from '@radix-ui/react-icons';
-import { FormConfiguration } from '@/types/globalFormTypes';
+import { IFormConfiguration } from '@/types/globalFormTypes';
 import {
   FormBuilder,
   TabNavigation,
@@ -21,7 +21,7 @@ import {
 } from '@/components/create';
 
 export default function CreateFormPage() {
-  const [config, setConfig] = useState<FormConfiguration>({
+  const [config, setConfig] = useState<IFormConfiguration>({
     title: 'Sample Form',
     description: 'Create your custom form',
     postgresTableName: 'sample_form',

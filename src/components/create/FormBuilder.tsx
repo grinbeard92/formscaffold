@@ -3,15 +3,15 @@
 import { Card } from '@/components/ui/card';
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import {
-  FormConfiguration,
-  FieldDefinition,
-  FormSectionDefinition,
+  IFormConfiguration,
+  IFieldDefinition,
+  IFormSectionDefinition,
 } from '@/types/globalFormTypes';
 import { FieldValues } from 'react-hook-form';
 
 interface FormBuilderProps {
-  config: FormConfiguration;
-  setConfig: React.Dispatch<React.SetStateAction<FormConfiguration>>;
+  config: IFormConfiguration;
+  setConfig: React.Dispatch<React.SetStateAction<IFormConfiguration>>;
   expandedField: string | null;
   setExpandedField: React.Dispatch<React.SetStateAction<string | null>>;
 }
@@ -23,7 +23,7 @@ export function FormBuilder({
   setExpandedField,
 }: FormBuilderProps) {
   const addSection = () => {
-    const newSection: FormSectionDefinition = {
+    const newSection: IFormSectionDefinition = {
       title: 'New Section',
       description: 'Section description',
       gridCols: '2',
@@ -37,7 +37,7 @@ export function FormBuilder({
   };
 
   const addField = (sectionIndex: number) => {
-    const newField: FieldDefinition<FieldValues> = {
+    const newField: IFieldDefinition<FieldValues> = {
       label: 'New Field',
       name: `field_${Date.now()}`,
       type: 'text',
@@ -59,7 +59,7 @@ export function FormBuilder({
   const updateField = (
     sectionIndex: number,
     fieldIndex: number,
-    updates: Partial<FieldDefinition<FieldValues>>,
+    updates: Partial<IFieldDefinition<FieldValues>>,
   ) => {
     setConfig((prev) => ({
       ...prev,
@@ -225,7 +225,7 @@ export function FormBuilder({
                         value={field.type}
                         onChange={(e) => {
                           const newType = e.target
-                            .value as FieldDefinition<FieldValues>['type'];
+                            .value as IFieldDefinition<FieldValues>['type'];
                           updateField(sectionIndex, fieldIndex, {
                             type: newType,
                             default:

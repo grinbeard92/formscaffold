@@ -1,7 +1,7 @@
-import { FormConfiguration } from '@/types/globalFormTypes';
+import { IFormConfiguration } from '@/types/globalFormTypes';
 
 export async function generateTypes(
-  config: FormConfiguration,
+  config: IFormConfiguration,
 ): Promise<string> {
   const tableName = config.postgresTableName;
   const capitalizedTableName =
@@ -129,14 +129,14 @@ export async function generateTypes(
  * Do not edit manually - regenerate using: npm run generate:all
  */
 
-export interface ${capitalizedTableName} {
+export interface I${capitalizedTableName} {
   id: string;
   created_at: string;
   updated_at: string;
 ${fieldTypes.join('\n')}
 }
 
-export type ${capitalizedTableName}FormData = Omit<${capitalizedTableName}, 'id' | 'created_at' | 'updated_at'>;
-export type Update${capitalizedTableName}Data = Partial<${capitalizedTableName}FormData>;
+export type T${capitalizedTableName}FormData = Omit<${capitalizedTableName}, 'id' | 'created_at' | 'updated_at'>;
+export type TUpdate${capitalizedTableName}Data = Partial<${capitalizedTableName}FormData>;
 `;
 }

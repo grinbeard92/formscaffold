@@ -1,4 +1,4 @@
-import { FormConfiguration } from '@/types/globalFormTypes';
+import { IFormConfiguration } from '@/types/globalFormTypes';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { generateServerActionsContent } from './generate-server-actions';
@@ -7,7 +7,7 @@ import { generateServerActionsContent } from './generate-server-actions';
  * Generates server actions file for a form configuration
  */
 export async function generateServerActions(
-  config: FormConfiguration,
+  config: IFormConfiguration,
   projectRoot: string = process.cwd(),
   configMetadata?: { fileName: string; exportName: string },
 ): Promise<void> {

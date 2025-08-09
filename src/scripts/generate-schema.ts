@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { FormConfiguration, FieldDefinition } from '@/types/globalFormTypes';
+import { IFormConfiguration, IFieldDefinition } from '@/types/globalFormTypes';
 import { FieldValues } from 'react-hook-form';
 
 // Utility function to generate Zod schema from form configuration
-export function generateZodSchema(config: FormConfiguration) {
+export function generateZodSchema(config: IFormConfiguration) {
   const schemaFields: Record<string, z.ZodTypeAny> = {};
 
   // DO NOT add database-generated fields (id, created_at, updated_at)
@@ -20,7 +20,7 @@ export function generateZodSchema(config: FormConfiguration) {
 }
 
 // Utility function to generate complete Zod schema including database fields (for type generation)
-export function generateCompleteZodSchema(config: FormConfiguration) {
+export function generateCompleteZodSchema(config: IFormConfiguration) {
   const schemaFields: Record<string, z.ZodTypeAny> = {};
 
   // Add database-generated fields for complete type definitions
@@ -40,7 +40,7 @@ export function generateCompleteZodSchema(config: FormConfiguration) {
 
 // Helper function to create Zod schema for individual field
 function createZodFieldSchema(
-  field: FieldDefinition<FieldValues>,
+  field: IFieldDefinition<FieldValues>,
 ): z.ZodTypeAny {
   let schema: z.ZodTypeAny;
 
@@ -248,7 +248,7 @@ function createZodFieldSchema(
 }
 
 // Utility function to generate PostgreSQL table creation SQL
-export function generatePostgresSchema(config: FormConfiguration): string {
+export function generatePostgresSchema(config: IFormConfiguration): string {
   const tableName = config.postgresTableName;
   const columns: string[] = [];
 
@@ -294,7 +294,7 @@ CREATE TRIGGER update_${tableName}_updated_at
 
 // Helper function to create PostgreSQL column definition
 function createPostgresColumnDefinition(
-  field: FieldDefinition<FieldValues>,
+  field: IFieldDefinition<FieldValues>,
 ): string {
   const pgConfig = field.pgConfig;
   let columnType: string;
@@ -360,7 +360,7 @@ function createPostgresColumnDefinition(
 }
 
 // Helper function to generate index creation SQL
-function generateIndexes(config: FormConfiguration): string {
+function generateIndexes(config: IFormConfiguration): string {
   const indexes: string[] = [];
   const tableName = config.postgresTableName;
 
@@ -378,7 +378,7 @@ function generateIndexes(config: FormConfiguration): string {
 }
 
 // Export the generated schema based on the form configuration
-export function createFormSchemas(config: FormConfiguration) {
+export function createFormSchemas(config: IFormConfiguration) {
   const zodSchema = generateZodSchema(config);
   const postgresSchema = generatePostgresSchema(config);
 
@@ -390,7 +390,7 @@ export function createFormSchemas(config: FormConfiguration) {
 }
 
 // Generate Zod schema as TypeScript code string
-export function generateZodSchemaCode(config: FormConfiguration): string {
+export function generateZodSchemaCode(config: IFormConfiguration): string {
   let schemaCode = `import { z } from 'zod';\n\n`;
   schemaCode += `export const ${config.postgresTableName}Schema = z.object({\n`;
 
@@ -407,13 +407,13 @@ export function generateZodSchemaCode(config: FormConfiguration): string {
 
         case 'email':
           fieldSchemaCode = field.zodConfig?.email
-            ? "z.string().email('Invalid email format')"
+            ? "z.email('Invalid email format')"
             : 'z.string()';
           break;
 
         case 'url':
           fieldSchemaCode = field.zodConfig?.url
-            ? "z.string().url('Invalid URL format')"
+            ? "z.url('Invalid URL format')"
             : 'z.string()';
           break;
 
@@ -551,14 +551,14 @@ export function generateZodSchemaCode(config: FormConfiguration): string {
   });
 
   schemaCode += '});\n\n';
-  schemaCode += `export type ${config.postgresTableName.charAt(0).toUpperCase() + config.postgresTableName.slice(1)}Data = z.infer<typeof ${config.postgresTableName}Schema>;`;
+  schemaCode += `export type T${config.postgresTableName.charAt(0).toUpperCase() + config.postgresTableName.slice(1)}Data = z.infer<typeof ${config.postgresTableName}Schema>;`;
 
   return schemaCode;
 }
 
 // Type exports
-export type FormConfigurationType = FormConfiguration;
-export type GeneratedFormType = z.infer<ReturnType<typeof generateZodSchema>>;
+export type TFormConfigurationType = IFormConfiguration;
+export type TGeneratedFormType = z.infer<ReturnType<typeof generateZodSchema>>;
 
 // For backward compatibility - you can remove these if not needed
 export const genericDataSchema = z.object({
@@ -569,4 +569,4 @@ export const genericDataSchema = z.object({
   updated_at: z.date(),
 });
 
-export type GenericDataType = z.infer<typeof genericDataSchema>;
+export type TGenericDataType = z.infer<typeof genericDataSchema>;

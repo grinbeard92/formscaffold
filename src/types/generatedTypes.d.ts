@@ -10,13 +10,13 @@
  */
 
 // Server action result types (shared across all forms)
-export interface ServerActionResult<T = unknown> {
+export interface IServerActionResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
 }
 
-export interface PaginatedResult<T = unknown> extends ServerActionResult<T[]> {
+export interface IPaginatedResult<T = unknown> extends ServerActionResult<T[]> {
   total?: number;
 }
 

@@ -23,12 +23,13 @@ import { createFormSchemas } from './generate-schema';
 import { generateTypes } from './generate-types';
 import { generateDemoPage } from './generate-demo-pages';
 import { discoverFormConfigurations } from './get-form-configurations';
-import type { FormConfiguration } from '../types/globalFormTypes';
+import type { IFormConfiguration } from '../types/globalFormTypes';
 import { postgresConfig } from '@/configurations/postgresConfiguration';
+import { generateExportComponent } from './generate-export-components';
 
 async function generateCombinedTypes(
   configurations: Array<{
-    config: FormConfiguration;
+    config: IFormConfiguration;
     fileName: string;
     exportName: string;
   }>,
@@ -57,13 +58,13 @@ ${configurations.map(({ fileName, exportName }) => ` * - ${fileName} (${exportNa
  */
 
 // Server action result types (shared across all forms)
-export interface ServerActionResult<T = unknown> {
+export interface IServerActionResult<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
 }
 
-export interface PaginatedResult<T = unknown> extends ServerActionResult<T[]> {
+export interface IPaginatedResult<T = unknown> extends ServerActionResult<T[]> {
   total?: number;
 }
 
@@ -149,9 +150,12 @@ async function main() {
       await fs.writeFile(typesFilePath, typeDefinitions, 'utf8');
       generatedFiles.push(`src/types/${config.postgresTableName}Types.d.ts`);
 
-      // 5. Generate demo page
+      // 5. Generate component
       console.log(`   🔧 Generating demo page...`);
-      await generateDemoPage(config, projectRoot, { fileName, exportName });
+      await generateExportComponent(config, projectRoot, {
+        fileName,
+        exportName,
+      });
       generatedFiles.push(`src/app/${config.postgresTableName}/page.tsx`);
 
       console.log(

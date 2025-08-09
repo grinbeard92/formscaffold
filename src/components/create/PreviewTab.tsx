@@ -3,10 +3,10 @@
 import { Card } from '@/components/ui/card';
 import { ClientForm } from '@/components/form/ClientForm';
 import { generateZodSchema } from '@/scripts/generate-schema';
-import { FormConfiguration } from '@/types/globalFormTypes';
+import { IFormConfiguration } from '@/types/globalFormTypes';
 
 interface PreviewTabProps {
-  config: FormConfiguration;
+  config: IFormConfiguration;
   onSubmit: (data: Record<string, unknown>) => void;
 }
 

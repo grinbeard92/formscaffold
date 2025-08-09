@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { ArrowLeftIcon, PlayIcon, CodeIcon } from '@radix-ui/react-icons';
 import Link from 'next/link';
-import { FormConfiguration } from '@/types/globalFormTypes';
+import { IFormConfiguration } from '@/types/globalFormTypes';
 import { ClientForm } from '@/components/form/ClientForm';
 import z from 'zod';
 
 // Helper function to generate Zod schema from form configuration
-function generateSchema(config: FormConfiguration) {
+function generateSchema(config: IFormConfiguration) {
   const schemaObject: Record<string, z.ZodTypeAny> = {};
 
   config.sections.forEach((section) => {
@@ -55,7 +55,7 @@ function generateSchema(config: FormConfiguration) {
 
 export default function TestFormPage() {
   const [configInput, setConfigInput] = useState<string>('');
-  const [parsedConfig, setParsedConfig] = useState<FormConfiguration | null>(
+  const [parsedConfig, setParsedConfig] = useState<IFormConfiguration | null>(
     null,
   );
   const [parseError, setParseError] = useState<string>('');

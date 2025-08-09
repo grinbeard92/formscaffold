@@ -7,11 +7,11 @@
 
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import type { FormConfiguration } from '../types/globalFormTypes';
+import type { IFormConfiguration } from '../types/globalFormTypes';
 import { postgresConfig } from '@/configurations/postgresConfiguration';
 
-export interface FormConfigurationModule {
-  config: FormConfiguration;
+export interface IFormConfigurationModule {
+  config: IFormConfiguration;
   fileName: string;
   exportName: string;
   filePath: string;
@@ -22,7 +22,7 @@ export interface FormConfigurationModule {
  */
 export async function discoverFormConfigurations(
   projectRoot: string = process.cwd(),
-): Promise<FormConfigurationModule[]> {
+): Promise<IFormConfigurationModule[]> {
   const configurationsDir = path.join(projectRoot, 'src', 'configurations');
 
   try {
@@ -35,7 +35,7 @@ export async function discoverFormConfigurations(
       `📂 Found ${tsFiles.length} configuration files in /src/configurations:`,
     );
 
-    const configurations: FormConfigurationModule[] = [];
+    const configurations: IFormConfigurationModule[] = [];
 
     for (const file of tsFiles) {
       try {
@@ -60,7 +60,7 @@ export async function discoverFormConfigurations(
         }
 
         for (const exportName of configExports) {
-          const config = configModule[exportName] as FormConfiguration;
+          const config = configModule[exportName] as IFormConfiguration;
 
           // Validate that this is a proper FormConfiguration
           if (
@@ -119,7 +119,7 @@ export async function discoverFormConfigurations(
 export async function getFormConfigurationByTableName(
   tableName: string,
   projectRoot: string = process.cwd(),
-): Promise<FormConfigurationModule | null> {
+): Promise<IFormConfigurationModule | null> {
   const configurations = await discoverFormConfigurations(projectRoot);
   return (
     configurations.find(
@@ -142,7 +142,7 @@ export async function getAllTableNames(
  * Validates that configurations don't have conflicting table names
  */
 export function validateConfigurations(
-  configurations: FormConfigurationModule[],
+  configurations: IFormConfigurationModule[],
 ): void {
   const tableNames = configurations.map(
     (config) => config.config.postgresTableName,

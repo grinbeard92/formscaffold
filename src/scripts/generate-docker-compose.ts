@@ -1,5 +1,5 @@
 // Docker compose generator
-import { PostgresConfig } from '../types/globalFormTypes';
+import { IPostgresConfig } from '../types/globalFormTypes';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { randomBytes } from 'crypto';
@@ -82,7 +82,7 @@ async function writePasswordFile(
  * Generates the Docker Compose YAML content
  */
 function generateDockerCompose(
-  postgresConfig: PostgresConfig,
+  postgresConfig: IPostgresConfig,
   password: string,
 ): string {
   let composeContent = `services:

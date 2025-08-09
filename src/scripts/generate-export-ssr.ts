@@ -21,11 +21,11 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import {
   discoverFormConfigurations,
-  FormConfigurationModule,
+  IFormConfigurationModule,
 } from './get-form-configurations';
-import { FormConfiguration } from '../types/globalFormTypes';
+import { IFormConfiguration } from '../types/globalFormTypes';
 
-interface ExportFileMapping {
+interface IExportFileMapping {
   source: string;
   destination: string;
   transform?: (content: string) => string;
@@ -134,7 +134,7 @@ async function copyRuntimeComponents(
   projectRoot: string,
   exportDir: string,
 ): Promise<void> {
-  const componentMappings: ExportFileMapping[] = [
+  const componentMappings: IExportFileMapping[] = [
     // Form components -> form-scaffold
     {
       source: 'src/components/form/ClientForm.tsx',
@@ -194,6 +194,11 @@ async function copyRuntimeComponents(
       source: 'src/utils/utils.ts',
       destination: 'utils/utils.ts',
     },
+    // Configurations
+    {
+      source: 'src/configurations/*.ts',
+      destination: 'configurations/',
+    },
   ];
 
   for (const mapping of componentMappings) {
@@ -218,11 +223,11 @@ async function copyRuntimeComponents(
 async function copyFormArtifacts(
   projectRoot: string,
   exportDir: string,
-  config: FormConfiguration,
+  config: IFormConfiguration,
 ): Promise<void> {
   const tableName = config.postgresTableName;
 
-  const artifactMappings: ExportFileMapping[] = [
+  const artifactMappings: IExportFileMapping[] = [
     // Generated types
     {
       source: `src/types/${tableName}Types.d.ts`,
@@ -277,7 +282,7 @@ async function copyFormArtifacts(
  */
 async function generateZodSchemaFile(
   exportDir: string,
-  config: FormConfiguration,
+  config: IFormConfiguration,
 ): Promise<void> {
   const tableName = config.postgresTableName;
   const capitalizedTableName =
@@ -316,7 +321,7 @@ export type Complete${capitalizedTableName} = z.infer<typeof complete${capitaliz
 /**
  * Generate Zod schema fields from configuration
  */
-function generateZodSchemaFields(config: FormConfiguration): string {
+function generateZodSchemaFields(config: IFormConfiguration): string {
   const fields: string[] = [];
 
   config.sections.forEach((section) => {
@@ -354,7 +359,7 @@ function generateZodSchemaFields(config: FormConfiguration): string {
 async function generateSqlSchemaFile(
   projectRoot: string,
   exportDir: string,
-  config: FormConfiguration,
+  config: IFormConfiguration,
 ): Promise<void> {
   const tableName = config.postgresTableName;
 
@@ -382,7 +387,7 @@ async function generateSqlSchemaFile(
  */
 async function createPackageFiles(
   exportDir: string,
-  configurations: FormConfigurationModule[],
+  configurations: IFormConfigurationModule[],
 ): Promise<void> {
   // Generate package.json
   const packageJson = {

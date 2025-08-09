@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { FormConfiguration } from '@/types/globalFormTypes';
+import { IFormConfiguration } from '@/types/globalFormTypes';
+import { ClipboardCopyIcon, CopyIcon } from '@radix-ui/react-icons';
+import { toast } from 'sonner';
 
 interface ServerActionsTabProps {
-  config: FormConfiguration;
+  config: IFormConfiguration;
   tableName: string;
 }
 
@@ -53,20 +55,22 @@ export function ServerActionsTab({ config, tableName }: ServerActionsTabProps) {
 
         <div className='relative'>
           <pre className='overflow-auto rounded-lg border bg-gray-50 p-4 text-sm'>
-            <code className='text-gray-800'>
+            <code className='javascript'>
+              {generatedCode && (
+                <button>
+                  <CopyIcon
+                    className='active:bg-secondary/30 absolute top-2 right-2 m-5 h-6 w-6 cursor-pointer rounded-lg active:scale-95'
+                    onClick={() => {
+                      toast.success('Copied to clipboard');
+                      navigator.clipboard.writeText(generatedCode);
+                    }}
+                  />
+                </button>
+              )}
               {generatedCode ||
                 '// Click "Generate Actions" to see the server actions code'}
             </code>
           </pre>
-
-          {generatedCode && (
-            <button
-              onClick={() => navigator.clipboard.writeText(generatedCode)}
-              className='absolute top-2 right-2 rounded bg-white px-2 py-1 text-xs shadow'
-            >
-              Copy
-            </button>
-          )}
         </div>
 
         <div className='mt-4 space-y-2'>

@@ -18,11 +18,11 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import {
   discoverFormConfigurations,
-  FormConfigurationModule,
+  IFormConfigurationModule,
 } from './get-form-configurations';
-import { FormConfiguration } from '../types/globalFormTypes';
+import { IFormConfiguration } from '../types/globalFormTypes';
 
-interface ExportFileMapping {
+interface IExportFileMapping {
   source: string;
   destination: string;
   transform?: (content: string) => string;
@@ -38,15 +38,6 @@ export async function generateExport(): Promise<void> {
   const exportDir = path.join(projectRoot, 'export');
 
   try {
-    // Step 1: Run generate-all to ensure all artifacts are up to date
-    console.log('📋 Step 1: Generating all FormScaffold artifacts...');
-    const { exec } = await import('child_process');
-    const { promisify } = await import('util');
-    const execAsync = promisify(exec);
-    await execAsync('npm run generate:all', { cwd: projectRoot });
-    console.log('✅ All artifacts generated\n');
-
-    // Step 2: Discover form configurations
     console.log('📋 Step 2: Discovering form configurations...');
     const configurations = await discoverFormConfigurations(projectRoot);
     console.log(`✅ Found ${configurations.length} form configurations\n`);
@@ -113,7 +104,7 @@ async function cleanAndCreateExportDir(exportDir: string): Promise<void> {
     'types',
     'actions',
     'schemas',
-    'pages',
+    'app',
     'db',
     'utils',
     'configurations',
@@ -131,41 +122,35 @@ async function copyRuntimeComponents(
   projectRoot: string,
   exportDir: string,
 ): Promise<void> {
-  const componentMappings: ExportFileMapping[] = [
+  const componentMappings: IExportFileMapping[] = [
     // Form components -> form-scaffold
     {
       source: 'src/components/form/ClientForm.tsx',
       destination: 'components/form-scaffold/ClientForm.tsx',
-      transform: updateImportPaths,
     },
     {
       source: 'src/components/form/ServerForm.tsx',
       destination: 'components/form-scaffold/ServerForm.tsx',
-      transform: updateImportPaths,
     },
     {
       source: 'src/components/form/FormSectionTemplate.tsx',
       destination: 'components/form-scaffold/FormSectionTemplate.tsx',
-      transform: updateImportPaths,
     },
 
     // Form utilities
     {
       source: 'src/components/form/utils/formSectionUtils.ts',
       destination: 'components/form-scaffold/utils/formSectionUtils.ts',
-      transform: updateImportPaths,
     },
     {
       source: 'src/components/form/utils/renderInputSection.tsx',
       destination: 'components/form-scaffold/utils/renderInputSection.tsx',
-      transform: updateImportPaths,
     },
 
     // UI components
     {
       source: 'src/components/ui/card.tsx',
       destination: 'components/ui/card.tsx',
-      transform: updateImportPaths,
     },
 
     // Core types
@@ -178,12 +163,10 @@ async function copyRuntimeComponents(
     {
       source: 'src/db/generic-db-actions.ts',
       destination: 'db/generic-db-actions.ts',
-      transform: updateImportPaths,
     },
     {
       source: 'src/db/postgres-js.ts',
       destination: 'db/postgres-js.ts',
-      transform: updateImportPaths,
     },
 
     // General utilities
@@ -215,11 +198,11 @@ async function copyRuntimeComponents(
 async function copyFormArtifacts(
   projectRoot: string,
   exportDir: string,
-  config: FormConfiguration,
+  config: IFormConfiguration,
 ): Promise<void> {
   const tableName = config.postgresTableName;
 
-  const artifactMappings: ExportFileMapping[] = [
+  const artifactMappings: IExportFileMapping[] = [
     // Generated types
     {
       source: `src/types/${tableName}Types.d.ts`,
@@ -229,15 +212,18 @@ async function copyFormArtifacts(
     // Generated server actions
     {
       source: `src/actions/${tableName}.ts`,
-      destination: `actions/${tableName}.ts`,
-      transform: updateImportPaths,
+      destination: `app/${tableName}/actions.ts`,
     },
 
     // Generated demo pages
     {
       source: `src/app/${tableName}/page.tsx`,
-      destination: `pages/${tableName}/page.tsx`,
-      transform: updateImportPaths,
+      destination: `app/${tableName}/page.tsx`,
+    },
+
+    {
+      source: `src/configurations/${tableName}FormConfiguration.ts`,
+      destination: `configurations/${tableName}FormConfiguration.ts`,
     },
   ];
 
@@ -274,7 +260,7 @@ async function copyFormArtifacts(
  */
 async function generateZodSchemaFile(
   exportDir: string,
-  config: FormConfiguration,
+  config: IFormConfiguration,
 ): Promise<void> {
   const tableName = config.postgresTableName;
   const capitalizedTableName =
@@ -313,7 +299,7 @@ export type Complete${capitalizedTableName} = z.infer<typeof complete${capitaliz
 /**
  * Generate Zod schema fields from configuration
  */
-function generateZodSchemaFields(config: FormConfiguration): string {
+function generateZodSchemaFields(config: IFormConfiguration): string {
   const fields: string[] = [];
 
   config.sections.forEach((section) => {
@@ -351,7 +337,7 @@ function generateZodSchemaFields(config: FormConfiguration): string {
 async function generateSqlSchemaFile(
   projectRoot: string,
   exportDir: string,
-  config: FormConfiguration,
+  config: IFormConfiguration,
 ): Promise<void> {
   const tableName = config.postgresTableName;
 
@@ -379,7 +365,7 @@ async function generateSqlSchemaFile(
  */
 async function createPackageFiles(
   exportDir: string,
-  configurations: FormConfigurationModule[],
+  configurations: IFormConfigurationModule[],
 ): Promise<void> {
   // Generate package.json
   const packageJson = {
@@ -494,12 +480,12 @@ function updateImportPaths(content: string): string {
   return content
     .replace(/from '@\/components\/form\//g, 'from "../')
     .replace(/from '@\/components\/ui\//g, 'from "../ui/')
-    .replace(/from '@\/types\//g, 'from "../../types/')
-    .replace(/from '@\/utils\//g, 'from "../../utils/')
-    .replace(/from '@\/db\//g, 'from "../../db/')
-    .replace(/from '@\/actions\//g, 'from "../../actions/')
-    .replace(/from '@\/scripts\/generate-schema'/g, 'from "../../schemas/')
-    .replace(/from '@\/configurations\//g, 'from "../../configurations/');
+    .replace(/from '@\/types\//g, 'from "../types/')
+    .replace(/from '@\/utils\//g, 'from "../utils/')
+    .replace(/from '@\/db\//g, 'from "../db/')
+    .replace(/from '@\/actions\//g, 'from "../actions/')
+    .replace(/from '@\/scripts\/generate-schema'/g, 'from "../schemas/')
+    .replace(/from '@\/configurations\//g, 'from "../configurations/');
 }
 
 /**
