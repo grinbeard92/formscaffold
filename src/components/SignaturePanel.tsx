@@ -37,7 +37,7 @@ function SignaturePanel({ onSignatureChange, onReset }: PropsSignaturePanel) {
   }, []);
 
   return (
-    <div className={'m-2 flex flex-row rounded-lg border-1 p-2'}>
+    <div className={'bg-secondary m-2 flex flex-row rounded-lg border-1 p-2'}>
       {/* SIGNATURE PAD */}
       <div className={'flex w-full'}>
         {trimmedDataURL && trimmedDataURL !== null ? (

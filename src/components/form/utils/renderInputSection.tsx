@@ -2,12 +2,15 @@
 
 import * as Select from '@radix-ui/react-select';
 import * as Checkbox from '@radix-ui/react-checkbox';
-import { ChevronDownIcon, CheckIcon } from '@radix-ui/react-icons';
+import { ChevronDownIcon, CheckIcon, FileIcon } from '@radix-ui/react-icons';
 import {
+  ControllerFieldState,
   ControllerRenderProps,
   FieldPath,
   FieldValues,
+  Path,
   useFormState,
+  UseFormStateReturn,
 } from 'react-hook-form';
 
 import React from 'react';
@@ -15,39 +18,31 @@ import { cn } from '@/utils/utils';
 import { ISelectOption } from '@/types/globalFormTypes';
 import { IFieldDefinition } from '@/types/globalFormTypes';
 import SignaturePanel from '@/components/SignaturePanel';
+import { FilesIcon, XCircleIcon } from 'lucide-react';
 
 export const renderInput = <T extends FieldValues>(
-  field: IFieldDefinition<T>,
-  {
-    field: controllerField,
-  }: {
-    field: ControllerRenderProps<T, FieldPath<T>>;
-  },
+  formField: IFieldDefinition<T>,
+  field: ControllerRenderProps<T, Path<T>>,
+  fieldState: ControllerFieldState,
+  formState: UseFormStateReturn<T>,
 ) => {
-  const { errors } = useFormState();
   const baseInputProps = {
-    placeholder: field.placeholder,
+    placeholder: formField.placeholder,
     disabled: field.disabled,
-    className: field.className,
+    className: formField.className,
   };
 
-  // Ensure controlled inputs always have a defined value
-  const controlledFieldProps = {
-    ...controllerField,
-    value: controllerField.value ?? '',
-  };
-
-  switch (field.type) {
+  switch (formField.type) {
     case 'textarea':
       return (
         <textarea
-          {...controlledFieldProps}
+          {...field}
           {...baseInputProps}
-          rows={field.rows || 3}
+          rows={formField.rows || 3}
           className={cn(
             'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
-            field.className,
-            errors &&
+            formField.className,
+            fieldState.error &&
               'border-destructive focus:border-destructive focus:ring-destructive',
           )}
         />
@@ -56,7 +51,7 @@ export const renderInput = <T extends FieldValues>(
     case 'select':
       // Normalize options to SelectOption format
       const normalizedOptions =
-        field.options?.map((option: string | ISelectOption) =>
+        formField.options?.map((option: string | ISelectOption) =>
           typeof option === 'string'
             ? { value: option, label: option }
             : { value: option.value, label: option.label },
@@ -64,12 +59,12 @@ export const renderInput = <T extends FieldValues>(
 
       return (
         <Select.Root
-          onValueChange={controllerField.onChange}
-          value={controllerField.value ?? ''} // Default to empty string instead of undefined
+          onValueChange={field.onChange}
+          value={field.value ?? ''} // Default to empty string instead of undefined
         >
           <Select.Trigger className='border-input bg-background ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50'>
             <Select.Value
-              placeholder={field.placeholder || 'Select an option'}
+              placeholder={formField.placeholder || 'Select an option'}
             />
             <Select.Icon className='h-4 w-4 opacity-50'>
               <ChevronDownIcon />
@@ -84,7 +79,7 @@ export const renderInput = <T extends FieldValues>(
                     value={option.value}
                     className={cn(
                       'focus:bg-accent focus:text-accent-foreground relative flex w-full cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
-                      errors &&
+                      fieldState.error &&
                         'border-destructive focus:border-destructive focus:ring-destructive',
                     )}
                   >
@@ -107,24 +102,24 @@ export const renderInput = <T extends FieldValues>(
         <div className='mb-5 grid grid-cols-[35px_1fr] gap-5'>
           <Checkbox.Root
             id={String(field.name)}
-            checked={controllerField.value ?? false}
-            onCheckedChange={controllerField.onChange}
+            checked={field.value ?? false}
+            onCheckedChange={field.onChange}
             disabled={field.disabled}
             className={cn(
-              'border-primary focus-visible:ring-ring data-[state=checked]:bg-primary data-[state=checked]:text-primary flex h-[25px] w-[25px] rounded-sm border-1 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
-              errors &&
+              'border-primary focus-visible:ring-ring bg-secondary data-[state=unchecked]:bg-accent data-[state=checked]:text-primary flex h-[25px] w-[25px] rounded-sm border-1 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+              fieldState.error &&
                 'border-destructive focus:border-destructive focus:ring-destructive',
             )}
           >
             <Checkbox.Indicator className='flex'>
-              <CheckIcon className='flex h-[25px] w-[25px]' />
+              <CheckIcon className='text-primary bg-secondary flex h-[25px] w-[25px]' />
             </Checkbox.Indicator>
           </Checkbox.Root>
           <label
             htmlFor={String(field.name)}
             className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
           >
-            {field.label}
+            {formField.label}
           </label>
         </div>
       );
@@ -134,18 +129,18 @@ export const renderInput = <T extends FieldValues>(
         <input
           {...baseInputProps}
           type='number'
-          step={field.step}
-          min={field.min || field.zodConfig?.min}
-          max={field.max || field.zodConfig?.max}
-          value={controllerField.value ?? ''} // Default to empty string for number inputs
+          step={formField.step}
+          min={formField.min || formField.zodConfig?.min}
+          max={formField.max || formField.zodConfig?.max}
+          value={field.value ?? ''} // Default to empty string for number inputs
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             const value = e.target.value;
-            controllerField.onChange(value === '' ? undefined : Number(value));
+            field.onChange(value === '' ? undefined : Number(value));
           }}
           className={cn(
             'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
-            field.className,
-            errors &&
+            formField.className,
+            fieldState.error &&
               'border-destructive focus:border-destructive focus:ring-destructive',
           )}
         />
@@ -158,15 +153,14 @@ export const renderInput = <T extends FieldValues>(
     case 'week':
       return (
         <input
-          {...controlledFieldProps}
-          {...baseInputProps}
-          type={field.type}
-          min={field.min}
-          max={field.max}
+          {...field}
+          type={formField.type}
+          min={formField.min}
+          max={formField.max}
           className={cn(
             'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
-            field.className,
-            errors &&
+            formField.className,
+            fieldState.error &&
               'border-destructive focus:border-destructive focus:ring-destructive',
           )}
         />
@@ -176,22 +170,22 @@ export const renderInput = <T extends FieldValues>(
       return (
         <div className='flex items-center space-x-4'>
           <input
-            {...controlledFieldProps}
+            {...field}
             {...baseInputProps}
             type='range'
-            min={field.min || field.zodConfig?.min}
-            max={field.max || field.zodConfig?.max}
-            defaultValue={(field.default as number) ?? 0}
-            step={field.step}
+            min={formField.min || formField.zodConfig?.min}
+            max={formField.max || formField.zodConfig?.max}
+            defaultValue={(formField.default as number) ?? 0}
+            step={formField.step}
             className={cn(
               'h-2 flex-1 cursor-pointer appearance-none rounded-lg bg-gray-200',
-              field.className,
-              errors &&
+              formField.className,
+              fieldState.error &&
                 'border-destructive focus:border-destructive focus:ring-destructive',
             )}
           />
           <span className='min-w-[3rem] text-sm text-gray-600'>
-            {controllerField.value ?? field.min ?? 0}
+            {field.value ?? formField.min ?? 0}
           </span>
         </div>
       );
@@ -200,18 +194,18 @@ export const renderInput = <T extends FieldValues>(
       return (
         <div className='flex items-center space-x-2'>
           <input
-            {...controlledFieldProps}
+            {...field}
             {...baseInputProps}
             type='color'
             className={cn(
               'border-input bg-background h-10 w-16 cursor-pointer rounded-md border disabled:cursor-not-allowed disabled:opacity-50',
-              field.className,
-              errors &&
+              formField.className,
+              fieldState.error &&
                 'border-destructive focus:border-destructive focus:ring-destructive',
             )}
           />
           <span className='text-sm text-gray-600'>
-            {controllerField.value || '#000000'}
+            {field.value || '#000000'}
           </span>
         </div>
       );
@@ -222,79 +216,110 @@ export const renderInput = <T extends FieldValues>(
           <input
             {...baseInputProps}
             type='file'
-            accept={field.accept}
-            multiple={field.multiple}
+            accept={formField.accept}
+            multiple={formField.multiple}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               const files = e.target.files;
               if (files && files.length > 0) {
-                if (field.multiple) {
+                if (formField.multiple) {
                   const fileArray = Array.from(files);
-                  controllerField.onChange(fileArray);
+                  field.onChange(fileArray);
                 } else {
                   const singleFile = files[0];
-                  controllerField.onChange(singleFile);
+                  field.onChange(singleFile);
                 }
               } else {
-                controllerField.onChange(field.multiple ? [] : undefined);
+                field.onChange(formField.multiple ? [] : undefined);
               }
             }}
             className={cn(
               'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
-              field.className,
-              errors &&
+              formField.className,
+              fieldState.error &&
                 'border-destructive focus:border-destructive focus:ring-destructive',
             )}
           />
 
           {/* Display thumbnails for uploaded files */}
-          {controllerField.value && (
+          {field.value && (
             <div className='mt-2 flex flex-wrap gap-2'>
-              {field.multiple ? (
+              {formField.multiple ? (
                 // Multiple files: value should be an array
-                Array.isArray(controllerField.value) &&
-                controllerField.value.length > 0 ? (
-                  controllerField.value.map((file: File, index: number) => (
+                Array.isArray(field.value) && field.value.length > 0 ? (
+                  field.value.map((file: File, index: number) => (
                     <div key={index} className={cn('relative')}>
                       {file.type && file.type.startsWith('image/') ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={URL.createObjectURL(file)}
-                          alt={file.name}
-                          className='h-20 w-20 rounded border object-cover'
-                        />
+                        <div className='relative'>
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={file.name}
+                            className='h-20 w-20 rounded border object-cover lg:h-30 lg:w-30'
+                          />
+                          <XCircleIcon
+                            onClick={() => {
+                              const newFiles = Array.isArray(field.value)
+                                ? field.value.filter((_, i) => i !== index)
+                                : [];
+                              field.onChange(newFiles);
+                            }}
+                            className={
+                              'text-destructive absolute top-0 right-0 m-1 block'
+                            }
+                          />
+                        </div>
                       ) : (
-                        <div className='flex h-20 w-20 items-center justify-center rounded border bg-gray-100 p-1 text-center text-xs'>
+                        <div className='bg-secondary relative flex h-20 w-20 flex-col items-center justify-center overflow-clip rounded-lg text-center align-middle text-xs'>
+                          <FilesIcon size={25} />
                           {file.name}
+                          <XCircleIcon
+                            onClick={() => {
+                              const newFiles = Array.isArray(field.value)
+                                ? field.value.filter((_, i) => i !== index)
+                                : [];
+                              field.onChange(newFiles);
+                            }}
+                            className={
+                              'text-destructive absolute top-0 right-0 m-1 block'
+                            }
+                          />
                         </div>
                       )}
-                      <div className='mt-1 max-w-20 truncate text-xs text-gray-600'>
-                        {file.name}
-                      </div>
                     </div>
                   ))
                 ) : null
               ) : // Single file: value should be a File object
-              controllerField.value &&
-                typeof controllerField.value === 'object' &&
-                'name' in controllerField.value &&
-                'type' in controllerField.value ? (
+              field.value &&
+                typeof field.value === 'object' &&
+                'name' in field.value &&
+                'type' in field.value ? (
                 <div className='relative'>
-                  {(controllerField.value as File).type &&
-                  (controllerField.value as File).type.startsWith('image/') ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={URL.createObjectURL(controllerField.value as File)}
-                      alt={(controllerField.value as File).name}
-                      className='h-20 w-20 rounded border object-cover'
-                    />
+                  {(field.value as File).type &&
+                  (field.value as File).type.startsWith('image/') ? (
+                    <div className='relative'>
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={URL.createObjectURL(field.value as File)}
+                        alt={(field.value as File).name}
+                        className='h-20 w-20 rounded border object-cover'
+                      />
+                      <XCircleIcon
+                        onClick={() => {
+                          const newFiles = Array.isArray(field.value)
+                            ? field.value.filter((_, i) => i !== index)
+                            : [];
+                          field.onChange(newFiles);
+                        }}
+                        className={
+                          'text-destructive absolute top-0 right-0 m-1 block'
+                        }
+                      />
+                    </div>
                   ) : (
-                    <div className='flex h-20 w-20 items-center justify-center rounded border bg-gray-100 p-1 text-center text-xs'>
-                      {(controllerField.value as File).name}
+                    <div className='bg-primary flex h-20 w-20 items-center justify-center rounded border p-1 text-center text-xs'>
+                      {(field.value as File).name}
                     </div>
                   )}
-                  <div className='mt-1 max-w-20 truncate text-xs text-gray-600'>
-                    {(controllerField.value as File).name}
-                  </div>
                 </div>
               ) : null}
             </div>
@@ -308,13 +333,13 @@ export const renderInput = <T extends FieldValues>(
           <div
             className={cn(
               'text-sm text-gray-500',
-              errors &&
+              fieldState.error &&
                 'border-destructive focus:border-destructive focus:ring-destructive',
             )}
           >
             <SignaturePanel
-              onSignatureChange={controllerField.onChange}
-              onReset={() => controllerField.onChange('')}
+              onSignatureChange={field.onChange}
+              onReset={() => field.onChange('')}
             />
           </div>
         </div>
@@ -322,7 +347,7 @@ export const renderInput = <T extends FieldValues>(
 
     case 'radio':
       const radioOptions =
-        field.options?.map((option: string | ISelectOption) =>
+        formField.options?.map((option: string | ISelectOption) =>
           typeof option === 'string'
             ? { value: option, label: option }
             : { value: option.value, label: option.label },
@@ -337,12 +362,12 @@ export const renderInput = <T extends FieldValues>(
                 id={`${String(field.name)}-${option.value}`}
                 name={String(field.name)}
                 value={option.value}
-                checked={controllerField.value === option.value}
-                onChange={() => controllerField.onChange(option.value)}
+                checked={field.value === option.value}
+                onChange={() => field.onChange(option.value)}
                 disabled={field.disabled}
                 className={cn(
                   'text-primary focus:ring-primary h-4 w-4 border-gray-300',
-                  errors &&
+                  fieldState.error &&
                     'border-destructive focus:border-destructive focus:ring-destructive',
                 )}
               />
@@ -363,32 +388,32 @@ export const renderInput = <T extends FieldValues>(
           <button
             type='button'
             role='switch'
-            aria-checked={controllerField.value ?? false}
-            onClick={() => controllerField.onChange(!controllerField.value)}
+            aria-checked={field.value ?? false}
+            onClick={() => field.onChange(!formField)}
             disabled={field.disabled}
             className={cn(
               'focus:ring-primary relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none',
-              controllerField.value ? 'bg-primary' : 'bg-gray-200',
+              field.value ? 'bg-primary' : 'bg-gray-200',
               field.disabled && 'cursor-not-allowed opacity-50',
-              errors &&
+              fieldState.error &&
                 'border-destructive focus:border-destructive focus:ring-destructive',
             )}
           >
             <span
               className={cn(
                 'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-                controllerField.value ? 'translate-x-6' : 'translate-x-1',
+                field.value ? 'translate-x-6' : 'translate-x-1',
               )}
             />
           </button>
           <label className='text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70'>
-            {field.label}
+            {formField.label}
           </label>
         </div>
       );
 
     case 'hidden':
-      return <input {...controlledFieldProps} type='hidden' />;
+      return <input {...field} type='hidden' />;
 
     case 'email':
     case 'url':
@@ -399,13 +424,13 @@ export const renderInput = <T extends FieldValues>(
     default:
       return (
         <input
-          {...controlledFieldProps}
+          {...field}
           {...baseInputProps}
-          type={field.type}
+          type={formField.type}
           className={cn(
             'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
-            field.className,
-            errors &&
+            formField.className,
+            fieldState.error &&
               'border-destructive focus:border-destructive focus:ring-destructive',
           )}
         />

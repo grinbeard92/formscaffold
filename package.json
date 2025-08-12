@@ -19,7 +19,7 @@
     "export": "tsx src/scripts/generate-export.ts",
     "generate:demo": "tsx src/scripts/generate-all-demo.ts",
     "generate:export": "tsx src/scripts/generate-all-prod.ts && tsx src/scripts/generate-export-files.ts",
-    "regenerate": "npm run generate:all && npm run db:stop && npm run db:start && npm run db:init && npm run dev"
+    "regenerate": "npm run generate:demo && npm run db:stop && npm run db:start && npm run db:init && npm run dev"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",

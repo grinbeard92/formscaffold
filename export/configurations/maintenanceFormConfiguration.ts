@@ -1,4 +1,8 @@
-import { IFormConfiguration } from '@/types/globalFormTypes';
+import {
+  EPostgresTypes as pgT,
+  EFormFieldTypes as fieldT,
+  IFormConfiguration,
+} from '@/types/globalFormTypes';
 
 /* 
 MAINTENANCE CHECKLIST FORM CONFIGURATION
@@ -23,7 +27,7 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
         {
           label: 'Technician Name',
           name: 'technician_name',
-          type: 'text',
+          type: fieldT.TEXT,
           required: true,
           placeholder: 'Enter technician name',
           default: '',
@@ -32,14 +36,14 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
             maxLength: 100,
           },
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 255,
           },
         },
         {
           label: 'System Type',
           name: 'system_type',
-          type: 'text',
+          type: fieldT.TEXT,
           required: true,
           placeholder: 'ie. CL1000 Mobile, AL1, CL150 cleanCELL etc.',
           default: '',
@@ -48,7 +52,7 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
             maxLength: 100,
           },
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 255,
             index: true,
           },
@@ -56,77 +60,78 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
         {
           label: 'System Serial Number',
           name: 'serial_number',
-          type: 'select',
+          type: fieldT.SELECT,
           required: true,
+          customErrorMessage: 'Please select a valid serial number',
           default: '',
           options: [
             { value: 'not-configured', label: 'TODO Add Serial Number data' },
           ],
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 255,
           },
         },
         {
           label: 'Support Case Number',
           name: 'support_case',
-          type: 'select',
+          type: fieldT.SELECT,
           required: true,
           default: '',
           options: [
             { value: 'not-configured', label: 'TODO Add Support Case data' },
           ],
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 255,
           },
         },
         {
           label: 'Customer',
           name: 'customer',
-          type: 'select',
+          type: fieldT.SELECT,
           required: true,
           default: '',
           options: [
             { value: 'not-configured', label: 'TODO Add Customer data' },
           ],
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 255,
           },
         },
         {
           label: 'Maintenance Date',
           name: 'maintenance_date',
-          type: 'date',
+          type: fieldT.DATE,
           required: true,
           default: '',
           zodConfig: {
             date: true,
           },
           pgConfig: {
-            type: 'DATE',
+            type: pgT.DATE,
             index: true,
           },
         },
         {
           label: 'Next Maintenance Due',
           name: 'next_maintenance_date',
-          type: 'date',
+          type: fieldT.DATE,
           required: true,
           default: '',
           zodConfig: {
             date: true,
           },
           pgConfig: {
-            type: 'DATE',
+            type: pgT.DATE,
             index: true,
           },
         },
         {
           label: 'Address',
           name: 'address',
-          type: 'text',
+          type: fieldT.TEXT,
           required: true,
           placeholder: 'Enter address',
           default: '',
@@ -135,14 +140,14 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
             maxLength: 255,
           },
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 255,
           },
         },
         {
           label: 'Customer Contact Name',
           name: 'customer_contact_name',
-          type: 'text',
+          type: fieldT.TEXT,
           required: true,
           placeholder: 'Enter customer contact name',
           default: '',
@@ -151,14 +156,14 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
             maxLength: 255,
           },
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 255,
           },
         },
         {
           label: 'Customer Contact Email',
           name: 'customer_contact_email',
-          type: 'text',
+          type: fieldT.EMAIL,
           required: true,
           placeholder: 'Enter customer contact email',
           default: '',
@@ -166,7 +171,7 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
             email: true,
           },
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 255,
           },
         },
@@ -181,18 +186,18 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
         {
           label: 'Test, Verify and Record Current System Performance and Power',
           name: 'confirm_system_performance',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           default: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
         },
         {
           label: 'Pre-Service Ablation Performance',
           name: 'pre_service_ablation_performance',
-          type: 'select',
+          type: fieldT.SELECT,
           required: true,
           default: '',
           options: [
@@ -203,7 +208,7 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
             { value: 'error', label: 'Existing Error / System Down' },
           ],
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 25,
             index: true,
           },
@@ -211,7 +216,7 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
         {
           label: 'Pre-Service Pulsing Power (W)',
           name: 'pre_service_pulsing_power',
-          type: 'number',
+          type: fieldT.NUMBER,
           required: true,
           placeholder: '0',
           default: 0,
@@ -219,28 +224,28 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
             min: 0,
           },
           pgConfig: {
-            type: 'INTEGER',
+            type: pgT.INTEGER,
             index: true,
           },
         },
         {
           label: 'Pre-Service CW Power (W)',
           name: 'pre_service_cw_power',
-          type: 'number',
+          type: fieldT.NUMBER,
           required: true,
           placeholder: '0',
           default: 0,
           zodConfig: { min: 0 },
-          pgConfig: { type: 'INTEGER', index: true },
+          pgConfig: { type: pgT.INTEGER, index: true },
         },
         {
           label: 'Replace Desiccant Packs',
           name: 'replace_desiccant_packs',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           default: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
         },
@@ -248,11 +253,11 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
           label:
             'Confirm Humidity Settings Warning/Error (CL150+ 45%/50%, CL1000 50%/60%)',
           name: 'confirm_humidity_settings',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           default: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
         },
@@ -260,55 +265,55 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
           label:
             'Capture Current Laser Settings and Script Files (cleanTouch, CLQ, CLL, cleanStudio, cleanBAKE)',
           name: 'capture_laser_settings',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           default: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
         },
         {
           label: 'Copy Last 6 Months of Logfiles to USB for Adapt records',
           name: 'copy_logfiles',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           default: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
         },
         {
           label: 'Inspect Protection Window and Optic Condition',
           name: 'inspect_protection_window',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           default: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
         },
         {
           label: 'Clean and Replace Optics as Needed',
           name: 'clean_replace_optics',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           default: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
         },
         {
           label: 'Perform Annual Coolant System Flush and Service',
           name: 'annual_water_service',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           default: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
         },
@@ -316,11 +321,11 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
           label:
             'Confirm O-rings installed and all screws installed and torqued properly on Resonator',
           name: 'confirm_o_rings_screws',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           default: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
         },
@@ -328,11 +333,11 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
           label:
             '(Especially CL1000) Tape Resonator seams with Aluminum tape if they are not already taped',
           name: 'tape_resonator_seams',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           default: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
         },
@@ -340,11 +345,11 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
           label:
             'Inspect Protection Hose and Verify Coupling Tightness, tape exposed metal sections with vinyl tape, record damage (if present)',
           name: 'inspect_protection_hose',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           default: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
         },
@@ -352,11 +357,11 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
           label:
             'Update MDS sensor to latest version and verify MDS sensor operation',
           name: 'update_mds_sensor',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           default: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
         },
@@ -364,22 +369,22 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
           label:
             '(in dirty environments) Unplug and Remove machine PC, HFC, BBT, UPS, etc.; blow out dust with clean compressed air',
           name: 'clean_equipment_dust',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           default: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
         },
         {
           label: 'Verify compressed air input pressure',
           name: 'verify_air_pressure',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           default: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
         },
@@ -387,11 +392,11 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
           label:
             'Verify door and emergency interlocks and e-stops, configurations will vary',
           name: 'verify_interlocks_estops',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           default: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
         },
@@ -406,7 +411,7 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
         {
           label: 'Issues Found',
           name: 'issues_found',
-          type: 'textarea',
+          type: fieldT.TEXTAREA,
           required: false,
           placeholder:
             'Describe any issues, problems, or concerns discovered...',
@@ -416,13 +421,13 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
             maxLength: 2000,
           },
           pgConfig: {
-            type: 'TEXT',
+            type: pgT.TEXT,
           },
         },
         {
           label: 'Corrective Actions Taken',
           name: 'corrective_actions',
-          type: 'textarea',
+          type: fieldT.TEXTAREA,
           required: false,
           placeholder: 'Describe any corrective actions performed...',
           rows: 4,
@@ -431,13 +436,13 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
             maxLength: 2000,
           },
           pgConfig: {
-            type: 'TEXT',
+            type: pgT.TEXT,
           },
         },
         {
           label: 'Recommendations',
           name: 'recommendations',
-          type: 'textarea',
+          type: fieldT.TEXTAREA,
           required: false,
           placeholder:
             'Enter recommendations for future maintenance or repairs...',
@@ -447,7 +452,7 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
             maxLength: 2000,
           },
           pgConfig: {
-            type: 'TEXT',
+            type: pgT.TEXT,
           },
         },
       ],
@@ -461,24 +466,24 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
         {
           label: 'Parts Used',
           name: 'parts_used',
-          type: 'textarea',
+          type: fieldT.TEXTAREA,
           required: false,
           default: '',
           zodConfig: {
             maxLength: 1000,
           },
           pgConfig: {
-            type: 'JSONB',
+            type: pgT.JSONB,
           },
         },
         {
           label: 'Job Hours',
           name: 'job_hours',
-          type: 'textarea',
+          type: fieldT.TEXTAREA,
           required: false,
           default: '',
           pgConfig: {
-            type: 'JSONB',
+            type: pgT.JSONB,
           },
         },
       ],
@@ -493,7 +498,7 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
         {
           label: 'Maintenance Pictures',
           name: 'maintenance_pictures',
-          type: 'file',
+          type: fieldT.FILE,
           required: false,
           accept: 'image/*',
           multiple: true,
@@ -504,14 +509,14 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
             maxLength: 5, // Max 5 images
           },
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 1000, // Store comma-separated file paths
           },
         },
         {
           label: 'Supporting Documents',
           name: 'supporting_documents',
-          type: 'file',
+          type: fieldT.FILE,
           required: false,
           accept: '.pdf,.doc,.docx,.txt,.csv',
           multiple: true,
@@ -522,7 +527,7 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
             maxLength: 5, // Max 5 files
           },
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 1000, // Store comma-separated file paths
           },
         },
@@ -537,25 +542,25 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
         {
           label: 'Technician Signature',
           name: 'technician_signature',
-          type: 'signature',
+          type: fieldT.SIGNATURE,
           required: true,
           default: '',
           description:
             'Digital signature of the technician who performed the maintenance',
           pgConfig: {
-            type: 'TEXT', // Store base64 encoded signature image
+            type: pgT.TEXT, // Store base64 encoded signature image
           },
         },
         {
           label: 'Customer Signature',
           name: 'customer_signature',
-          type: 'signature',
+          type: fieldT.SIGNATURE,
           required: false,
           default: '',
           description:
             'Digital signature of the supervising technician or manager',
           pgConfig: {
-            type: 'TEXT', // Store base64 encoded signature image
+            type: pgT.TEXT,
           },
         },
       ],

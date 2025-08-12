@@ -179,7 +179,9 @@ function createZodFieldSchema(
         const values = field.options.map((option) =>
           typeof option === 'string' ? option : option.value,
         );
-        schema = z.enum(values as [string, ...string[]]);
+        schema = z.enum(values as [string, ...string[]], {
+          error: 'Please select a value.',
+        });
       } else {
         schema = z.string();
       }
@@ -190,7 +192,9 @@ function createZodFieldSchema(
         const values = field.options.map((option) =>
           typeof option === 'string' ? option : option.value,
         );
-        schema = z.enum(values as [string, ...string[]]);
+        schema = z.enum(values as [string, ...string[]], {
+          error: 'Please select a value.',
+        });
       } else {
         schema = z.string();
       }
@@ -226,6 +230,9 @@ function createZodFieldSchema(
     }
     if (field.zodConfig?.regex) {
       schema = z.string().regex(field.zodConfig.regex);
+    }
+    if (field.required) {
+      schema = z.string().min(1, 'A value is required.');
     }
   }
 

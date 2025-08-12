@@ -33,8 +33,8 @@ CREATE TABLE demo (
   profile_picture BYTEA,
   resume_file VARCHAR(500),
   biography TEXT,
-  config_json JSON,
-  skills TEXT[],
+  config_json JSONB,
+  skills TEXT,
   user_id UUID DEFAULT gen_random_uuid(),
   metadata JSONB
 );

@@ -33,7 +33,7 @@ export interface IDemo {
   resume_file?: string | null;
   biography?: string | null;
   config_json?: object | null;
-  skills?: string[] | null;
+  skills?: string | null;
   user_id?: string | null;
   metadata?: object | null;
 }

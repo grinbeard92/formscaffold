@@ -1,4 +1,8 @@
-import { IFormConfiguration } from '@/types/globalFormTypes';
+import {
+  EPostgresTypes as pgT,
+  EFormFieldTypes as fieldT,
+  IFormConfiguration,
+} from '@/types/globalFormTypes';
 
 /* 
 DEFINE YOUR FORM SCHEMA, ZOD VALIDATION PREFERENCES, AND POSTGRESQL TABLE CONFIGURATION HERE
@@ -24,7 +28,7 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Full Name',
           name: 'full_name',
-          type: 'text',
+          type: fieldT.TEXT,
           required: true,
           placeholder: 'Enter your full name',
           zodConfig: {
@@ -32,7 +36,7 @@ export const demoFormConfiguration: IFormConfiguration = {
             maxLength: 100,
           },
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 100,
             index: true,
           },
@@ -41,14 +45,14 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Email Address',
           name: 'email',
-          type: 'email',
+          type: fieldT.EMAIL,
           required: true,
           placeholder: 'your.email@example.com',
           zodConfig: {
             email: true,
           },
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 255,
             unique: true,
             index: true,
@@ -58,7 +62,7 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Website URL',
           name: 'website',
-          type: 'url',
+          type: fieldT.URL,
           required: false,
           placeholder: 'https://yourwebsite.com',
           zodConfig: {
@@ -66,7 +70,7 @@ export const demoFormConfiguration: IFormConfiguration = {
             maxLength: 500,
           },
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 500,
           },
           default: null,
@@ -74,11 +78,11 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Phone Number',
           name: 'phone',
-          type: 'tel',
+          type: fieldT.TEL,
           required: false,
           placeholder: '+1-555-123-4567',
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 20,
           },
           default: null,
@@ -86,18 +90,18 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Search Keywords',
           name: 'keywords',
-          type: 'search',
+          type: fieldT.SEARCH,
           required: false,
           placeholder: 'Enter search terms...',
           pgConfig: {
-            type: 'TEXT',
+            type: pgT.TEXT,
           },
           default: null,
         },
         {
           label: 'Secret Code',
           name: 'secret_code',
-          type: 'password',
+          type: fieldT.PASSWORD,
           required: false,
           placeholder: 'Enter password',
           zodConfig: {
@@ -105,7 +109,7 @@ export const demoFormConfiguration: IFormConfiguration = {
             maxLength: 50,
           },
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 255, // Encrypted storage
           },
           default: null,
@@ -121,7 +125,7 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Age',
           name: 'age',
-          type: 'number',
+          type: fieldT.NUMBER,
           required: true,
           min: 13,
           max: 120,
@@ -134,14 +138,14 @@ export const demoFormConfiguration: IFormConfiguration = {
             max: 120,
           },
           pgConfig: {
-            type: 'INTEGER',
+            type: pgT.INTEGER,
             index: true,
           },
         },
         {
           label: 'Salary Range',
           name: 'salary',
-          type: 'number',
+          type: fieldT.NUMBER,
           required: false,
           placeholder: '50000.00',
           zodConfig: {
@@ -150,7 +154,7 @@ export const demoFormConfiguration: IFormConfiguration = {
             max: 1000000,
           },
           pgConfig: {
-            type: 'DECIMAL',
+            type: pgT.DECIMAL,
             precision: 10,
             scale: 2,
           },
@@ -159,7 +163,7 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Experience Level (1-10)',
           name: 'experience_level',
-          type: 'range',
+          type: fieldT.RANGE,
           required: false,
           zodConfig: {
             int: true,
@@ -167,7 +171,7 @@ export const demoFormConfiguration: IFormConfiguration = {
             max: 10,
           },
           pgConfig: {
-            type: 'INTEGER',
+            type: pgT.INTEGER,
             default: 5,
           },
           default: null,
@@ -175,7 +179,7 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Satisfaction Rating',
           name: 'satisfaction',
-          type: 'range',
+          type: fieldT.RANGE,
           required: false,
           zodConfig: {
             int: true,
@@ -183,7 +187,7 @@ export const demoFormConfiguration: IFormConfiguration = {
             max: 100,
           },
           pgConfig: {
-            type: 'INTEGER',
+            type: pgT.INTEGER,
             default: 50,
           },
           default: null,
@@ -199,14 +203,14 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Birth Date',
           name: 'birth_date',
-          type: 'date',
+          type: fieldT.DATE,
           customErrorMessage: 'Please enter your birth date',
           required: false,
           zodConfig: {
             date: true,
           },
           pgConfig: {
-            type: 'DATE',
+            type: pgT.DATE,
             index: true,
           },
           default: null,
@@ -214,30 +218,30 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Appointment Time',
           name: 'appointment_time',
-          type: 'time',
+          type: fieldT.TIME,
           required: false,
           pgConfig: {
-            type: 'TIME',
+            type: pgT.TIME,
           },
           default: null,
         },
         {
           label: 'Event Date & Time',
           name: 'event_datetime',
-          type: 'datetime-local',
+          type: fieldT.DATETIME_LOCAL,
           required: false,
           pgConfig: {
-            type: 'TIMESTAMP',
+            type: pgT.TIMESTAMP,
           },
           default: null,
         },
         {
           label: 'Target Month',
           name: 'target_month',
-          type: 'month',
+          type: fieldT.MONTH,
           required: false,
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 7, // YYYY-MM format
           },
           default: null,
@@ -245,10 +249,10 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Target Week',
           name: 'target_week',
-          type: 'week',
+          type: fieldT.WEEK,
           required: false,
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 8, // YYYY-W## format
           },
           default: null,
@@ -264,7 +268,7 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Preferred Language',
           name: 'language',
-          type: 'select',
+          type: fieldT.SELECT,
           required: true,
           options: [
             { label: 'English', value: 'en' },
@@ -274,7 +278,7 @@ export const demoFormConfiguration: IFormConfiguration = {
             { label: 'Japanese', value: 'ja' },
           ],
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 5,
             index: true,
           },
@@ -283,11 +287,11 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Skill Level',
           name: 'skill_level',
-          type: 'radio',
+          type: fieldT.RADIO,
           required: true,
           options: ['Beginner', 'Intermediate', 'Advanced', 'Expert'],
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 20,
             index: true,
           },
@@ -296,10 +300,10 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Newsletter Subscription',
           name: 'newsletter_subscription',
-          type: 'checkbox',
+          type: fieldT.CHECKBOX,
           required: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: false,
           },
           default: null,
@@ -307,10 +311,10 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Enable Notifications',
           name: 'notifications_enabled',
-          type: 'toggle',
+          type: fieldT.TOGGLE,
           required: false,
           pgConfig: {
-            type: 'BOOLEAN',
+            type: pgT.BOOLEAN,
             default: true,
           },
           default: null,
@@ -326,10 +330,10 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Favorite Color',
           name: 'favorite_color',
-          type: 'color',
+          type: fieldT.COLOR,
           required: false,
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 7, // Hex color format
           },
           default: null,
@@ -337,20 +341,20 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Profile Picture',
           name: 'profile_picture',
-          type: 'file',
+          type: fieldT.FILE,
           required: false,
           pgConfig: {
-            type: 'BYTEA', // Binary data storage
+            type: pgT.BYTEA, // Binary data storage
           },
           default: null,
         },
         {
           label: 'Resume/CV',
           name: 'resume_file',
-          type: 'file',
+          type: fieldT.FILE,
           required: false,
           pgConfig: {
-            type: 'VARCHAR',
+            type: pgT.VARCHAR,
             length: 500, // File path/URL storage
           },
           default: null,
@@ -358,7 +362,7 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Biography',
           name: 'biography',
-          type: 'textarea',
+          type: fieldT.TEXTAREA,
           required: false,
           placeholder: 'Tell us about yourself...',
           zodConfig: {
@@ -366,7 +370,7 @@ export const demoFormConfiguration: IFormConfiguration = {
             maxLength: 2000,
           },
           pgConfig: {
-            type: 'TEXT',
+            type: pgT.TEXT,
           },
           default: null,
         },
@@ -381,32 +385,32 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Configuration JSON',
           name: 'config_json',
-          type: 'text', // Will be treated as JSON
+          type: fieldT.TEXT, // Will be treated as JSON
           required: false,
           placeholder: '{"theme": "dark", "language": "en"}',
           pgConfig: {
-            type: 'JSON',
+            type: pgT.JSONB,
           },
           default: null,
         },
         {
           label: 'Skills Array',
           name: 'skills',
-          type: 'text', // Will be treated as array
+          type: fieldT.TEXT, // Will be treated as array
           required: false,
           placeholder: 'JavaScript,TypeScript,React,Node.js',
           pgConfig: {
-            type: 'ARRAY',
+            type: pgT.TEXT,
           },
           default: null,
         },
         {
           label: 'User ID',
           name: 'user_id',
-          type: 'hidden',
+          type: fieldT.HIDDEN,
           required: false,
           pgConfig: {
-            type: 'UUID',
+            type: pgT.UUID,
             default: 'gen_random_uuid()',
           },
           default: null,
@@ -414,7 +418,7 @@ export const demoFormConfiguration: IFormConfiguration = {
         {
           label: 'Metadata',
           name: 'metadata',
-          type: 'textarea',
+          type: fieldT.TEXTAREA,
           required: false,
           placeholder: 'Additional JSON metadata...',
           zodConfig: {
@@ -422,7 +426,7 @@ export const demoFormConfiguration: IFormConfiguration = {
             maxLength: 5000,
           },
           pgConfig: {
-            type: 'JSONB', // Optimized JSON storage
+            type: pgT.JSONB, // Optimized JSON storage
           },
           default: null,
         },

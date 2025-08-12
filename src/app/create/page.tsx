@@ -3,7 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeftIcon } from '@radix-ui/react-icons';
-import { IFormConfiguration } from '@/types/globalFormTypes';
+import {
+  EPostgresTypes as pgT,
+  EFormFieldTypes as fieldT,
+  IFormConfiguration,
+} from '@/types/globalFormTypes';
 import {
   FormBuilder,
   TabNavigation,
@@ -39,20 +43,20 @@ export default function CreateFormPage() {
           {
             label: 'Name',
             name: 'name',
-            type: 'text',
+            type: fieldT.TEXT,
             required: true,
             placeholder: 'Enter your name',
             default: '',
-            pgConfig: { type: 'VARCHAR', length: 255 },
+            pgConfig: { type: pgT.VARCHAR, length: 255 },
           },
           {
             label: 'Email',
             name: 'email',
-            type: 'email',
+            type: fieldT.EMAIL,
             required: true,
             placeholder: 'your@email.com',
             default: '',
-            pgConfig: { type: 'VARCHAR', length: 255 },
+            pgConfig: { type: pgT.VARCHAR, length: 255 },
           },
         ],
       },

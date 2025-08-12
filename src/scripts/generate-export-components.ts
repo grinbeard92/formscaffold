@@ -80,21 +80,20 @@ export default function ${capitalizedTableName}Page() {
           <p className='text-muted-foreground'>
             Generated form component for{' '}
             <code className='bg-muted text-muted-foreground rounded px-1 py-0.5 font-mono'>${tableName}</code> table
+                        
           </p>
+          <code className='bg-muted text-muted-foreground rounded px-1 py-0.5 font-mono'>
+              Use the ServerForm component anywhere in your app.
+              Ensure that the types, components and configurations are imported into your project correctly.
+            </code>
         </div>
 
         {/* Form Section */}
         <div className='bg-card rounded-lg border shadow-sm'>
-          <div className='p-6'>
-            <code className='mb-4 text-xl font-semibold text-card-foreground'>
-              Use the ServerForm component anywhere in your app.
-              Ensure that the types, components and configurations are imported into your project correctly.
-            </code>
             <ServerForm
               config={${configVariableName}}
               autoSaveToDatabase={true}
             />
-          </div>
         </div>
 
         {/* Footer */}

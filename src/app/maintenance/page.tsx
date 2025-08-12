@@ -12,41 +12,33 @@ export default function MaintenancePage() {
           </h1>
           <p className='text-muted-foreground'>
             Generated form component for{' '}
-            <code className='bg-muted text-muted-foreground rounded px-1 py-0.5 font-mono'>
-              maintenance
-            </code>{' '}
-            table
+            <code className='bg-muted text-muted-foreground rounded px-1 py-0.5 font-mono'>maintenance</code> table
+                        
           </p>
+          <code className='bg-muted text-muted-foreground rounded px-1 py-0.5 font-mono'>
+              Use the ServerForm component anywhere in your app.
+              Ensure that the types, components and configurations are imported into your project correctly.
+            </code>
         </div>
 
         {/* Form Section */}
         <div className='bg-card rounded-lg border shadow-sm'>
-          <div className='p-6'>
-            <code className='text-card-foreground mb-4 text-xl font-semibold'>
-              Use the ServerForm component anywhere in your app. Ensure that the
-              types, components and configurations are imported into your
-              project correctly.
-            </code>
             <ServerForm
               config={maintenanceFormConfiguration}
               autoSaveToDatabase={true}
             />
-          </div>
         </div>
 
         {/* Footer */}
-        <div className='text-muted-foreground space-y-1 text-center text-sm'>
+        <div className='space-y-1 text-center text-sm text-muted-foreground'>
           <p>
             This page was auto-generated from{' '}
-            <code className='bg-muted rounded px-1 py-0.5 font-mono'>
+            <code className='rounded bg-muted px-1 py-0.5 font-mono'>
               maintenanceFormConfiguration.ts
             </code>
           </p>
           <p>
-            Form configuration filename:{' '}
-            <strong className='text-card-foreground'>
-              maintenanceFormConfiguration
-            </strong>
+            Form configuration filename: <strong className='text-card-foreground'>maintenanceFormConfiguration</strong>
           </p>
         </div>
       </div>

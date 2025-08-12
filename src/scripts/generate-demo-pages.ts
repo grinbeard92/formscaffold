@@ -289,9 +289,6 @@ export default function ${capitalizedTableName}Page() {
         {/* Form Section */}
         <div className='bg-card rounded-lg border shadow-sm'>
           <div className='p-6'>
-            <h2 className='mb-4 text-xl font-semibold text-card-foreground'>
-              Add New ${capitalizedTableName}
-            </h2>
             <ServerForm
               config={${configVariableName}}
               autoSaveToDatabase={true}

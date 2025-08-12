@@ -62,6 +62,7 @@ export const maintenanceFormConfiguration: IFormConfiguration = {
           name: 'serial_number',
           type: fieldT.SELECT,
           required: true,
+          customErrorMessage: 'Please select a valid serial number',
           default: '',
           options: [
             { value: 'not-configured', label: 'TODO Add Serial Number data' },
