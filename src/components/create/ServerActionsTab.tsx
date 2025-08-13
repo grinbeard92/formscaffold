@@ -18,7 +18,6 @@ export function ServerActionsTab({ config, tableName }: ServerActionsTabProps) {
   const generateServerActions = async () => {
     setIsGenerating(true);
     try {
-      // Import the master script function
       const { generateServerActionsCode } = await import(
         '@/scripts/generate-server-actions'
       );

@@ -6,15 +6,12 @@ import { FieldValues } from 'react-hook-form';
 import { EPostgresTypes as pgT } from '@/types/globalFormTypes';
 import { EFormFieldTypes as fieldT } from '@/types/globalFormTypes';
 
-// Extract field types from the type definition - this will automatically include any new types
 type FieldType = IFieldDefinition<FieldValues>['type'];
 
-// Extract PostgreSQL types from the type definition
 type PostgresType = NonNullable<
   IFieldDefinition<FieldValues>['pgConfig']
 >['type'];
 
-// Field type configurations with metadata
 export interface FieldTypeConfig {
   value: FieldType;
   label: string;
@@ -31,7 +28,6 @@ export interface FieldTypeConfig {
   defaultPgType?: PostgresType;
 }
 
-// This object will automatically stay in sync with the type definitions
 export const FIELD_TYPE_CONFIGS: FieldTypeConfig[] = [
   {
     value: fieldT.TEXT,
@@ -207,7 +203,6 @@ export const FIELD_TYPE_CONFIGS: FieldTypeConfig[] = [
   },
 ];
 
-// PostgreSQL type configurations
 export interface PostgresTypeConfig {
   value: PostgresType;
   label: string;
@@ -337,7 +332,6 @@ export const POSTGRES_TYPE_CONFIGS: PostgresTypeConfig[] = [
   },
 ];
 
-// Grid column options
 export const GRID_COLUMN_OPTIONS: Array<{
   value: '1' | '2' | '3' | '4';
   label: string;
@@ -348,7 +342,6 @@ export const GRID_COLUMN_OPTIONS: Array<{
   { value: '4', label: '4 Columns' },
 ];
 
-// Spacing options
 export const SPACING_OPTIONS: Array<{
   value: 'sm' | 'md' | 'lg';
   label: string;
@@ -358,7 +351,6 @@ export const SPACING_OPTIONS: Array<{
   { value: 'lg', label: 'Large' },
 ];
 
-// File accept types from the type definition
 export const FILE_ACCEPT_OPTIONS = [
   { value: 'image/*', label: 'All Images' },
   { value: 'video/*', label: 'All Videos' },
@@ -379,7 +371,6 @@ export const FILE_ACCEPT_OPTIONS = [
   { value: '.mp3,.wav,.ogg,.m4a', label: 'Common Audio' },
 ];
 
-// Utility functions
 export function getFieldTypeConfig(
   type: FieldType,
 ): FieldTypeConfig | undefined {
@@ -426,14 +417,11 @@ export function createNewSection(): IFormSectionDefinition {
   };
 }
 
-// Validation functions
 export function isValidFieldName(name: string): boolean {
-  // PostgreSQL column names: start with letter/underscore, contain only letters/numbers/underscores
   return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name);
 }
 
 export function isValidTableName(name: string): boolean {
-  // Same rules as field names
   return isValidFieldName(name);
 }
 

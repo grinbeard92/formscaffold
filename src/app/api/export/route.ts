@@ -10,21 +10,15 @@ import path from 'path';
  */
 export async function POST(request: NextRequest) {
   try {
-    console.log('🚀 Starting FormScaffold export via API...');
-
-    // Parse request body (optional parameters)
     const body = await request.json().catch(() => ({}));
     const { timestamp } = body;
 
-    // Log the request
     console.log(
       `Export requested at: ${timestamp ? new Date(timestamp).toISOString() : new Date().toISOString()}`,
     );
 
-    // Run the server-side export generation
     await generateExportSSR();
 
-    // Return success response
     const projectRoot = process.cwd();
     const exportDir = path.join(projectRoot, 'export');
 
@@ -58,7 +52,6 @@ export async function GET(request: NextRequest) {
     const projectRoot = process.cwd();
     const exportDir = path.join(projectRoot, 'export');
 
-    // Check if export directory exists
     const fs = await import('fs/promises');
     let exists = false;
     let files: string[] = [];

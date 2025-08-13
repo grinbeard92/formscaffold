@@ -4,15 +4,10 @@ import {
   IFormConfiguration,
 } from '@/types/globalFormTypes';
 
-/* 
-MAINTENANCE CHECKLIST FORM CONFIGURATION
-This configuration defines a comprehensive maintenance checklist form with file uploads and signature capabilities.
-Includes support for maintenance pictures, file attachments, and customer/technician signatures.
-*/
 export const maintenanceFormConfiguration: IFormConfiguration = {
   title: 'Annual Maintenance Checklist',
   description: 'Comprehensive maintenance checklist',
-  postgresTableName: 'maintenance',
+  postgresTableName: 'maintenance_form',
   submitButtonText: 'Submit Report',
   saveDraftButtonText: 'Save Draft',
   showDraftButton: true,

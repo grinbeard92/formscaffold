@@ -8,7 +8,6 @@ import { FormSectionTemplate } from './FormSectionTemplate';
 import z from 'zod';
 import { IFormSectionDefinition } from '../../types/globalFormTypes';
 
-// Helper function to convert errors
 function convertErrors(
   errors: FieldErrors<Record<string, unknown>>,
 ): Record<string, { message?: string }> {
@@ -64,7 +63,6 @@ export function ClientForm({
     trigger,
     formState: { errors, isSubmitting },
   } = useForm<Record<string, unknown>>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(schema as any),
     defaultValues: defaultValues,
     mode: 'onChange', // Validate on every change
@@ -72,7 +70,6 @@ export function ClientForm({
     shouldFocusError: true, // Focus on first error field
   });
 
-  // Trigger validation on mount to show initial validation state
   React.useEffect(() => {
     trigger(); // This will validate all fields immediately
   }, [trigger]);
@@ -85,7 +82,6 @@ export function ClientForm({
 
   const [formError, setFormError] = React.useState<string | null>(null);
 
-  // Helper function to extract error message
   const getErrorMessage = (error: unknown): string => {
     if (typeof error === 'string') {
       return error;
@@ -99,16 +95,13 @@ export function ClientForm({
     return 'An unexpected error occurred';
   };
 
-  // Create submission handler that works with React Hook Form data
   const handleFormSubmit = async (data: Record<string, unknown>) => {
     try {
-      // Clear any previous errors
       setFormError(null);
       if (externalSetFormError) {
         externalSetFormError(null);
       }
 
-      // Auto-save to database if enabled
       if (autoSaveToDatabase && serverAction) {
         const result = await serverAction(data);
 
@@ -125,7 +118,6 @@ export function ClientForm({
         toast.warning('Server action not available');
       }
 
-      // Call custom onSubmit handler if provided
       if (onSubmit) {
         await onSubmit(data);
       }

@@ -12,7 +12,6 @@ import sql from '@/db/postgres-js';
  */
 export function generateInitScript(config: IFormConfiguration): string {
   const { postgresTableName, sections } = config;
-
   let sqlContent = `-- Database initialization script
 -- Generated automatically from FormConfiguration
 
@@ -26,7 +25,6 @@ CREATE TABLE ${postgresTableName} (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,`;
 
-  // Add columns based on form fields
   for (const section of sections) {
     for (const field of section.fields) {
       const pgConfig = field.pgConfig;
@@ -34,7 +32,6 @@ CREATE TABLE ${postgresTableName} (
 
       let columnDef = `\n  ${field.name} `;
 
-      // Add column type with proper formatting
       switch (pgConfig.type) {
         case 'VARCHAR':
           columnDef += pgConfig.length
@@ -73,17 +70,14 @@ CREATE TABLE ${postgresTableName} (
           columnDef += pgConfig.type || 'TEXT';
       }
 
-      // Add nullable/not null
       if (pgConfig.nullable === false || field.required) {
         columnDef += ' NOT NULL';
       }
 
-      // Add unique constraint
       if (pgConfig.unique) {
         columnDef += ' UNIQUE';
       }
 
-      // Add default value with proper type handling
       if (pgConfig.default !== undefined && pgConfig.default !== null) {
         switch (pgConfig.type) {
           case 'BOOLEAN':
@@ -130,7 +124,6 @@ CREATE TABLE ${postgresTableName} (
             }
             break;
           default:
-            // String types (VARCHAR, TEXT, etc.)
             columnDef += ` DEFAULT '${pgConfig.default}'`;
         }
       }
@@ -143,7 +136,6 @@ CREATE TABLE ${postgresTableName} (
   sqlContent = sqlContent.slice(0, -1); // Remove last comma
   sqlContent += '\n);\n\n';
 
-  // Add indexes
   for (const section of sections) {
     for (const field of section.fields) {
       const pgConfig = field.pgConfig;
@@ -153,7 +145,6 @@ CREATE TABLE ${postgresTableName} (
     }
   }
 
-  // Add updated_at trigger
   sqlContent += `
 -- Create function to update the updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -191,7 +182,6 @@ export async function executeInitScript(
       `🔄 Executing database initialization for table: ${config.postgresTableName}`,
     );
 
-    // Execute the SQL script
     await sql.unsafe(initSql);
 
     console.log(
@@ -213,27 +203,19 @@ export async function createDatabaseInitFiles(
   config: IFormConfiguration,
   projectRoot: string,
 ): Promise<void> {
-  // Ensure init-scripts directory exists
   const initScriptsDir = path.join(projectRoot, 'init-scripts');
   try {
     await fs.mkdir(initScriptsDir, { recursive: true });
-  } catch {
-    // Directory might already exist, which is fine
-  }
+  } catch {}
 
-  // Generate initialization SQL script
   const initSqlContent = generateInitScript(config);
   const tableName = config.postgresTableName;
 
-  // Write table-specific initialization script
   await fs.writeFile(
     path.join(initScriptsDir, `${tableName}-init-tables.sql`),
     initSqlContent,
     'utf8',
   );
-
-  console.log('✅ Generated database initialization files:');
-  console.log(`   - init-scripts/${tableName}-init-tables.sql`);
 }
 
 /**
@@ -243,31 +225,23 @@ export async function main(executeDatabase: boolean = true): Promise<void> {
   try {
     const projectRoot = process.cwd();
 
-    // Get all form configurations
-    const { discoverFormConfigurations } = await import(
-      './get-form-configurations'
+    const { discoverFormConfigurations } = await import('./get-project-info');
+    const formConfigurations = await discoverFormConfigurations(
+      projectRoot,
+      false,
     );
-    const formConfigurations = await discoverFormConfigurations();
 
     if (formConfigurations.length === 0) {
-      console.log('❌ No form configurations found.');
       return;
     }
 
-    console.log('🔧 Generating database initialization scripts...\n');
-
     for (const { config, fileName, exportName } of formConfigurations) {
-      console.log(`📝 Processing ${exportName} from ${fileName}:`);
-      console.log(`   Database: ${postgresConfig.database}`);
-      console.log(`   Table: ${config.postgresTableName}`);
       console.log(
         `   Fields: ${config.sections.flatMap((s: IFormSectionDefinition) => s.fields).length}`,
       );
 
-      // Generate SQL files
       await createDatabaseInitFiles(config, projectRoot);
 
-      // Execute SQL against the database if requested
       if (executeDatabase) {
         await executeInitScript(config);
       }
@@ -277,24 +251,19 @@ export async function main(executeDatabase: boolean = true): Promise<void> {
       `\n🎉 Database initialization generation${executeDatabase ? ' and execution' : ''} completed!`,
     );
 
-    // Close database connection if we used it
     if (executeDatabase) {
       await sql.end();
     }
   } catch (error) {
     console.error('❌ Error generating database initialization:', error);
 
-    // Close database connection on error
     try {
       await sql.end();
-    } catch {
-      // Ignore cleanup errors
-    }
+    } catch {}
     process.exit(1);
   }
 }
 
-// Run the script if called directly
 if (require.main === module) {
   main();
 }

@@ -1,8 +1,8 @@
 'use server';
 
 /**
- * Server Actions for Demo
- * Generated automatically from FormConfiguration: Comprehensive Form Demo
+ * Server Actions for maintenanceForm
+ * Generated automatically from FormConfiguration: Annual Maintenance Checklist
  */
 
 import { revalidatePath } from 'next/cache';
@@ -14,22 +14,22 @@ import {
   updateFormData,
   deleteFormData,
 } from '@/db/generic-db-actions';
-import { demoFormConfiguration } from '@/configurations/demoFormConfiguration';
+import { maintenanceFormConfiguration } from '@/configurations/maintenanceFormConfiguration';
 import { generateZodSchema } from '@/scripts/generate-schema';
-import { DemoFormData, UpdateDemoData, Demo } from '@/types/demoTypes';
+import { maintenanceFormFormData, UpdatemaintenanceFormData, maintenanceForm } from '@/types/maintenanceFormTypes';
 import { saveUploadedFiles, filePathsToString } from '@/utils/fileUpload';
 
-// Generate schemas
-const demoFormSchema = generateZodSchema(demoFormConfiguration); // For form validation (with File objects)
 
-// Create database schema (files converted to strings)
-const demoDatabaseSchema = demoFormSchema.extend({
-  profile_picture: z.string().nullable().optional(),
-  resume_file: z.string().nullable().optional()
+const maintenanceFormFormSchema = generateZodSchema(maintenanceFormConfiguration); // For form validation (with File objects)
+
+
+const maintenanceFormDatabaseSchema = maintenanceFormFormSchema.extend({
+  maintenance_pictures: z.string().nullable().optional(),
+  supporting_documents: z.string().nullable().optional()
 });
 
-const createDemoSchema = demoDatabaseSchema;
-const updateDemoSchema = createDemoSchema.partial();
+const createmaintenanceFormSchema = maintenanceFormDatabaseSchema;
+const updatemaintenanceFormSchema = createmaintenanceFormSchema.partial();
 
 /**
  * Process file uploads and convert File objects to file paths
@@ -37,46 +37,45 @@ const updateDemoSchema = createDemoSchema.partial();
 async function processFileUploads(data: Record<string, unknown>): Promise<Record<string, unknown>> {
   const processedData = { ...data };
   
-  // Process profile_picture
-  if (data.profile_picture instanceof File || Array.isArray(data.profile_picture)) {
-    const filePaths = await saveUploadedFiles(data.profile_picture as File | File[], 'demo');
-    processedData.profile_picture = filePathsToString(filePaths);
+
+  if (data.maintenance_pictures instanceof File || Array.isArray(data.maintenance_pictures)) {
+    const filePaths = await saveUploadedFiles(data.maintenance_pictures as File | File[], 'maintenanceform');
+    processedData.maintenance_pictures = filePathsToString(filePaths);
   }
-  // Process resume_file
-  if (data.resume_file instanceof File || Array.isArray(data.resume_file)) {
-    const filePaths = await saveUploadedFiles(data.resume_file as File | File[], 'demo');
-    processedData.resume_file = filePathsToString(filePaths);
+
+  if (data.supporting_documents instanceof File || Array.isArray(data.supporting_documents)) {
+    const filePaths = await saveUploadedFiles(data.supporting_documents as File | File[], 'maintenanceform');
+    processedData.supporting_documents = filePathsToString(filePaths);
   }
   return processedData;
 }
 
 
 /**
- * Create a new demo entry
+ * Create a new maintenanceForm entry
  */
-export async function createDemo(
-  data: DemoFormData
-): Promise<{ success: boolean; data?: Demo; error?: string }> {
+export async function createmaintenanceFormRecord(
+  data: maintenanceFormFormData
+): Promise<{ success: boolean; data?: maintenanceForm; error?: string }> {
   try {
-    // Process file uploads first (convert File objects to file paths)
+
     const processedData = await processFileUploads(data as Record<string, unknown>);
     
-    // Validate the processed data
-    const validatedData = createDemoSchema.parse(processedData);
+
+    const validatedData = createmaintenanceFormSchema.parse(processedData);
     
-    // Insert data using the database function
-    const result = await insertFormData(demoFormConfiguration, validatedData);
+
+    const result = await insertFormData(maintenanceFormConfiguration, validatedData);
     
-    // Revalidate the page to show updated data
-    revalidatePath('/demo');
-    revalidatePath('/demo');
+
+    revalidatePath('/maintenanceForm');
     
     return {
       success: true,
-      data: result as unknown as Demo, // Cast to Demo type
+      data: result as unknown as maintenanceForm, // Cast to maintenanceForm type
     };
   } catch (error) {
-    console.error('Error creating demo:', error);
+    console.error('Error creating maintenance_form:', error);
     
     if (error instanceof z.ZodError) {
       return {
@@ -93,15 +92,15 @@ export async function createDemo(
 }
 
 /**
- * Get demo entries with pagination and filtering
+ * Get maintenance_form entries with pagination and filtering
  */
-export async function getDemoList(options: {
+export async function getmaintenanceFormList(options: {
   limit?: number;
   offset?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   filters?: Record<string, unknown>;
-} = {}): Promise<{ success: boolean; data?: Demo[]; total?: number; error?: string }> {
+} = {}): Promise<{ success: boolean; data?: maintenanceForm[]; total?: number; error?: string }> {
   try {
     const {
       limit = 50,
@@ -111,7 +110,7 @@ export async function getDemoList(options: {
       filters = {},
     } = options;
 
-    const result = await getFormData(demoFormConfiguration, {
+    const result = await getFormData(maintenanceFormConfiguration, {
       limit,
       offset,
       sortBy,
@@ -121,11 +120,11 @@ export async function getDemoList(options: {
 
     return {
       success: true,
-      data: result.data as unknown as Demo[], // Cast to Demo[] type
+      data: result.data as unknown as maintenanceForm[], // Cast to maintenanceForm[] type
       total: result.total,
     };
   } catch (error) {
-    console.error('Error fetching demo list:', error);
+    console.error('Error fetching maintenance_form list:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -134,13 +133,13 @@ export async function getDemoList(options: {
 }
 
 /**
- * Get a single demo entry by ID
+ * Get a single maintenance_form entry by ID
  */
-export async function getDemoById(
+export async function getmaintenanceFormRecordById(
   id: string
-): Promise<{ success: boolean; data?: Demo; error?: string }> {
+): Promise<{ success: boolean; data?: maintenanceForm; error?: string }> {
   try {
-    const result = await getFormData(demoFormConfiguration, {
+    const result = await getFormData(maintenanceFormConfiguration, {
       filters: { id },
       limit: 1,
       offset: 0,
@@ -149,16 +148,16 @@ export async function getDemoById(
     if (!result.data || result.data.length === 0) {
       return {
         success: false,
-        error: `No demo found with id '${id}'`,
+        error: `No maintenance_form found with id '${id}'`,
       };
     }
 
     return {
       success: true,
-      data: result.data[0] as unknown as Demo, // Cast to Demo type
+      data: result.data[0] as unknown as maintenanceForm, // Cast to maintenanceForm type
     };
   } catch (error) {
-    console.error('Error fetching demo by ID:', error);
+    console.error('Error fetching maintenance_form by ID:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -167,29 +166,28 @@ export async function getDemoById(
 }
 
 /**
- * Update a demo entry
+ * Update a maintenance_form entry
  */
-export async function updateDemo(
+export async function updatemaintenanceFormRecord(
   id: string,
-  data: UpdateDemoData
-): Promise<{ success: boolean; data?: Demo; error?: string }> {
+  data: UpdatemaintenanceFormData
+): Promise<{ success: boolean; data?: maintenanceForm; error?: string }> {
   try {
-    // Validate the input data
-    const validatedData = updateDemoSchema.parse(data);
+
+    const validatedData = updatemaintenanceFormSchema.parse(data);
     
-    // Update data using the database function
-    const result = await updateFormData(demoFormConfiguration, id, validatedData);
+
+    const result = await updateFormData(maintenanceFormConfiguration, id, validatedData);
     
-    // Revalidate the page to show updated data
-    revalidatePath('/demo');
-    revalidatePath('/demo');
+
+    revalidatePath('/maintenance_form');
     
     return {
       success: true,
-      data: result as unknown as Demo, // Cast to Demo type
+      data: result as unknown as maintenanceForm, // Cast to maintenanceForm type
     };
   } catch (error) {
-    console.error('Error updating demo:', error);
+    console.error('Error updating maintenance_form:', error);
     
     if (error instanceof z.ZodError) {
       return {
@@ -206,23 +204,22 @@ export async function updateDemo(
 }
 
 /**
- * Delete a demo entry
+ * Delete a maintenance_form entry
  */
-export async function deleteDemo(
+export async function deletemaintenanceForm(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await deleteFormData(demoFormConfiguration, id);
+    await deleteFormData(maintenanceFormConfiguration, id);
     
-    // Revalidate the page to show updated data
-    revalidatePath('/demo');
-    revalidatePath('/demo');
+
+    revalidatePath('/maintenance_form');
     
     return {
       success: true,
     };
   } catch (error) {
-    console.error('Error deleting demo:', error);
+    console.error('Error deleting maintenance_form:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -233,16 +230,16 @@ export async function deleteDemo(
 /**
  * Server action for form submission with redirect
  */
-export async function submitDemoForm(
+export async function submitmaintenanceFormForm(
   formData: FormData
 ): Promise<void> {
   try {
-    // Convert FormData to object, handling files properly
+
     const data: Record<string, unknown> = {};
     
-    // Get field configurations to determine file handling
+
     const fieldConfigs = new Map<string, { type: string; multiple?: boolean; pgConfig?: any }>();
-    demoFormConfiguration.sections.forEach(section => {
+    maintenanceFormConfiguration.sections.forEach(section => {
       section.fields.forEach(field => {
         fieldConfigs.set(field.name, { 
           type: field.type, 
@@ -252,7 +249,7 @@ export async function submitDemoForm(
       });
     });
     
-    // Group all form entries by key to handle multiple files
+
     const formEntries: Record<string, (string | File)[]> = {};
     
     for (const [key, value] of formData.entries()) {
@@ -262,7 +259,7 @@ export async function submitDemoForm(
       formEntries[key].push(value as string | File);
     }
     
-    // Process each field appropriately
+
     for (const [fieldName, values] of Object.entries(formEntries)) {
       if (values.length === 0) {
         continue;
@@ -272,22 +269,22 @@ export async function submitDemoForm(
       const hasFiles = values.some(value => value instanceof File);
       
       if (hasFiles && fieldConfig?.type === 'file') {
-        // Handle file uploads using proper file processing
+
         const files = values.filter(value => value instanceof File) as File[];
         
         if (fieldConfig.multiple) {
-          // Multiple file upload - save files and store paths as comma-separated string
-          const filePaths = await saveUploadedFiles(files, 'demo');
+
+          const filePaths = await saveUploadedFiles(files, 'maintenance_form');
           data[fieldName] = filePathsToString(filePaths);
         } else {
-          // Single file upload - save file and store path as string
+
           if (files.length > 0) {
-            const filePath = await saveUploadedFiles(files[0], 'demo');
+            const filePath = await saveUploadedFiles(files[0], 'maintenance_form');
             data[fieldName] = filePath;
           }
         }
       } else if (hasFiles && fieldConfig?.type === 'signature') {
-        // Handle signature fields - always single, convert to base64
+
         const files = values.filter(value => value instanceof File) as File[];
         if (files.length > 0) {
           const file = files[0];
@@ -296,28 +293,28 @@ export async function submitDemoForm(
           data[fieldName] = `data:${file.type};base64,${base64}`;
         }
       } else {
-        // Handle regular form data
+
         if (values.length === 1) {
           data[fieldName] = values[0];
         } else {
-          // Multiple values for same field name (e.g., checkboxes)
+
           data[fieldName] = values;
         }
       }
     }
 
-    // Create the demo
-    const result = await createDemo(data as DemoFormData);
+
+    const result = await createmaintenanceForm(data as maintenanceFormFormData);
     
     if (!result.success) {
-      throw new Error(result.error || 'Failed to create demo');
+      throw new Error(result.error || 'Failed to create maintenance_form');
     }
     
-    // Redirect to success page or back to form
-    redirect('/demo?success=true');
+
+    redirect('/maintenance_form?success=true');
   } catch (error) {
-    console.error('Error in submitDemoForm:', error);
-    // In a real app, you might want to handle errors differently
+    console.error('Error in submitmaintenanceFormForm:', error);
+
     throw error;
   }
 }

@@ -1,12 +1,10 @@
 import { FieldValues } from 'react-hook-form';
 import { IFieldDefinition, ISelectOption } from '@/types/globalFormTypes';
 
-// Helper function to create field configurations with type safety
 export const createField = <T extends FieldValues>(
   config: IFieldDefinition<T>,
 ): IFieldDefinition<T> => config;
 
-// Helper function to create select options from simple strings
 export const createSelectOptions = (
   items: string[] | { value: string; label: string }[],
 ): ISelectOption[] => {
@@ -15,7 +13,6 @@ export const createSelectOptions = (
   );
 };
 
-// Helper function to generate field requirements text
 export const getFieldRequirements = <T extends FieldValues>(
   field: IFieldDefinition<T>,
 ): string[] => {

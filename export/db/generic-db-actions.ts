@@ -1,10 +1,7 @@
 import sql from '@/db/postgres-js';
-import {
-  FormConfigurationType,
-  generatePostgresSchema,
-} from '@/scripts/generate-schema';
+import { generatePostgresSchema } from '@/scripts/generate-schema';
+import { IFormConfiguration } from '@/types/globalFormTypes';
 
-// Database record type
 interface DatabaseRecord {
   id: string;
   created_at: Date;
@@ -12,7 +9,6 @@ interface DatabaseRecord {
   [key: string]: unknown;
 }
 
-// Table column info type
 interface ColumnInfo {
   column_name: string;
   data_type: string;
@@ -21,14 +17,12 @@ interface ColumnInfo {
   character_maximum_length: number | null;
 }
 
-// Function to ensure table exists based on form configuration
 export async function ensureTableExists(
-  config: FormConfigurationType,
+  config: IFormConfiguration,
 ): Promise<void> {
   try {
     const schema = generatePostgresSchema(config);
 
-    // Execute the schema creation SQL
     await sql.unsafe(schema);
 
     console.log(
@@ -40,23 +34,19 @@ export async function ensureTableExists(
   }
 }
 
-// Function to insert form data into the configured table
 export async function insertFormData(
-  config: FormConfigurationType,
+  config: IFormConfiguration,
   data: Record<string, unknown>,
 ): Promise<DatabaseRecord> {
   try {
-    // Ensure table exists first
     await ensureTableExists(config);
 
-    // Prepare data with timestamps
     const insertData = {
       ...data,
       created_at: new Date(),
       updated_at: new Date(),
     };
 
-    // Insert data and return the created record
     const [result] = (await sql`
       INSERT INTO ${sql(config.postgresTableName)} 
       ${sql(insertData)}
@@ -73,9 +63,8 @@ export async function insertFormData(
   }
 }
 
-// Function to query form data from the configured table
 export async function queryFormData(
-  config: FormConfigurationType,
+  config: IFormConfiguration,
   options: {
     limit?: number;
     offset?: number;
@@ -85,7 +74,6 @@ export async function queryFormData(
   } = {},
 ): Promise<DatabaseRecord[]> {
   try {
-    // Ensure table exists first
     await ensureTableExists(config);
 
     const {
@@ -98,15 +86,12 @@ export async function queryFormData(
 
     let query = sql`SELECT * FROM ${sql(config.postgresTableName)}`;
 
-    // Add WHERE conditions if provided
     if (Object.keys(where).length > 0) {
       query = sql`${query} WHERE ${sql(where)}`;
     }
 
-    // Add ORDER BY
     query = sql`${query} ORDER BY ${sql(orderBy)} ${sql(orderDir)}`;
 
-    // Add LIMIT and OFFSET
     query = sql`${query} LIMIT ${limit} OFFSET ${offset}`;
 
     const results = await query;
@@ -120,14 +105,12 @@ export async function queryFormData(
   }
 }
 
-// Function to update form data in the configured table
 export async function updateFormData(
-  config: FormConfigurationType,
+  config: IFormConfiguration,
   id: string,
   data: Record<string, unknown>,
 ): Promise<DatabaseRecord> {
   try {
-    // Ensure table exists first
     await ensureTableExists(config);
 
     const updateData = {
@@ -152,9 +135,8 @@ export async function updateFormData(
   }
 }
 
-// Function to get form data with pagination and filtering
 export async function getFormData(
-  config: FormConfigurationType,
+  config: IFormConfiguration,
   options: {
     limit?: number;
     offset?: number;
@@ -164,7 +146,6 @@ export async function getFormData(
   } = {},
 ): Promise<{ data: DatabaseRecord[]; total: number }> {
   try {
-    // Ensure table exists first
     await ensureTableExists(config);
 
     const {
@@ -174,7 +155,6 @@ export async function getFormData(
       filters = {},
     } = options;
 
-    // Get total count
     let countQuery = sql`SELECT COUNT(*) as total FROM ${sql(config.postgresTableName)}`;
     if (Object.keys(filters).length > 0) {
       countQuery = sql`${countQuery} WHERE ${sql(filters)}`;
@@ -182,7 +162,6 @@ export async function getFormData(
     const countResult = (await countQuery) as unknown as [{ total: number }];
     const total = Number(countResult[0].total);
 
-    // Get paginated data
     let dataQuery = sql`SELECT * FROM ${sql(config.postgresTableName)}`;
     if (Object.keys(filters).length > 0) {
       dataQuery = sql`${dataQuery} WHERE ${sql(filters)}`;
@@ -202,13 +181,11 @@ export async function getFormData(
   }
 }
 
-// Function to delete form data from the configured table
 export async function deleteFormData(
-  config: FormConfigurationType,
+  config: IFormConfiguration,
   id: string,
 ): Promise<boolean> {
   try {
-    // Ensure table exists first
     await ensureTableExists(config);
 
     const result = await sql`
@@ -226,7 +203,6 @@ export async function deleteFormData(
   }
 }
 
-// Function to get table schema information
 export async function getTableInfo(tableName: string): Promise<ColumnInfo[]> {
   try {
     const result = (await sql`

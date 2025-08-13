@@ -12,17 +12,14 @@ export const ${config.postgresTableName}FormConfiguration: FormConfiguration = $
   return configString;
 }
 
-// Use the master Zod schema generator from scripts
 export function generateZodSchemaCode(config: IFormConfiguration): string {
   return generateZodCode(config);
 }
 
-// Use the master PostgreSQL schema generator from scripts
 export function generatePostgreSQLInit(config: IFormConfiguration): string {
   return generatePostgresSchema(config);
 }
 
-// Generate TypeScript types using the master generator
 export async function generateTypeDefinitions(
   config: IFormConfiguration,
 ): Promise<string> {

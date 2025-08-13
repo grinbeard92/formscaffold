@@ -5,6 +5,7 @@
  * Creates CRUD operations for the specified table
  */
 import { IFormConfiguration } from '@/types/globalFormTypes';
+import { reactifyLowercase, reactifyName } from '@/utils/utils';
 
 /**
  * Generate file field overrides for database schema
@@ -30,15 +31,17 @@ function generateFileProcessingLogic(
   config: IFormConfiguration,
   tableName: string,
 ): string {
+  const reactTableName = reactifyName(tableName);
+  const reactLowercaseTableName = reactifyLowercase(tableName);
   const fileFields: string[] = [];
 
   config.sections.forEach((section) => {
     section.fields.forEach((field) => {
       if (field.type === 'file') {
         fileFields.push(`
-  // Process ${field.name}
+
   if (data.${field.name} instanceof File || Array.isArray(data.${field.name})) {
-    const filePaths = await saveUploadedFiles(data.${field.name} as File | File[], '${tableName}');
+    const filePaths = await saveUploadedFiles(data.${field.name} as File | File[], '${reactLowercaseTableName}');
     processedData.${field.name} = filePathsToString(filePaths);
   }`);
       }
@@ -56,28 +59,24 @@ export function generateServerActionsContent(
   configMetadata?: { fileName: string; exportName: string },
 ): string {
   const tableName = config.postgresTableName;
-  const capitalizedTableName =
-    tableName.charAt(0).toUpperCase() + tableName.slice(1);
+  const reactTableName = reactifyLowercase(tableName);
 
-  // Generate configuration import based on actual file metadata
   let configImportPath: string;
   let configVariableName: string;
 
   if (configMetadata) {
-    // Remove .ts extension and use the actual file name
     const configFileName = configMetadata.fileName.replace(/\.tsx?$/, '');
     configImportPath = `@/configurations/${configFileName}`;
     configVariableName = configMetadata.exportName;
   } else {
-    // Fallback for backwards compatibility
-    configImportPath = `@/configurations/${tableName}FormConfiguration`;
-    configVariableName = `${tableName}FormConfiguration`;
+    configImportPath = `@/configurations/${reactTableName}FormConfiguration`;
+    configVariableName = `${reactTableName}FormConfiguration`;
   }
 
   return `'use server';
 
 /**
- * Server Actions for ${capitalizedTableName}
+ * Server Actions for ${reactTableName}
  * Generated automatically from FormConfiguration: ${config.title}
  */
 
@@ -92,51 +91,50 @@ import {
 } from '@/db/generic-db-actions';
 import { ${configVariableName} } from '${configImportPath}';
 import { generateZodSchema } from '@/scripts/generate-schema';
-import { ${capitalizedTableName}FormData, Update${capitalizedTableName}Data, ${capitalizedTableName} } from '@/types/${tableName}Types';
+import { ${reactTableName}FormData, Update${reactTableName}Data, ${reactTableName} } from '@/types/${reactTableName}Types';
 import { saveUploadedFiles, filePathsToString } from '@/utils/fileUpload';
 
-// Generate schemas
-const ${tableName}FormSchema = generateZodSchema(${configVariableName}); // For form validation (with File objects)
 
-// Create database schema (files converted to strings)
-const ${tableName}DatabaseSchema = ${tableName}FormSchema.extend({${generateFileFieldOverrides(config)}});
+const ${reactTableName}FormSchema = generateZodSchema(${configVariableName}); // For form validation (with File objects)
 
-const create${capitalizedTableName}Schema = ${tableName}DatabaseSchema;
-const update${capitalizedTableName}Schema = create${capitalizedTableName}Schema.partial();
+
+const ${reactTableName}DatabaseSchema = ${reactTableName}FormSchema.extend({${generateFileFieldOverrides(config)}});
+
+const create${reactTableName}Schema = ${reactTableName}DatabaseSchema;
+const update${reactTableName}Schema = create${reactTableName}Schema.partial();
 
 /**
  * Process file uploads and convert File objects to file paths
  */
 async function processFileUploads(data: Record<string, unknown>): Promise<Record<string, unknown>> {
   const processedData = { ...data };
-  ${generateFileProcessingLogic(config, tableName)}
+  ${generateFileProcessingLogic(config, reactTableName)}
   return processedData;
 }
 
 
 /**
- * Create a new ${tableName} entry
+ * Create a new ${reactTableName} entry
  */
-export async function create${capitalizedTableName}(
-  data: ${capitalizedTableName}FormData
-): Promise<{ success: boolean; data?: ${capitalizedTableName}; error?: string }> {
+export async function create${reactTableName}Record(
+  data: ${reactTableName}FormData
+): Promise<{ success: boolean; data?: ${reactTableName}; error?: string }> {
   try {
-    // Process file uploads first (convert File objects to file paths)
+
     const processedData = await processFileUploads(data as Record<string, unknown>);
     
-    // Validate the processed data
-    const validatedData = create${capitalizedTableName}Schema.parse(processedData);
+
+    const validatedData = create${reactTableName}Schema.parse(processedData);
     
-    // Insert data using the database function
+
     const result = await insertFormData(${configVariableName}, validatedData);
     
-    // Revalidate the page to show updated data
-    revalidatePath('/${tableName}');
-    revalidatePath('/demo');
+
+    revalidatePath('/${reactTableName}');
     
     return {
       success: true,
-      data: result as unknown as ${capitalizedTableName}, // Cast to ${capitalizedTableName} type
+      data: result as unknown as ${reactTableName}, // Cast to ${reactTableName} type
     };
   } catch (error) {
     console.error('Error creating ${tableName}:', error);
@@ -158,13 +156,13 @@ export async function create${capitalizedTableName}(
 /**
  * Get ${tableName} entries with pagination and filtering
  */
-export async function get${capitalizedTableName}List(options: {
+export async function get${reactTableName}List(options: {
   limit?: number;
   offset?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   filters?: Record<string, unknown>;
-} = {}): Promise<{ success: boolean; data?: ${capitalizedTableName}[]; total?: number; error?: string }> {
+} = {}): Promise<{ success: boolean; data?: ${reactTableName}[]; total?: number; error?: string }> {
   try {
     const {
       limit = 50,
@@ -184,7 +182,7 @@ export async function get${capitalizedTableName}List(options: {
 
     return {
       success: true,
-      data: result.data as unknown as ${capitalizedTableName}[], // Cast to ${capitalizedTableName}[] type
+      data: result.data as unknown as ${reactTableName}[], // Cast to ${reactTableName}[] type
       total: result.total,
     };
   } catch (error) {
@@ -199,9 +197,9 @@ export async function get${capitalizedTableName}List(options: {
 /**
  * Get a single ${tableName} entry by ID
  */
-export async function get${capitalizedTableName}ById(
+export async function get${reactTableName}RecordById(
   id: string
-): Promise<{ success: boolean; data?: ${capitalizedTableName}; error?: string }> {
+): Promise<{ success: boolean; data?: ${reactTableName}; error?: string }> {
   try {
     const result = await getFormData(${configVariableName}, {
       filters: { id },
@@ -218,7 +216,7 @@ export async function get${capitalizedTableName}ById(
 
     return {
       success: true,
-      data: result.data[0] as unknown as ${capitalizedTableName}, // Cast to ${capitalizedTableName} type
+      data: result.data[0] as unknown as ${reactTableName}, // Cast to ${reactTableName} type
     };
   } catch (error) {
     console.error('Error fetching ${tableName} by ID:', error);
@@ -232,24 +230,23 @@ export async function get${capitalizedTableName}ById(
 /**
  * Update a ${tableName} entry
  */
-export async function update${capitalizedTableName}(
+export async function update${reactTableName}Record(
   id: string,
-  data: Update${capitalizedTableName}Data
-): Promise<{ success: boolean; data?: ${capitalizedTableName}; error?: string }> {
+  data: Update${reactTableName}Data
+): Promise<{ success: boolean; data?: ${reactTableName}; error?: string }> {
   try {
-    // Validate the input data
-    const validatedData = update${capitalizedTableName}Schema.parse(data);
+
+    const validatedData = update${reactTableName}Schema.parse(data);
     
-    // Update data using the database function
+
     const result = await updateFormData(${configVariableName}, id, validatedData);
     
-    // Revalidate the page to show updated data
+
     revalidatePath('/${tableName}');
-    revalidatePath('/demo');
     
     return {
       success: true,
-      data: result as unknown as ${capitalizedTableName}, // Cast to ${capitalizedTableName} type
+      data: result as unknown as ${reactTableName}, // Cast to ${reactTableName} type
     };
   } catch (error) {
     console.error('Error updating ${tableName}:', error);
@@ -271,15 +268,14 @@ export async function update${capitalizedTableName}(
 /**
  * Delete a ${tableName} entry
  */
-export async function delete${capitalizedTableName}(
+export async function delete${reactTableName}(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     await deleteFormData(${configVariableName}, id);
     
-    // Revalidate the page to show updated data
+
     revalidatePath('/${tableName}');
-    revalidatePath('/demo');
     
     return {
       success: true,
@@ -296,14 +292,14 @@ export async function delete${capitalizedTableName}(
 /**
  * Server action for form submission with redirect
  */
-export async function submit${capitalizedTableName}Form(
+export async function submit${reactTableName}Form(
   formData: FormData
 ): Promise<void> {
   try {
-    // Convert FormData to object, handling files properly
+
     const data: Record<string, unknown> = {};
     
-    // Get field configurations to determine file handling
+
     const fieldConfigs = new Map<string, { type: string; multiple?: boolean; pgConfig?: any }>();
     ${configVariableName}.sections.forEach(section => {
       section.fields.forEach(field => {
@@ -315,7 +311,7 @@ export async function submit${capitalizedTableName}Form(
       });
     });
     
-    // Group all form entries by key to handle multiple files
+
     const formEntries: Record<string, (string | File)[]> = {};
     
     for (const [key, value] of formData.entries()) {
@@ -325,7 +321,7 @@ export async function submit${capitalizedTableName}Form(
       formEntries[key].push(value as string | File);
     }
     
-    // Process each field appropriately
+
     for (const [fieldName, values] of Object.entries(formEntries)) {
       if (values.length === 0) {
         continue;
@@ -335,22 +331,22 @@ export async function submit${capitalizedTableName}Form(
       const hasFiles = values.some(value => value instanceof File);
       
       if (hasFiles && fieldConfig?.type === 'file') {
-        // Handle file uploads using proper file processing
+
         const files = values.filter(value => value instanceof File) as File[];
         
         if (fieldConfig.multiple) {
-          // Multiple file upload - save files and store paths as comma-separated string
+
           const filePaths = await saveUploadedFiles(files, '${tableName}');
           data[fieldName] = filePathsToString(filePaths);
         } else {
-          // Single file upload - save file and store path as string
+
           if (files.length > 0) {
             const filePath = await saveUploadedFiles(files[0], '${tableName}');
             data[fieldName] = filePath;
           }
         }
       } else if (hasFiles && fieldConfig?.type === 'signature') {
-        // Handle signature fields - always single, convert to base64
+
         const files = values.filter(value => value instanceof File) as File[];
         if (files.length > 0) {
           const file = files[0];
@@ -359,28 +355,28 @@ export async function submit${capitalizedTableName}Form(
           data[fieldName] = \`data:\${file.type};base64,\${base64}\`;
         }
       } else {
-        // Handle regular form data
+
         if (values.length === 1) {
           data[fieldName] = values[0];
         } else {
-          // Multiple values for same field name (e.g., checkboxes)
+
           data[fieldName] = values;
         }
       }
     }
 
-    // Create the ${tableName}
-    const result = await create${capitalizedTableName}(data as ${capitalizedTableName}FormData);
+
+    const result = await create${reactTableName}(data as ${reactTableName}FormData);
     
     if (!result.success) {
       throw new Error(result.error || 'Failed to create ${tableName}');
     }
     
-    // Redirect to success page or back to form
+
     redirect('/${tableName}?success=true');
   } catch (error) {
-    console.error('Error in submit${capitalizedTableName}Form:', error);
-    // In a real app, you might want to handle errors differently
+    console.error('Error in submit${reactTableName}Form:', error);
+
     throw error;
   }
 }

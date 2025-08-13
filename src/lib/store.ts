@@ -3,7 +3,6 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { IFormConfiguration } from '@/types/globalFormTypes';
 import { createNewSection } from '@/utils/form-builder-utils';
 
-// Base form configuration template
 const createDefaultFormConfig = (): IFormConfiguration => ({
   title: 'New Form',
   description: '',
@@ -15,63 +14,50 @@ const createDefaultFormConfig = (): IFormConfiguration => ({
   sections: [createNewSection()],
 });
 
-// Types for the store
 interface FormConfigurationStore {
-  // Current form configuration being edited
   currentConfig: IFormConfiguration;
 
-  // Configuration history for undo/redo
   configHistory: IFormConfiguration[];
   historyIndex: number;
 
-  // Auto-save and sync status
   isDirty: boolean;
   isAutoSaving: boolean;
   lastSaved: Date | null;
 
-  // SaaS features (for future database storage)
   isOnline: boolean;
   isPaidUser: boolean;
   syncError: string | null;
 
-  // Expanded field state for form builder UI
   expandedField: string | null;
 
-  // Actions
   updateConfig: (config: IFormConfiguration) => void;
   updateConfigPartial: (updates: Partial<IFormConfiguration>) => void;
   resetConfig: () => void;
   loadConfig: (config: IFormConfiguration) => void;
 
-  // History management
   undo: () => void;
   redo: () => void;
   canUndo: () => boolean;
   canRedo: () => boolean;
 
-  // Auto-save and persistence
   saveToLocalStorage: () => void;
   loadFromLocalStorage: () => void;
   markDirty: () => void;
   markClean: () => void;
   autoSave: () => void;
 
-  // SaaS features (future implementation)
   syncToDatabase: () => Promise<void>;
   loadFromDatabase: (configId: string) => Promise<void>;
   deleteFromDatabase: (configId: string) => Promise<void>;
 
-  // UI state
   setExpandedField: (fieldId: string | null) => void;
 }
 
-// Maximum history entries to keep in memory
 const MAX_HISTORY = 50;
 
 export const useFormConfigStore = create<FormConfigurationStore>()(
   persist(
     (set, get) => ({
-      // Initial state
       currentConfig: createDefaultFormConfig(),
       configHistory: [],
       historyIndex: -1,
@@ -83,7 +69,6 @@ export const useFormConfigStore = create<FormConfigurationStore>()(
       syncError: null,
       expandedField: null,
 
-      // Core configuration management
       updateConfig: (config: IFormConfiguration) => {
         const state = get();
         const newHistory = [
@@ -99,7 +84,6 @@ export const useFormConfigStore = create<FormConfigurationStore>()(
           lastSaved: null,
         });
 
-        // Auto-save after a short delay
         get().autoSave();
       },
 
@@ -131,7 +115,6 @@ export const useFormConfigStore = create<FormConfigurationStore>()(
         });
       },
 
-      // History management
       undo: () => {
         const state = get();
         if (state.canUndo()) {
@@ -168,7 +151,6 @@ export const useFormConfigStore = create<FormConfigurationStore>()(
         return state.historyIndex < state.configHistory.length - 1;
       },
 
-      // Local storage management
       saveToLocalStorage: () => {
         if (typeof window === 'undefined') return;
 
@@ -218,7 +200,6 @@ export const useFormConfigStore = create<FormConfigurationStore>()(
       markDirty: () => set({ isDirty: true }),
       markClean: () => set({ isDirty: false, lastSaved: new Date() }),
 
-      // Auto-save functionality
       autoSave: (() => {
         let timeout: NodeJS.Timeout;
         return () => {
@@ -233,7 +214,6 @@ export const useFormConfigStore = create<FormConfigurationStore>()(
         };
       })(),
 
-      // Future SaaS features
       syncToDatabase: async () => {
         const state = get();
         if (!state.isPaidUser) {
@@ -242,15 +222,6 @@ export const useFormConfigStore = create<FormConfigurationStore>()(
 
         try {
           set({ isAutoSaving: true, syncError: null });
-
-          // TODO: Implement API call to sync configuration to database
-          // const response = await fetch('/api/form-configs', {
-          //   method: 'POST',
-          //   headers: { 'Content-Type': 'application/json' },
-          //   body: JSON.stringify(state.currentConfig),
-          // });
-
-          // if (!response.ok) throw new Error('Failed to sync to database');
 
           set({
             isAutoSaving: false,
@@ -274,16 +245,6 @@ export const useFormConfigStore = create<FormConfigurationStore>()(
 
         try {
           set({ syncError: null });
-
-          // TODO: Implement API call to load configuration from database
-          // const response = await fetch(`/api/form-configs/${configId}`);
-          // if (!response.ok) throw new Error('Failed to load from database');
-          // const config = await response.json();
-
-          // get().loadConfig(config);
-
-          // Temporary: Use configId parameter to avoid lint warning
-          console.log('Loading config with ID:', configId);
         } catch (error) {
           set({
             syncError: error instanceof Error ? error.message : 'Load failed',
@@ -300,16 +261,6 @@ export const useFormConfigStore = create<FormConfigurationStore>()(
 
         try {
           set({ syncError: null });
-
-          // TODO: Implement API call to delete configuration from database
-          // const response = await fetch(`/api/form-configs/${configId}`, {
-          //   method: 'DELETE',
-          // });
-
-          // if (!response.ok) throw new Error('Failed to delete from database');
-
-          // Temporary: Use configId parameter to avoid lint warning
-          console.log('Deleting config with ID:', configId);
         } catch (error) {
           set({
             syncError: error instanceof Error ? error.message : 'Delete failed',
@@ -318,7 +269,6 @@ export const useFormConfigStore = create<FormConfigurationStore>()(
         }
       },
 
-      // UI state management
       setExpandedField: (fieldId: string | null) => {
         set({ expandedField: fieldId });
       },
@@ -327,7 +277,6 @@ export const useFormConfigStore = create<FormConfigurationStore>()(
       name: 'formscaffold-store',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        // Only persist essential data to localStorage
         currentConfig: state.currentConfig,
         lastSaved: state.lastSaved,
         isPaidUser: state.isPaidUser,
@@ -336,7 +285,6 @@ export const useFormConfigStore = create<FormConfigurationStore>()(
   ),
 );
 
-// Hook for online status monitoring
 if (typeof window !== 'undefined') {
   window.addEventListener('online', () => {
     useFormConfigStore.setState({ isOnline: true });
@@ -347,7 +295,6 @@ if (typeof window !== 'undefined') {
   });
 }
 
-// Utility hooks for common operations
 export const useFormConfig = () => {
   const store = useFormConfigStore();
   return {

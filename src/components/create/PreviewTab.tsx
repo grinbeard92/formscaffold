@@ -1,7 +1,7 @@
 'use client';
 
 import { Card } from '@/components/ui/card';
-import { ClientForm } from '@/components/form/ClientForm';
+import { ClientForm } from '@/components/form-scaffold/ClientForm';
 import { generateZodSchema } from '@/scripts/generate-schema';
 import { IFormConfiguration } from '@/types/globalFormTypes';
 import { ArrowLeftIcon } from '@radix-ui/react-icons';
@@ -10,27 +10,6 @@ import { useEffect, useState } from 'react';
 interface PreviewTabProps {
   config: IFormConfiguration;
 }
-
-// export function PreviewTab({ config, onSubmit }: PreviewTabProps) {
-//   return (
-//     <Card.Root>
-//       <div className='p-6'>
-//         <h3 className='mb-4 text-lg font-semibold'>Form Preview</h3>
-//         <ClientForm
-//           schema={generateZodSchema(config)}
-//           title={config.title}
-//           description={config.description}
-//           sections={config.sections}
-//           submitButtonText={config.submitButtonText}
-//           resetButtonText={config.resetButtonText}
-//           showResetButton={config.showResetButton}
-//           onSubmit={onSubmit}
-//           autoSaveToDatabase={false}
-//         />
-//       </div>
-//     </Card.Root>
-//   );
-// }
 
 export function PreviewTab({ config }: PreviewTabProps) {
   const [activeFormData, setActiveFormData] =
@@ -45,7 +24,6 @@ export function PreviewTab({ config }: PreviewTabProps) {
 
   const parseConfiguration = () => {
     try {
-      // Validate that it has the required properties
       if (!config.title || !config.sections) {
         throw new Error(
           'Configuration must have title and sections properties',

@@ -2,11 +2,11 @@
 -- Generated automatically from FormConfiguration
 
 -- Drop existing table and related objects if they exist
-DROP TABLE IF EXISTS maintenance CASCADE;
+DROP TABLE IF EXISTS maintenance_form CASCADE;
 DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;
 
 -- Create the main table
-CREATE TABLE maintenance (
+CREATE TABLE maintenance_form (
   id SERIAL PRIMARY KEY,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -49,12 +49,12 @@ CREATE TABLE maintenance (
   customer_signature TEXT
 );
 
-CREATE INDEX idx_maintenance_system_type ON maintenance(system_type);
-CREATE INDEX idx_maintenance_maintenance_date ON maintenance(maintenance_date);
-CREATE INDEX idx_maintenance_next_maintenance_date ON maintenance(next_maintenance_date);
-CREATE INDEX idx_maintenance_pre_service_ablation_performance ON maintenance(pre_service_ablation_performance);
-CREATE INDEX idx_maintenance_pre_service_pulsing_power ON maintenance(pre_service_pulsing_power);
-CREATE INDEX idx_maintenance_pre_service_cw_power ON maintenance(pre_service_cw_power);
+CREATE INDEX idx_maintenance_form_system_type ON maintenance_form(system_type);
+CREATE INDEX idx_maintenance_form_maintenance_date ON maintenance_form(maintenance_date);
+CREATE INDEX idx_maintenance_form_next_maintenance_date ON maintenance_form(next_maintenance_date);
+CREATE INDEX idx_maintenance_form_pre_service_ablation_performance ON maintenance_form(pre_service_ablation_performance);
+CREATE INDEX idx_maintenance_form_pre_service_pulsing_power ON maintenance_form(pre_service_pulsing_power);
+CREATE INDEX idx_maintenance_form_pre_service_cw_power ON maintenance_form(pre_service_cw_power);
 
 -- Create function to update the updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -66,11 +66,11 @@ END;
 $$ language 'plpgsql';
 
 -- Create trigger to automatically update updated_at
-CREATE TRIGGER update_maintenance_updated_at
-    BEFORE UPDATE ON maintenance
+CREATE TRIGGER update_maintenance_form_updated_at
+    BEFORE UPDATE ON maintenance_form
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
 -- Grant permissions
-GRANT ALL PRIVILEGES ON TABLE maintenance TO formscaffold_user;
-GRANT USAGE, SELECT ON SEQUENCE maintenance_id_seq TO formscaffold_user;
+GRANT ALL PRIVILEGES ON TABLE maintenance_form TO formscaffold_user;
+GRANT USAGE, SELECT ON SEQUENCE maintenance_form_id_seq TO formscaffold_user;

@@ -49,7 +49,6 @@ export const renderInput = <T extends FieldValues>(
       );
 
     case 'select':
-      // Normalize options to SelectOption format
       const normalizedOptions =
         formField.options?.map((option: string | ISelectOption) =>
           typeof option === 'string'
@@ -244,12 +243,10 @@ export const renderInput = <T extends FieldValues>(
           {field.value && (
             <div className='mt-2 flex flex-wrap gap-2'>
               {formField.multiple ? (
-                // Multiple files: value should be an array
                 Array.isArray(field.value) && field.value.length > 0 ? (
                   field.value.map((file: File, index: number) => (
                     <div key={index} className={cn('relative')}>
                       {file.type && file.type.startsWith('image/') ? (
-                        // eslint-disable-next-line @next/next/no-img-element
                         <div className='relative'>
                           <img
                             src={URL.createObjectURL(file)}
@@ -259,7 +256,9 @@ export const renderInput = <T extends FieldValues>(
                           <XCircleIcon
                             onClick={() => {
                               const newFiles = Array.isArray(field.value)
-                                ? field.value.filter((_, i) => i !== index)
+                                ? field.value.filter(
+                                    (_: File, i: number) => i !== index,
+                                  )
                                 : [];
                               field.onChange(newFiles);
                             }}
@@ -275,7 +274,9 @@ export const renderInput = <T extends FieldValues>(
                           <XCircleIcon
                             onClick={() => {
                               const newFiles = Array.isArray(field.value)
-                                ? field.value.filter((_, i) => i !== index)
+                                ? field.value.filter(
+                                    (_: File, i: number) => i !== index,
+                                  )
                                 : [];
                               field.onChange(newFiles);
                             }}
@@ -297,7 +298,6 @@ export const renderInput = <T extends FieldValues>(
                   {(field.value as File).type &&
                   (field.value as File).type.startsWith('image/') ? (
                     <div className='relative'>
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={URL.createObjectURL(field.value as File)}
                         alt={(field.value as File).name}
@@ -305,9 +305,7 @@ export const renderInput = <T extends FieldValues>(
                       />
                       <XCircleIcon
                         onClick={() => {
-                          const newFiles = Array.isArray(field.value)
-                            ? field.value.filter((_, i) => i !== index)
-                            : [];
+                          const newFiles = null;
                           field.onChange(newFiles);
                         }}
                         className={

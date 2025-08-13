@@ -11,7 +11,6 @@ import {
 import { FeatureCard } from '@/components/FeatureCard';
 import SubHeader from '@/components/SubHeader';
 
-// Get available form configurations
 async function getFormConfigurations() {
   try {
     const configurations = [

@@ -15,14 +15,9 @@ export async function generateServerActions(
   const actionsDir = path.join(projectRoot, 'src', 'actions');
   const actionsFile = path.join(actionsDir, `${tableName}.ts`);
 
-  // Ensure actions directory exists
   await fs.mkdir(actionsDir, { recursive: true });
 
-  // Generate the server actions content
   const actionsContent = generateServerActionsContent(config, configMetadata);
 
-  // Write the actions file
   await fs.writeFile(actionsFile, actionsContent, 'utf8');
-
-  console.log(`✅ Generated server actions: src/actions/${tableName}.ts`);
 }

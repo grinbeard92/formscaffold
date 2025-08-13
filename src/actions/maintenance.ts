@@ -19,10 +19,10 @@ import { generateZodSchema } from '@/scripts/generate-schema';
 import { MaintenanceFormData, UpdateMaintenanceData, Maintenance } from '@/types/maintenanceTypes';
 import { saveUploadedFiles, filePathsToString } from '@/utils/fileUpload';
 
-// Generate schemas
+
 const maintenanceFormSchema = generateZodSchema(maintenanceFormConfiguration); // For form validation (with File objects)
 
-// Create database schema (files converted to strings)
+
 const maintenanceDatabaseSchema = maintenanceFormSchema.extend({
   maintenance_pictures: z.string().nullable().optional(),
   supporting_documents: z.string().nullable().optional()
@@ -37,12 +37,12 @@ const updateMaintenanceSchema = createMaintenanceSchema.partial();
 async function processFileUploads(data: Record<string, unknown>): Promise<Record<string, unknown>> {
   const processedData = { ...data };
   
-  // Process maintenance_pictures
+
   if (data.maintenance_pictures instanceof File || Array.isArray(data.maintenance_pictures)) {
     const filePaths = await saveUploadedFiles(data.maintenance_pictures as File | File[], 'maintenance');
     processedData.maintenance_pictures = filePathsToString(filePaths);
   }
-  // Process supporting_documents
+
   if (data.supporting_documents instanceof File || Array.isArray(data.supporting_documents)) {
     const filePaths = await saveUploadedFiles(data.supporting_documents as File | File[], 'maintenance');
     processedData.supporting_documents = filePathsToString(filePaths);
@@ -54,22 +54,21 @@ async function processFileUploads(data: Record<string, unknown>): Promise<Record
 /**
  * Create a new maintenance entry
  */
-export async function createMaintenance(
+export async function createMaintenanceRecord(
   data: MaintenanceFormData
 ): Promise<{ success: boolean; data?: Maintenance; error?: string }> {
   try {
-    // Process file uploads first (convert File objects to file paths)
+
     const processedData = await processFileUploads(data as Record<string, unknown>);
     
-    // Validate the processed data
+
     const validatedData = createMaintenanceSchema.parse(processedData);
     
-    // Insert data using the database function
+
     const result = await insertFormData(maintenanceFormConfiguration, validatedData);
     
-    // Revalidate the page to show updated data
+
     revalidatePath('/maintenance');
-    revalidatePath('/demo');
     
     return {
       success: true,
@@ -136,7 +135,7 @@ export async function getMaintenanceList(options: {
 /**
  * Get a single maintenance entry by ID
  */
-export async function getMaintenanceById(
+export async function getMaintenanceRecordById(
   id: string
 ): Promise<{ success: boolean; data?: Maintenance; error?: string }> {
   try {
@@ -169,20 +168,19 @@ export async function getMaintenanceById(
 /**
  * Update a maintenance entry
  */
-export async function updateMaintenance(
+export async function updateMaintenanceRecord(
   id: string,
   data: UpdateMaintenanceData
 ): Promise<{ success: boolean; data?: Maintenance; error?: string }> {
   try {
-    // Validate the input data
+
     const validatedData = updateMaintenanceSchema.parse(data);
     
-    // Update data using the database function
+
     const result = await updateFormData(maintenanceFormConfiguration, id, validatedData);
     
-    // Revalidate the page to show updated data
+
     revalidatePath('/maintenance');
-    revalidatePath('/demo');
     
     return {
       success: true,
@@ -214,9 +212,8 @@ export async function deleteMaintenance(
   try {
     await deleteFormData(maintenanceFormConfiguration, id);
     
-    // Revalidate the page to show updated data
+
     revalidatePath('/maintenance');
-    revalidatePath('/demo');
     
     return {
       success: true,
@@ -237,10 +234,10 @@ export async function submitMaintenanceForm(
   formData: FormData
 ): Promise<void> {
   try {
-    // Convert FormData to object, handling files properly
+
     const data: Record<string, unknown> = {};
     
-    // Get field configurations to determine file handling
+
     const fieldConfigs = new Map<string, { type: string; multiple?: boolean; pgConfig?: any }>();
     maintenanceFormConfiguration.sections.forEach(section => {
       section.fields.forEach(field => {
@@ -252,7 +249,7 @@ export async function submitMaintenanceForm(
       });
     });
     
-    // Group all form entries by key to handle multiple files
+
     const formEntries: Record<string, (string | File)[]> = {};
     
     for (const [key, value] of formData.entries()) {
@@ -262,7 +259,7 @@ export async function submitMaintenanceForm(
       formEntries[key].push(value as string | File);
     }
     
-    // Process each field appropriately
+
     for (const [fieldName, values] of Object.entries(formEntries)) {
       if (values.length === 0) {
         continue;
@@ -272,22 +269,22 @@ export async function submitMaintenanceForm(
       const hasFiles = values.some(value => value instanceof File);
       
       if (hasFiles && fieldConfig?.type === 'file') {
-        // Handle file uploads using proper file processing
+
         const files = values.filter(value => value instanceof File) as File[];
         
         if (fieldConfig.multiple) {
-          // Multiple file upload - save files and store paths as comma-separated string
+
           const filePaths = await saveUploadedFiles(files, 'maintenance');
           data[fieldName] = filePathsToString(filePaths);
         } else {
-          // Single file upload - save file and store path as string
+
           if (files.length > 0) {
             const filePath = await saveUploadedFiles(files[0], 'maintenance');
             data[fieldName] = filePath;
           }
         }
       } else if (hasFiles && fieldConfig?.type === 'signature') {
-        // Handle signature fields - always single, convert to base64
+
         const files = values.filter(value => value instanceof File) as File[];
         if (files.length > 0) {
           const file = files[0];
@@ -296,28 +293,28 @@ export async function submitMaintenanceForm(
           data[fieldName] = `data:${file.type};base64,${base64}`;
         }
       } else {
-        // Handle regular form data
+
         if (values.length === 1) {
           data[fieldName] = values[0];
         } else {
-          // Multiple values for same field name (e.g., checkboxes)
+
           data[fieldName] = values;
         }
       }
     }
 
-    // Create the maintenance
+
     const result = await createMaintenance(data as MaintenanceFormData);
     
     if (!result.success) {
       throw new Error(result.error || 'Failed to create maintenance');
     }
     
-    // Redirect to success page or back to form
+
     redirect('/maintenance?success=true');
   } catch (error) {
     console.error('Error in submitMaintenanceForm:', error);
-    // In a real app, you might want to handle errors differently
+
     throw error;
   }
 }

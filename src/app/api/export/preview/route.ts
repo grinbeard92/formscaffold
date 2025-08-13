@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { discoverFormConfigurations } from '@/scripts/get-form-configurations';
+import { discoverFormConfigurations } from '@/scripts/get-project-info';
 
 /**
  * API Route for FormScaffold Export Preview
@@ -8,8 +8,6 @@ import { discoverFormConfigurations } from '@/scripts/get-form-configurations';
  */
 export async function GET() {
   try {
-    console.log('📋 Getting export preview...');
-
     const projectRoot = process.cwd();
     const configurations = await discoverFormConfigurations(projectRoot);
 
@@ -31,7 +29,6 @@ export async function GET() {
       'utils.ts',
     ];
 
-    // Calculate total files that would be generated
     const filesPerForm = 5; // types, actions, pages, zod schema, sql schema
     const totalFiles = components.length + forms.length * filesPerForm + 2; // +2 for package.json and README
 

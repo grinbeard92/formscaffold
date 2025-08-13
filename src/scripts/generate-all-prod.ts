@@ -1,5 +1,3 @@
-#!/usr/bin/env tsx
-
 /**
  * Master Generation Script
  *
@@ -21,11 +19,11 @@ import { createDatabaseInitFiles } from './db-init';
 import { generateServerActions } from './generate-server-actions-ssr';
 import { createFormSchemas } from './generate-schema';
 import { generateTypes } from './generate-types';
-import { generateDemoPage } from './generate-demo-pages';
-import { discoverFormConfigurations } from './get-form-configurations';
+import { discoverFormConfigurations } from './get-project-info';
 import type { IFormConfiguration } from '../types/globalFormTypes';
-import { postgresConfig } from '@/configurations/postgresConfiguration';
 import { generateExportComponent } from './generate-export-components';
+import { generateDemoPage } from './generate-demo-pages';
+import { generateProdPage } from './generate-prod-pages';
 
 async function generateCombinedTypes(
   configurations: Array<{
@@ -36,7 +34,6 @@ async function generateCombinedTypes(
 ): Promise<string> {
   const exportStatements: string[] = [];
 
-  // Generate export statements for each configuration
   for (const { config } of configurations) {
     const tableName = config.postgresTableName;
     const capitalizedTableName =
@@ -57,7 +54,7 @@ async function generateCombinedTypes(
 ${configurations.map(({ fileName, exportName }) => ` * - ${fileName} (${exportName})`).join('\n')}
  */
 
-// Server action result types (shared across all forms)
+
 export interface IServerActionResult<T = unknown> {
   success: boolean;
   data?: T;
@@ -68,7 +65,7 @@ export interface IPaginatedResult<T = unknown> extends ServerActionResult<T[]> {
   total?: number;
 }
 
-// Re-export all generated types
+
 ${exportStatements.join('\n')}
 `;
 
@@ -76,29 +73,15 @@ ${exportStatements.join('\n')}
 }
 
 async function main() {
-  console.log('🚀 Running all generation scripts for FormConfigurations...\n');
-  console.log('📋 Generation Pipeline:');
-  console.log('   1. 🐳 Docker Compose & Database Setup');
-  console.log('   2. 📊 Database Schema Generation');
-  console.log('   3. ⚡ Server Actions Generation');
-  console.log('   4. 🔷 TypeScript Type Definitions');
-  console.log('   5. 📄 Demo Pages Generation');
-  console.log('');
-
   try {
     const projectRoot = path.resolve(__dirname, '../', '../');
 
-    // Discover all form configurations
-    const configurations = await discoverFormConfigurations(projectRoot);
+    const configurations = await discoverFormConfigurations(projectRoot, true);
 
     if (configurations.length === 0) {
-      console.log('❌ No valid FormConfiguration files found.');
       process.exit(1);
     }
 
-    console.log(`\n📋 Processing ${configurations.length} configuration(s):\n`);
-
-    // Ensure directories exist
     const actionsDir = path.join(projectRoot, 'src', 'actions');
     const typesDir = path.join(projectRoot, 'src', 'types');
 
@@ -107,41 +90,24 @@ async function main() {
 
     const generatedFiles: string[] = [];
 
-    // Process each configuration
     for (const { config, fileName, exportName } of configurations) {
-      console.log(`📝 Processing ${exportName} from ${fileName}:`);
-      console.log(`   Database: ${postgresConfig.database}`);
-      console.log(`   Table: ${config.postgresTableName}`);
-      console.log(
-        `   Fields: ${config.sections.flatMap((s) => s.fields).length}`,
-      );
-
-      // 1. Generate Docker Compose and database setup
-      console.log(`   🔧 Generating Docker Compose...`);
       await createDockerComposeFiles(projectRoot);
       generatedFiles.push(`.docker/docker-compose.yml`);
       generatedFiles.push(`postgres_password.txt`);
 
-      console.log(`   🔧 Generating database initialization...`);
       await createDatabaseInitFiles(config, projectRoot);
       generatedFiles.push(
         `init-scripts/${config.postgresTableName}-init-tables.sql`,
       );
 
-      // 2. Generate database schema
-      console.log(`   🔧 Generating database schema...`);
       await createFormSchemas(config);
 
-      // 3. Generate server actions
-      console.log(`   🔧 Generating server actions...`);
       await generateServerActions(config, projectRoot, {
         fileName,
         exportName,
       });
       generatedFiles.push(`src/actions/${config.postgresTableName}.ts`);
 
-      // 4. Generate individual type file
-      console.log(`   🔧 Generating type definitions...`);
       const typeDefinitions = await generateTypes(config);
       const typesFilePath = path.join(
         typesDir,
@@ -150,58 +116,14 @@ async function main() {
       await fs.writeFile(typesFilePath, typeDefinitions, 'utf8');
       generatedFiles.push(`src/types/${config.postgresTableName}Types.d.ts`);
 
-      // 5. Generate component
-      console.log(`   🔧 Generating demo page...`);
-      await generateExportComponent(config, projectRoot, {
-        fileName,
-        exportName,
-      });
+      await generateProdPage(config, projectRoot, { fileName, exportName });
       generatedFiles.push(`src/app/${config.postgresTableName}/page.tsx`);
-
-      console.log(
-        `   ✅ Generated all files for ${config.postgresTableName}\n`,
-      );
     }
 
-    // Generate combined types index
-    console.log('📝 Generating combined types index...');
     const combinedTypes = await generateCombinedTypes(configurations);
     const indexTypesPath = path.join(typesDir, 'generatedTypes.d.ts');
     await fs.writeFile(indexTypesPath, combinedTypes, 'utf8');
     generatedFiles.push('src/types/generatedTypes.d.ts');
-
-    console.log('\n🎉 All generation scripts completed successfully!');
-    console.log('\n✅ Generated files:');
-    generatedFiles.forEach((file) => console.log(`   📄 ${file}`));
-
-    console.log('\n📖 Usage Examples:');
-    configurations.forEach(({ config }) => {
-      const tableName = config.postgresTableName;
-      const capitalizedTableName =
-        tableName.charAt(0).toUpperCase() + tableName.slice(1);
-      console.log(`\n   // For ${config.title}:`);
-      console.log(
-        `   import { ${capitalizedTableName} } from '@/types/generatedTypes';`,
-      );
-      console.log(
-        `   import { create${capitalizedTableName}, get${capitalizedTableName}List } from '@/actions/${tableName}';`,
-      );
-    });
-
-    console.log('\n💡 Next Steps:');
-    console.log('   1. Start the database: npm run db:start');
-    console.log('   2. Test the database connection: npm run db:test');
-    console.log('   3. Copy the postgres_password.txt to .env');
-    console.log(
-      `   4. Run 'npm run db:terminal' to access the database directly`,
-    );
-    console.log('   5. Start development server: npm run dev');
-    console.log('   6. Access your forms at:');
-    configurations.forEach(({ config }) => {
-      console.log(
-        `      - ${config.title}: http://localhost:3799/${config.postgresTableName}`,
-      );
-    });
   } catch (error) {
     console.error('❌ Error generating files:', error);
     process.exit(1);

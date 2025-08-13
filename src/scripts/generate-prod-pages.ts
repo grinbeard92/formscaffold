@@ -12,11 +12,12 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import type { IFormConfiguration } from '../types/globalFormTypes';
+import { reactifyLowercase, reactifyName } from '@/utils/utils';
 
 /**
  * Generates a demo page for a form configuration
  */
-export async function generateExportComponent(
+export async function generateProdPage(
   config: IFormConfiguration,
   projectRoot: string = process.cwd(),
   configMetadata?: { fileName: string; exportName: string },
@@ -40,9 +41,7 @@ function generatePageContent(
   configMetadata?: { fileName: string; exportName: string },
 ): string {
   const tableName = config.postgresTableName;
-  const capitalizedTableName =
-    tableName.charAt(0).toUpperCase() + tableName.slice(1);
-
+  const reactTableName = reactifyLowercase(tableName);
   let configImportPath: string;
   let configVariableName: string;
 
@@ -51,66 +50,46 @@ function generatePageContent(
     configImportPath = `@/configurations/${configFileName}`;
     configVariableName = configMetadata.exportName;
   } else {
-    configImportPath = `@/configurations/${tableName}FormConfiguration`;
-    configVariableName = `${tableName}FormConfiguration`;
+    configImportPath = `@/configurations/${reactTableName}Configuration`;
+    configVariableName = `${reactTableName}Configuration`;
   }
 
-  return `import { ServerForm } from '@/components/form/ServerForm';
+  return `import { ServerForm } from '../../components/form-scaffold/ServerForm';
+import sql from '../../db/postgres-js';
 import { ${configVariableName} } from '${configImportPath}';
 
-export default function ${capitalizedTableName}Page() {
+export default function ${reactTableName}Page() {
   return (
     <div className='container mx-auto max-w-4xl px-4 py-8'>
-      <div className='space-y-6'>
-        {/* Page Header */}
-        <div className='space-y-2 text-center'>
-          <h1 className='text-foreground text-3xl font-bold'>
-            ${config.title}
-          </h1>
-          <p className='text-muted-foreground'>
-            Generated form component for{' '}
-            <code className='bg-muted text-muted-foreground rounded px-1 py-0.5 font-mono'>${tableName}</code> table
-                        
-          </p>
-          <code className='bg-muted text-muted-foreground rounded px-1 py-0.5 font-mono'>
-              Use the ServerForm component anywhere in your app.
-              Ensure that the types, components and configurations are imported into your project correctly.
-            </code>
-        </div>
 
         {/* Form Section */}
         <div className='bg-card rounded-lg border shadow-sm'>
+          <div className='p-6'>
             <ServerForm
               config={${configVariableName}}
               autoSaveToDatabase={true}
             />
+          </div>
         </div>
-
-        {/* Footer */}
-        <div className='space-y-1 text-center text-sm text-muted-foreground'>
-          <p>
-            This page was auto-generated from{' '}
-            <code className='rounded bg-muted px-1 py-0.5 font-mono'>
-              ${configMetadata?.fileName || `${tableName}FormConfiguration.ts`}
-            </code>
-          </p>
-          <p>
-            Form configuration filename: <strong className='text-card-foreground'>${configMetadata?.exportName || configVariableName}</strong>
-          </p>
-        </div>
-      </div>
     </div>
   );
 }
 
 export const metadata = {
-  title: '${config.title} - FormScaffold Generated Component',
-  description: 'Auto-generated form component for ${tableName} table',
+  title: '${config.title}',
+  description: 'Production ${reactTableName} form',
 };
 `;
 }
 
-async function main() {}
+/**
+ * Standalone execution for testing
+ */
+async function main() {
+  console.log(
+    'For standalone usage, you would need to provide configuration...',
+  );
+}
 
 if (require.main === module) {
   main().catch(console.error);

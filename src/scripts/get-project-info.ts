@@ -9,6 +9,7 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import type { IFormConfiguration } from '../types/globalFormTypes';
 import { postgresConfig } from '@/configurations/postgresConfiguration';
+import { file } from 'zod';
 
 export interface IFormConfigurationModule {
   config: IFormConfiguration;
@@ -22,14 +23,22 @@ export interface IFormConfigurationModule {
  */
 export async function discoverFormConfigurations(
   projectRoot: string = process.cwd(),
+  production: boolean,
 ): Promise<IFormConfigurationModule[]> {
   const configurationsDir = path.join(projectRoot, 'src', 'configurations');
 
   try {
     const files = await fs.readdir(configurationsDir);
-    const tsFiles = files.filter(
-      (file) => file.endsWith('.ts') || file.endsWith('.tsx'),
-    );
+    let tsFiles;
+    if (production) {
+      tsFiles = files.filter((file) => !file.includes('demo'));
+      console.log('Production files:', tsFiles);
+    } else {
+      tsFiles = files.filter(
+        (file) => file.endsWith('.ts') || file.endsWith('.tsx'),
+      );
+      console.log('Development files:', tsFiles);
+    }
 
     console.log(
       `📂 Found ${tsFiles.length} configuration files in /src/configurations:`,
@@ -39,14 +48,10 @@ export async function discoverFormConfigurations(
 
     for (const file of tsFiles) {
       try {
-        console.log(`   📄 Processing: ${file}`);
-
-        // Dynamic import of the configuration file
         const modulePath = path.resolve(configurationsDir, file);
         const fileUrl = `file://${modulePath.replace(/\\/g, '/')}`;
         const configModule = await import(fileUrl);
 
-        // Look for exports that might be FormConfiguration objects
         const exports = Object.keys(configModule);
         const configExports = exports.filter(
           (exportName) =>
@@ -55,14 +60,12 @@ export async function discoverFormConfigurations(
         );
 
         if (configExports.length === 0) {
-          console.log(`   ⚠️  No configuration exports found in ${file}`);
           continue;
         }
 
         for (const exportName of configExports) {
           const config = configModule[exportName] as IFormConfiguration;
 
-          // Validate that this is a proper FormConfiguration
           if (
             config &&
             typeof config === 'object' &&
@@ -110,6 +113,31 @@ export async function discoverFormConfigurations(
       `❌ Error reading configurations directory: ${configurationsDir}`,
     );
     throw error;
+  }
+}
+
+export async function copyPostgresSchemas(
+  projectRoot: string,
+  production: boolean,
+): Promise<void> {
+  const schemasDir = path.join(projectRoot, 'init-scripts');
+  const schemas = await fs.readdir(schemasDir);
+  const destPath = await fs.mkdir(
+    path.join(projectRoot, 'export', 'db', 'init'),
+    { recursive: true },
+  );
+  if (!destPath) {
+    console.warn('⚠️ Could not create destination directory for schemas');
+    return;
+  }
+  // Filter out demo files if in production mode
+  const filteredSchemas = production
+    ? schemas.filter((file) => !file.includes('demo'))
+    : schemas;
+  for (const schema of filteredSchemas) {
+    const sourcePath = path.join(schemasDir, schema);
+    const content = await fs.readFile(sourcePath, 'utf-8');
+    await fs.writeFile(path.join(destPath, schema), content);
   }
 }
 

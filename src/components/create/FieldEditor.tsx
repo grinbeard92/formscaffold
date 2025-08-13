@@ -47,7 +47,7 @@ export function FieldEditor({
         type: newType as IFieldDefinition<FieldValues>['type'],
         default: defaultConfig.default,
         pgConfig: defaultConfig.pgConfig,
-        // Clear type-specific properties when changing type
+
         options: typeConfig.hasOptions ? field.options || [] : undefined,
         accept: field.type === 'file' ? field.accept : undefined,
         multiple: field.type === 'file' ? field.multiple : undefined,

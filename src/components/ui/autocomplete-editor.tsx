@@ -31,7 +31,6 @@ export function AutocompleteEditor({
   ) {
     editorRef.current = editor;
 
-    // Configure JSON schema validation and autocomplete
     if (language === 'json') {
       const formConfigurationSchema = {
         type: 'object',
@@ -315,7 +314,6 @@ export function AutocompleteEditor({
         required: ['title', 'postgresTableName', 'sections'],
       };
 
-      // Configure JSON language service
       monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
         validate: true,
         schemas: [
@@ -328,12 +326,10 @@ export function AutocompleteEditor({
       });
     }
 
-    // Add custom key bindings
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space, () => {
       editor.trigger('keyboard', 'editor.action.triggerSuggest', {});
     });
 
-    // Configure editor options
     editor.updateOptions({
       minimap: { enabled: false },
       scrollBeyondLastLine: false,
@@ -351,7 +347,6 @@ export function AutocompleteEditor({
       },
     });
 
-    // Show placeholder when empty
     if (!value || value.trim() === '') {
       const placeholderContentWidget = {
         getId: () => 'placeholder-widget',
@@ -372,7 +367,6 @@ export function AutocompleteEditor({
 
       editor.addContentWidget(placeholderContentWidget);
 
-      // Remove placeholder when user starts typing
       const disposable = editor.onDidChangeModelContent(() => {
         if (editor.getValue().trim() !== '') {
           editor.removeContentWidget(placeholderContentWidget);

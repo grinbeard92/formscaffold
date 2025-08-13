@@ -19,10 +19,10 @@ import { generateZodSchema } from '@/scripts/generate-schema';
 import { DemoFormData, UpdateDemoData, Demo } from '@/types/demoTypes';
 import { saveUploadedFiles, filePathsToString } from '@/utils/fileUpload';
 
-// Generate schemas
+
 const demoFormSchema = generateZodSchema(demoFormConfiguration); // For form validation (with File objects)
 
-// Create database schema (files converted to strings)
+
 const demoDatabaseSchema = demoFormSchema.extend({
   profile_picture: z.string().nullable().optional(),
   resume_file: z.string().nullable().optional()
@@ -37,12 +37,12 @@ const updateDemoSchema = createDemoSchema.partial();
 async function processFileUploads(data: Record<string, unknown>): Promise<Record<string, unknown>> {
   const processedData = { ...data };
   
-  // Process profile_picture
+
   if (data.profile_picture instanceof File || Array.isArray(data.profile_picture)) {
     const filePaths = await saveUploadedFiles(data.profile_picture as File | File[], 'demo');
     processedData.profile_picture = filePathsToString(filePaths);
   }
-  // Process resume_file
+
   if (data.resume_file instanceof File || Array.isArray(data.resume_file)) {
     const filePaths = await saveUploadedFiles(data.resume_file as File | File[], 'demo');
     processedData.resume_file = filePathsToString(filePaths);
@@ -54,21 +54,20 @@ async function processFileUploads(data: Record<string, unknown>): Promise<Record
 /**
  * Create a new demo entry
  */
-export async function createDemo(
+export async function createDemoRecord(
   data: DemoFormData
 ): Promise<{ success: boolean; data?: Demo; error?: string }> {
   try {
-    // Process file uploads first (convert File objects to file paths)
+
     const processedData = await processFileUploads(data as Record<string, unknown>);
     
-    // Validate the processed data
+
     const validatedData = createDemoSchema.parse(processedData);
     
-    // Insert data using the database function
+
     const result = await insertFormData(demoFormConfiguration, validatedData);
     
-    // Revalidate the page to show updated data
-    revalidatePath('/demo');
+
     revalidatePath('/demo');
     
     return {
@@ -136,7 +135,7 @@ export async function getDemoList(options: {
 /**
  * Get a single demo entry by ID
  */
-export async function getDemoById(
+export async function getDemoRecordById(
   id: string
 ): Promise<{ success: boolean; data?: Demo; error?: string }> {
   try {
@@ -169,19 +168,18 @@ export async function getDemoById(
 /**
  * Update a demo entry
  */
-export async function updateDemo(
+export async function updateDemoRecord(
   id: string,
   data: UpdateDemoData
 ): Promise<{ success: boolean; data?: Demo; error?: string }> {
   try {
-    // Validate the input data
+
     const validatedData = updateDemoSchema.parse(data);
     
-    // Update data using the database function
+
     const result = await updateFormData(demoFormConfiguration, id, validatedData);
     
-    // Revalidate the page to show updated data
-    revalidatePath('/demo');
+
     revalidatePath('/demo');
     
     return {
@@ -214,8 +212,7 @@ export async function deleteDemo(
   try {
     await deleteFormData(demoFormConfiguration, id);
     
-    // Revalidate the page to show updated data
-    revalidatePath('/demo');
+
     revalidatePath('/demo');
     
     return {
@@ -237,10 +234,10 @@ export async function submitDemoForm(
   formData: FormData
 ): Promise<void> {
   try {
-    // Convert FormData to object, handling files properly
+
     const data: Record<string, unknown> = {};
     
-    // Get field configurations to determine file handling
+
     const fieldConfigs = new Map<string, { type: string; multiple?: boolean; pgConfig?: any }>();
     demoFormConfiguration.sections.forEach(section => {
       section.fields.forEach(field => {
@@ -252,7 +249,7 @@ export async function submitDemoForm(
       });
     });
     
-    // Group all form entries by key to handle multiple files
+
     const formEntries: Record<string, (string | File)[]> = {};
     
     for (const [key, value] of formData.entries()) {
@@ -262,7 +259,7 @@ export async function submitDemoForm(
       formEntries[key].push(value as string | File);
     }
     
-    // Process each field appropriately
+
     for (const [fieldName, values] of Object.entries(formEntries)) {
       if (values.length === 0) {
         continue;
@@ -272,22 +269,22 @@ export async function submitDemoForm(
       const hasFiles = values.some(value => value instanceof File);
       
       if (hasFiles && fieldConfig?.type === 'file') {
-        // Handle file uploads using proper file processing
+
         const files = values.filter(value => value instanceof File) as File[];
         
         if (fieldConfig.multiple) {
-          // Multiple file upload - save files and store paths as comma-separated string
+
           const filePaths = await saveUploadedFiles(files, 'demo');
           data[fieldName] = filePathsToString(filePaths);
         } else {
-          // Single file upload - save file and store path as string
+
           if (files.length > 0) {
             const filePath = await saveUploadedFiles(files[0], 'demo');
             data[fieldName] = filePath;
           }
         }
       } else if (hasFiles && fieldConfig?.type === 'signature') {
-        // Handle signature fields - always single, convert to base64
+
         const files = values.filter(value => value instanceof File) as File[];
         if (files.length > 0) {
           const file = files[0];
@@ -296,28 +293,28 @@ export async function submitDemoForm(
           data[fieldName] = `data:${file.type};base64,${base64}`;
         }
       } else {
-        // Handle regular form data
+
         if (values.length === 1) {
           data[fieldName] = values[0];
         } else {
-          // Multiple values for same field name (e.g., checkboxes)
+
           data[fieldName] = values;
         }
       }
     }
 
-    // Create the demo
+
     const result = await createDemo(data as DemoFormData);
     
     if (!result.success) {
       throw new Error(result.error || 'Failed to create demo');
     }
     
-    // Redirect to success page or back to form
+
     redirect('/demo?success=true');
   } catch (error) {
     console.error('Error in submitDemoForm:', error);
-    // In a real app, you might want to handle errors differently
+
     throw error;
   }
 }

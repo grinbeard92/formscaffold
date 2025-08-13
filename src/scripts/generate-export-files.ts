@@ -1,5 +1,3 @@
-#!/usr/bin/env tsx
-
 /**
  * Export Generator
  *
@@ -19,7 +17,7 @@ import * as path from 'path';
 import {
   discoverFormConfigurations,
   IFormConfigurationModule,
-} from './get-form-configurations';
+} from './get-project-info';
 import { IFormConfiguration } from '../types/globalFormTypes';
 
 interface IExportFileMapping {
@@ -32,53 +30,27 @@ interface IExportFileMapping {
  * Main export generation function
  */
 export async function generateExport(): Promise<void> {
-  console.log('🚀 Generating FormScaffold Export Package...\n');
-
   const projectRoot = path.resolve(__dirname, '../', '../');
   const exportDir = path.join(projectRoot, 'export');
 
   try {
-    console.log('📋 Step 2: Discovering form configurations...');
-    const configurations = await discoverFormConfigurations(projectRoot);
-    console.log(`✅ Found ${configurations.length} form configurations\n`);
+    const configurations = await discoverFormConfigurations(projectRoot, true);
 
-    // Step 3: Clean and create export directory
-    console.log('📋 Step 3: Preparing export directory...');
     await cleanAndCreateExportDir(exportDir);
-    console.log('✅ Export directory ready\n');
 
-    // Step 4: Copy runtime components
-    console.log('📋 Step 4: Copying runtime components...');
     await copyRuntimeComponents(projectRoot, exportDir);
-    console.log('✅ Runtime components copied\n');
 
-    // Step 5: Copy generated artifacts for each form
-    console.log('📋 Step 5: Copying generated artifacts...');
     for (const { config } of configurations) {
-      console.log(`   📝 Processing ${config.postgresTableName}...`);
       await copyFormArtifacts(projectRoot, exportDir, config);
     }
-    console.log('✅ All form artifacts copied\n');
 
-    // Step 6: Generate package.json and documentation
-    console.log('📋 Step 6: Creating package files...');
     await createPackageFiles(exportDir, configurations);
-    console.log('✅ Package files created\n');
 
-    // Step 7: Copy and rename globals.css
-    console.log('📋 Step 7: Copying styles...');
     await copyStyles(projectRoot, exportDir);
-    console.log('✅ Styles copied\n');
 
-    console.log('🎉 FormScaffold export package generated successfully!');
-    console.log(`📦 Location: ${exportDir}`);
-    console.log('\n💡 Next steps:');
     console.log(
       '   1. Copy the export folder contents to your Next.js project',
     );
-    console.log('   2. Install dependencies: npm install');
-    console.log('   3. Import form-scaffold.css in your app');
-    console.log('   4. Use the generated components and actions');
   } catch (error) {
     console.error('❌ Error generating export:', error);
     throw error;
@@ -91,19 +63,15 @@ export async function generateExport(): Promise<void> {
 async function cleanAndCreateExportDir(exportDir: string): Promise<void> {
   try {
     await fs.rm(exportDir, { recursive: true, force: true });
-  } catch {
-    // Directory might not exist, which is fine
-  }
+  } catch {}
 
   await fs.mkdir(exportDir, { recursive: true });
 
-  // Create subdirectories
   const subdirs = [
     'components/form-scaffold/utils',
     'components/ui',
     'types',
     'actions',
-    'schemas',
     'app',
     'db',
     'utils',
@@ -123,7 +91,6 @@ async function copyRuntimeComponents(
   exportDir: string,
 ): Promise<void> {
   const componentMappings: IExportFileMapping[] = [
-    // Form components -> form-scaffold
     {
       source: 'src/components/form/ClientForm.tsx',
       destination: 'components/form-scaffold/ClientForm.tsx',
@@ -137,7 +104,6 @@ async function copyRuntimeComponents(
       destination: 'components/form-scaffold/FormSectionTemplate.tsx',
     },
 
-    // Form utilities
     {
       source: 'src/components/form/utils/formSectionUtils.ts',
       destination: 'components/form-scaffold/utils/formSectionUtils.ts',
@@ -147,19 +113,16 @@ async function copyRuntimeComponents(
       destination: 'components/form-scaffold/utils/renderInputSection.tsx',
     },
 
-    // UI components
     {
       source: 'src/components/ui/card.tsx',
       destination: 'components/ui/card.tsx',
     },
 
-    // Core types
     {
       source: 'src/types/globalFormTypes.ts',
       destination: 'types/globalFormTypes.ts',
     },
 
-    // Database utilities
     {
       source: 'src/db/generic-db-actions.ts',
       destination: 'db/generic-db-actions.ts',
@@ -169,7 +132,6 @@ async function copyRuntimeComponents(
       destination: 'db/postgres-js.ts',
     },
 
-    // General utilities
     {
       source: 'src/utils/utils.ts',
       destination: 'utils/utils.ts',
@@ -203,19 +165,16 @@ async function copyFormArtifacts(
   const tableName = config.postgresTableName;
 
   const artifactMappings: IExportFileMapping[] = [
-    // Generated types
     {
       source: `src/types/${tableName}Types.d.ts`,
       destination: `types/${tableName}Types.d.ts`,
     },
 
-    // Generated server actions
     {
       source: `src/actions/${tableName}.ts`,
       destination: `app/${tableName}/actions.ts`,
     },
 
-    // Generated demo pages
     {
       source: `src/app/${tableName}/page.tsx`,
       destination: `app/${tableName}/page.tsx`,
@@ -232,7 +191,6 @@ async function copyFormArtifacts(
     const destPath = path.join(exportDir, mapping.destination);
 
     try {
-      // Ensure directory exists
       await fs.mkdir(path.dirname(destPath), { recursive: true });
 
       const content = await fs.readFile(sourcePath, 'utf8');
@@ -248,10 +206,8 @@ async function copyFormArtifacts(
     }
   }
 
-  // Generate separate Zod schema file
   await generateZodSchemaFile(exportDir, config);
 
-  // Generate separate SQL schema file
   await generateSqlSchemaFile(projectRoot, exportDir, config);
 }
 
@@ -275,12 +231,12 @@ async function generateZodSchemaFile(
  * Import and use this schema for validation in your application.
  */
 
-// Form validation schema (excludes database-generated fields)
+
 export const ${tableName}Schema = z.object({
 ${generateZodSchemaFields(config)}
 });
 
-// Complete schema including database fields (for type generation)
+
 export const complete${capitalizedTableName}Schema = z.object({
   id: z.string().uuid(),
   created_at: z.date(),
@@ -367,7 +323,6 @@ async function createPackageFiles(
   exportDir: string,
   configurations: IFormConfigurationModule[],
 ): Promise<void> {
-  // Generate package.json
   const packageJson = {
     name: 'formscaffold-generated',
     version: '1.0.0',
@@ -399,16 +354,15 @@ async function createPackageFiles(
     'utf8',
   );
 
-  // Generate README.md
   const readmeContent = `# FormScaffold Generated Package
 
 This package contains generated FormScaffold components and artifacts for integration into Next.js projects.
 
-## Generated Forms
+
 
 ${configurations.map(({ config }) => `- **${config.title}** (table: \`${config.postgresTableName}\`)`).join('\n')}
 
-## Installation
+
 
 1. Copy this package to your Next.js project
 2. Install dependencies: \`npm install\`
@@ -417,20 +371,20 @@ ${configurations.map(({ config }) => `- **${config.title}** (table: \`${config.p
    import './form-scaffold.css'
    \`\`\`
 
-## Usage
+
 
 \`\`\`tsx
 import { ServerForm } from './components/form-scaffold/ServerForm';
 import { ${configurations[0]?.config.postgresTableName}Schema } from './schemas/${configurations[0]?.config.postgresTableName}-zod';
 
-// Use in your component
+
 <ServerForm 
   config={yourFormConfiguration}
   autoSaveToDatabase={true}
 />
 \`\`\`
 
-## Generated Files
+
 
 - \`/components/form-scaffold/\` - Form components
 - \`/types/\` - TypeScript type definitions  
@@ -457,7 +411,6 @@ async function copyStyles(
 
     const content = await fs.readFile(sourcePath, 'utf8');
 
-    // Add header comment to the CSS
     const cssWithHeader = `/**
  * FormScaffold Styles
  * 
@@ -495,7 +448,6 @@ async function main(): Promise<void> {
   await generateExport();
 }
 
-// Only run main if this file is executed directly
 if (require.main === module) {
   main().catch((error) => {
     console.error('Failed to generate export:', error);

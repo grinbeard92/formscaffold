@@ -1,5 +1,3 @@
-#!/usr/bin/env tsx
-
 /**
  * Demo Pages Generator
  *
@@ -25,18 +23,13 @@ export async function generateDemoPage(
 ): Promise<void> {
   const tableName = config.postgresTableName;
 
-  // Create the app/[tableName] directory
   const pageDir = path.join(projectRoot, 'src', 'app', tableName);
   await fs.mkdir(pageDir, { recursive: true });
 
-  // Generate the page content
   const pageContent = generatePageContent(config, configMetadata);
 
-  // Write the page.tsx file
   const pagePath = path.join(pageDir, 'page.tsx');
   await fs.writeFile(pagePath, pageContent, 'utf8');
-
-  console.log(`✅ Generated demo page: src/app/${tableName}/page.tsx`);
 }
 
 /**
@@ -50,17 +43,14 @@ function generatePageContent(
   const capitalizedTableName =
     tableName.charAt(0).toUpperCase() + tableName.slice(1);
 
-  // Generate configuration import based on actual file metadata
   let configImportPath: string;
   let configVariableName: string;
 
   if (configMetadata) {
-    // Remove .ts extension and use the actual file name
     const configFileName = configMetadata.fileName.replace(/\.tsx?$/, '');
     configImportPath = `@/configurations/${configFileName}`;
     configVariableName = configMetadata.exportName;
   } else {
-    // Fallback for backwards compatibility
     configImportPath = `@/configurations/${tableName}FormConfiguration`;
     configVariableName = `${tableName}FormConfiguration`;
   }
@@ -69,14 +59,14 @@ function generatePageContent(
 import { ${configVariableName} } from '${configImportPath}';
 import sql from '@/db/postgres-js';
 
-// Database info component that shows table contents
+
 async function DatabaseInfo() {
   let tableData: Record<string, unknown>[] = [];
   let columnStats: Record<string, unknown>[] = [];
   let error: string | null = null;
   
   try {
-    // First get all column names dynamically
+
     const columnsResult = await sql\`
       SELECT column_name 
       FROM information_schema.columns 
@@ -87,12 +77,12 @@ async function DatabaseInfo() {
     
     const columns = columnsResult.map(row => row.column_name as string);
     
-    // Build dynamic column size selectors
+
     const columnSizeSelectors = columns.map(col => 
       \`pg_column_size(\${col}) as \${col}_size\`
     ).join(', ');
     
-    // Execute dynamic query with all columns and their sizes
+
     const dynamicQuery = \`
       SELECT *, \${columnSizeSelectors}
       FROM ${tableName} 
@@ -103,7 +93,7 @@ async function DatabaseInfo() {
     const result = await sql.unsafe(dynamicQuery);
     tableData = result as Record<string, unknown>[];
 
-    // Get column statistics including memory usage
+
     const columnStatsQuery = sql\`
       SELECT 
         column_name,
@@ -204,10 +194,10 @@ async function DatabaseInfo() {
                   {tableData.map((row, idx) => (
                     <tr key={idx} className='border-b border-border hover:bg-muted/30'>
                       {Object.entries(row).map(([key, value], cellIdx) => {
-                        // Skip rendering size columns as separate cells
+
                         if (key.endsWith('_size')) return null;
                         
-                        // Get the corresponding size value
+
                         const sizeKey = \`\${key}_size\`;
                         const sizeValue = row[sizeKey] as number | undefined;
                         
@@ -270,7 +260,7 @@ async function DatabaseInfo() {
   );
 }
 
-// Main page component
+
 export default function ${capitalizedTableName}Page() {
   return (
     <div className='container mx-auto max-w-4xl px-4 py-8'>
@@ -334,14 +324,11 @@ export const metadata = {
  * Standalone execution for testing
  */
 async function main() {
-  console.log('🚀 Demo Pages Generator');
-  console.log('This script is typically called by generate-all.ts');
   console.log(
     'For standalone usage, you would need to provide configuration...',
   );
 }
 
-// Only run main if this file is executed directly
 if (require.main === module) {
   main().catch(console.error);
 }

@@ -17,7 +17,6 @@ function getPostgresConfig() {
     );
   }
 
-  // If DATABASE_URL is provided, use it directly
   if (process.env.DATABASE_URL && !password) {
     return process.env.DATABASE_URL;
   }
@@ -38,14 +37,11 @@ function getPostgresConfig() {
   };
 }
 
-// Create postgres connection with configuration from FormConfiguration
 const config = getPostgresConfig();
 const sql = typeof config === 'string' ? postgres(config) : postgres(config);
 
-// Log connection info (without password) in development
 if (process.env.NODE_ENV === 'development') {
   if (typeof config === 'string') {
-    console.log('📦 PostgreSQL connection configured with DATABASE_URL');
   } else {
     console.log('📦 PostgreSQL connection configured:', {
       host: config.host,

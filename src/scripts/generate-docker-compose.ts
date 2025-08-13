@@ -1,4 +1,3 @@
-// Docker compose generator
 import { IPostgresConfig } from '../types/globalFormTypes';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -11,29 +10,20 @@ import { postgresConfig } from '@/configurations/postgresConfiguration';
 export async function createDockerComposeFiles(
   projectRoot: string,
 ): Promise<void> {
-  // Generate a secure random password
   const password = generateSecurePassword();
 
-  // Create necessary directories
   await ensureDirectories(projectRoot);
 
-  // Write password to file
   const passwordFile = postgresConfig.passwordFile || 'postgres_password.txt';
   await writePasswordFile(projectRoot, password, passwordFile);
 
-  // Generate Docker Compose content
   const dockerComposeContent = generateDockerCompose(postgresConfig, password);
 
-  // Write Docker Compose file
   await fs.writeFile(
     path.join(projectRoot, '.docker', 'docker-compose.yml'),
     dockerComposeContent,
     'utf8',
   );
-
-  console.log('✅ Generated Docker Compose files:');
-  console.log('   - .docker/docker-compose.yml');
-  console.log('   - postgres_password.txt');
 }
 
 /**
@@ -61,9 +51,7 @@ async function ensureDirectories(projectRoot: string): Promise<void> {
   for (const dir of directories) {
     try {
       await fs.mkdir(dir, { recursive: true });
-    } catch {
-      // Directory might already exist, which is fine
-    }
+    } catch {}
   }
 }
 
@@ -113,7 +101,6 @@ function generateDockerCompose(
       retries: 3
       start_period: 30s`;
 
-  // Add backup service if enabled
   if (postgresConfig.backupEnabled) {
     const backupInterval = postgresConfig.backupInterval || '6h';
     const intervalHours = backupInterval.replace('h', '');

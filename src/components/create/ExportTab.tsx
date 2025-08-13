@@ -30,13 +30,11 @@ export function ExportTab({ config, formTitle }: ExportTabProps) {
     warnings: string[];
   } | null>(null);
 
-  // Validate prerequisites when component mounts or config changes
   useEffect(() => {
     const result = validateExportPrerequisites(config);
     setValidationResult(result);
   }, [config]);
 
-  // Load export preview
   useEffect(() => {
     generateExportPreview().then(setExportPreview);
   }, []);

@@ -5,7 +5,6 @@ import { ClientForm } from './ClientForm';
 import { IFormConfiguration } from '@/types/globalFormTypes';
 import { generateZodSchema } from '@/scripts/generate-schema';
 
-// Transform server configuration to client-safe version
 function sanitizeConfigurationForClient(config: IFormConfiguration) {
   return {
     title: config.title,

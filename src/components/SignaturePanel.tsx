@@ -28,7 +28,6 @@ function SignaturePanel({ onSignatureChange, onReset }: PropsSignaturePanel) {
     }
   }
 
-  // Clear signature pad on mount and set WillReadFrequently to true
   useEffect(() => {
     if (sigCanvas.current) {
       sigCanvas.current.clear();

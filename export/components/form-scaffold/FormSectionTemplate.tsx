@@ -12,7 +12,6 @@ import {
 import { getFieldRequirements } from './utils/formSectionUtils';
 import { renderInput } from './utils/renderInputSection';
 
-// Main FormSectionTemplate component
 export const FormSectionTemplate = <T extends FieldValues>({
   title,
   description,
@@ -58,7 +57,6 @@ export const FormSectionTemplate = <T extends FieldValues>({
   );
 };
 
-// Render individual form field
 const renderFormField = <T extends FieldValues>(
   formField: IFieldDefinition<T>,
   control: Control<T>,

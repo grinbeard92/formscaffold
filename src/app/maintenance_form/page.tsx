@@ -1,8 +1,8 @@
 import { ServerForm } from '../../components/form-scaffold/ServerForm';
 import sql from '../../db/postgres-js';
-import { demoFormConfiguration } from '@/configurations/demoFormConfiguration';
+import { maintenanceFormConfiguration } from '@/configurations/maintenanceFormConfiguration';
 
-export default function DemoPage() {
+export default function maintenanceFormPage() {
   return (
     <div className='container mx-auto max-w-4xl px-4 py-8'>
 
@@ -10,7 +10,7 @@ export default function DemoPage() {
         <div className='bg-card rounded-lg border shadow-sm'>
           <div className='p-6'>
             <ServerForm
-              config={demoFormConfiguration}
+              config={maintenanceFormConfiguration}
               autoSaveToDatabase={true}
             />
           </div>
@@ -20,6 +20,6 @@ export default function DemoPage() {
 }
 
 export const metadata = {
-  title: 'Comprehensive Form Demo',
-  description: 'Production demo form',
+  title: 'Annual Maintenance Checklist',
+  description: 'Production maintenanceForm form',
 };

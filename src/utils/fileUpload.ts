@@ -16,7 +16,6 @@ export async function saveUploadedFiles(
 
   const uploadDir = join(process.cwd(), 'public', 'uploads', folder);
 
-  // Ensure upload directory exists
   try {
     await mkdir(uploadDir, { recursive: true });
   } catch (error) {
@@ -25,7 +24,6 @@ export async function saveUploadedFiles(
   }
 
   if (Array.isArray(files)) {
-    // Handle multiple files
     const filePaths: string[] = [];
 
     for (const file of files) {
@@ -37,7 +35,6 @@ export async function saveUploadedFiles(
 
     return filePaths.length > 0 ? filePaths : null;
   } else {
-    // Handle single file
     if (files.size === 0) return null;
     return await saveFile(files, uploadDir, folder);
   }
@@ -53,7 +50,6 @@ async function compressFileBuffer(
   buffer: Buffer,
   mimeType: string,
 ): Promise<Buffer> {
-  // Skip compression for already compressed formats
   const skipCompression = [
     'image/jpeg',
     'image/jpg',
@@ -78,7 +74,6 @@ async function compressFileBuffer(
 
     const compressed = await gzipAsync(buffer);
 
-    // Only use compression if it actually reduces file size significantly
     if (compressed.length < buffer.length * 0.9) {
       return compressed;
     }
@@ -99,20 +94,16 @@ async function saveFile(
   folder: string,
 ): Promise<string | null> {
   try {
-    // Generate unique filename
     const timestamp = Date.now();
     const randomSuffix = Math.random().toString(36).substring(2, 8);
     const fileExt = file.name.split('.').pop() || '';
     const filename = `${timestamp}-${randomSuffix}.${fileExt}`;
 
-    // Save file to disk
     let buffer = Buffer.from(await file.arrayBuffer());
     if (file.type.startsWith('image/')) {
-      // Compress image using sharp
       const sharp = (await import('sharp')).default;
       const image = sharp(buffer);
 
-      // You can adjust compression options as needed
       let compressedBuffer: Buffer;
       if (file.type === 'image/jpeg' || file.type === 'image/jpg') {
         compressedBuffer = await image.jpeg({ quality: 70 }).toBuffer();
@@ -123,11 +114,10 @@ async function saveFile(
       } else {
         compressedBuffer = buffer; // fallback for unsupported types
       }
-      // Overwrite buffer with compressedBuffer
+
       buffer = Buffer.from(compressedBuffer);
     } else {
       compressFileBuffer(buffer, file.type).then((compressedBuffer) => {
-        // Only overwrite if compression was successful
         if (compressedBuffer.length < buffer.length) {
           buffer = Buffer.from(compressedBuffer);
         }
@@ -136,7 +126,6 @@ async function saveFile(
     const filePath = join(uploadDir, filename);
     await writeFile(filePath, buffer);
 
-    // Return relative path from public directory
     return `/uploads/${folder}/${filename}`;
   } catch (error) {
     console.error('Failed to save file:', error);

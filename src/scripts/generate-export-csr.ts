@@ -44,7 +44,6 @@ export async function generateExportCSR(
       progress: 0,
     });
 
-    // Call the API endpoint that triggers server-side export
     const response = await fetch('/api/export', {
       method: 'POST',
       headers: {
@@ -64,12 +63,10 @@ export async function generateExportCSR(
       );
     }
 
-    // Check if response is a streaming response
     if (
       response.body &&
       response.headers.get('content-type')?.includes('text/plain')
     ) {
-      // Handle streaming response with progress updates
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
 
@@ -86,7 +83,6 @@ export async function generateExportCSR(
               const statusUpdate = JSON.parse(line);
               updateStatus(statusUpdate);
             } catch {
-              // If not JSON, treat as plain text message
               updateStatus({
                 step: 'processing',
                 message: line.trim(),
@@ -96,7 +92,6 @@ export async function generateExportCSR(
         }
       }
     } else {
-      // Handle regular JSON response
       const result = await response.json();
 
       updateStatus({
@@ -180,10 +175,8 @@ export async function downloadExportZip(): Promise<void> {
       throw new Error(`Failed to download export: ${response.statusText}`);
     }
 
-    // Create blob from response
     const blob = await response.blob();
 
-    // Create download link
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -191,7 +184,6 @@ export async function downloadExportZip(): Promise<void> {
     document.body.appendChild(a);
     a.click();
 
-    // Cleanup
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
   } catch (error) {
@@ -216,7 +208,6 @@ export function generateFormExportPreview(config: IFormConfiguration): {
   const packageName = config.title.toLowerCase().replace(/\s+/g, '-');
 
   const files = [
-    // Components
     {
       path: `components/form-scaffold/${tableName}Form.tsx`,
       description: 'Generated form component',
@@ -228,14 +219,12 @@ export function generateFormExportPreview(config: IFormConfiguration): {
       type: 'component' as const,
     },
 
-    // Types
     {
       path: `types/${tableName}Types.d.ts`,
       description: 'TypeScript type definitions',
       type: 'type' as const,
     },
 
-    // Schemas
     {
       path: `schemas/${tableName}-zod.ts`,
       description: 'Zod validation schema',
@@ -247,21 +236,18 @@ export function generateFormExportPreview(config: IFormConfiguration): {
       type: 'schema' as const,
     },
 
-    // Actions
     {
       path: `actions/${tableName}.ts`,
       description: 'Server actions for CRUD operations',
       type: 'action' as const,
     },
 
-    // Pages
     {
       path: `pages/${tableName}/page.tsx`,
       description: 'Demo page implementation',
       type: 'page' as const,
     },
 
-    // Configuration
     {
       path: `configurations/${tableName}FormConfiguration.ts`,
       description: 'Form configuration file',
@@ -286,7 +272,6 @@ export function validateExportPrerequisites(config: IFormConfiguration): {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  // Check required fields
   if (!config.title?.trim()) {
     errors.push('Form title is required');
   }
@@ -299,7 +284,6 @@ export function validateExportPrerequisites(config: IFormConfiguration): {
     errors.push('At least one form section is required');
   }
 
-  // Check for fields in sections
   const hasFields = config.sections?.some(
     (section) => section.fields?.length > 0,
   );
@@ -307,7 +291,6 @@ export function validateExportPrerequisites(config: IFormConfiguration): {
     errors.push('At least one field is required in the form');
   }
 
-  // Validate table name format
   if (
     config.postgresTableName &&
     !/^[a-z][a-z0-9_]*$/i.test(config.postgresTableName)
@@ -317,7 +300,6 @@ export function validateExportPrerequisites(config: IFormConfiguration): {
     );
   }
 
-  // Check for duplicate field names
   const fieldNames = new Set<string>();
   const duplicateFields: string[] = [];
 
@@ -335,7 +317,6 @@ export function validateExportPrerequisites(config: IFormConfiguration): {
     errors.push(`Duplicate field names found: ${duplicateFields.join(', ')}`);
   }
 
-  // Warnings
   if (config.sections && config.sections.length > 10) {
     warnings.push('Large number of sections might affect performance');
   }

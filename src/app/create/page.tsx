@@ -73,7 +73,6 @@ export default function CreateFormPage() {
   };
 
   const handleTestSubmit = (data: Record<string, unknown>) => {
-    console.log('Form submitted:', data);
     alert('Form submitted! Check console for data.');
   };
 

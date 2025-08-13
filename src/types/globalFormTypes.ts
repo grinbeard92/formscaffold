@@ -86,13 +86,13 @@ export interface IFieldDefinition<T extends FieldValues> {
   min?: string | number;
   max?: string | number;
   rows?: number;
-  //Only necessary for select fields
+
   options?: ISelectOption[] | Array<string | { value: string; label: string }>;
   className?: string;
   disabled?: boolean;
   description?: string;
   default: string | number | boolean | Date | File[] | null;
-  // Override system-style zod error message with a user-friendly message
+
   customErrorMessage?: string;
 
   accept?: EAcceptFileTypes | string;
