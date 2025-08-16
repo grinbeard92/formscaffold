@@ -1,8 +1,8 @@
 'use server';
 
 /**
- * Server Actions for maintenanceForm
- * Generated automatically from FormConfiguration: Annual Maintenance Checklist
+ * Server Actions for finalQualityForm
+ * Generated automatically from FormConfiguration: Final Quality Inspection Report
  */
 
 import { revalidatePath } from 'next/cache';
@@ -14,22 +14,22 @@ import {
   updateFormData,
   deleteFormData,
 } from '@/db/generic-db-actions';
-import { maintenanceFormConfiguration } from '@/configurations/maintenanceFormConfiguration';
+import { finalQualityFormConfiguration } from '@/configurations/finalQualityFormConfiguration';
 import { generateZodSchema } from '@/scripts/generate-schema';
-import { maintenanceFormFormData, UpdateMaintenanceFormData, maintenanceForm } from '@/types/maintenanceFormTypes';
+import { finalQualityFormFormData, UpdateFinalQualityFormData, finalQualityForm } from '@/types/finalQualityFormTypes';
 import { saveUploadedFiles, filePathsToString } from '@/utils/fileUpload';
 
 
-const maintenanceFormFormSchema = generateZodSchema(maintenanceFormConfiguration, false);
+const finalQualityFormFormSchema = generateZodSchema(finalQualityFormConfiguration, false);
 
 
-const maintenanceFormDatabaseSchema = maintenanceFormFormSchema.extend({
+const finalQualityFormDatabaseSchema = finalQualityFormFormSchema.extend({
   maintenance_pictures: z.string().nullable().optional(),
   supporting_documents: z.string().nullable().optional()
 });
 
-const createMaintenanceFormSchema = maintenanceFormDatabaseSchema;
-const updateMaintenanceFormSchema = createMaintenanceFormSchema.partial();
+const createFinalQualityFormSchema = finalQualityFormDatabaseSchema;
+const updateFinalQualityFormSchema = createFinalQualityFormSchema.partial();
 
 /**
  * Process file uploads and convert File objects to file paths
@@ -39,12 +39,12 @@ async function processFileUploads(data: Record<string, unknown>): Promise<Record
   
 
   if (data.maintenance_pictures instanceof File || Array.isArray(data.maintenance_pictures)) {
-    const filePaths = await saveUploadedFiles(data.maintenance_pictures as File | File[], 'maintenanceform');
+    const filePaths = await saveUploadedFiles(data.maintenance_pictures as File | File[], 'finalqualityform');
     processedData.maintenance_pictures = filePathsToString(filePaths);
   }
 
   if (data.supporting_documents instanceof File || Array.isArray(data.supporting_documents)) {
-    const filePaths = await saveUploadedFiles(data.supporting_documents as File | File[], 'maintenanceform');
+    const filePaths = await saveUploadedFiles(data.supporting_documents as File | File[], 'finalqualityform');
     processedData.supporting_documents = filePathsToString(filePaths);
   }
   return processedData;
@@ -52,30 +52,30 @@ async function processFileUploads(data: Record<string, unknown>): Promise<Record
 
 
 /**
- * Create a new maintenanceForm entry
+ * Create a new finalQualityForm entry
  */
-export async function createMaintenanceFormRecord(
-  data: maintenanceFormFormData
-): Promise<{ success: boolean; data?: maintenanceForm; error?: string }> {
+export async function createFinalQualityFormRecord(
+  data: finalQualityFormFormData
+): Promise<{ success: boolean; data?: finalQualityForm; error?: string }> {
   try {
 
     const processedData = await processFileUploads(data as Record<string, unknown>);
     
 
-    const validatedData = createMaintenanceFormSchema.parse(processedData);
+    const validatedData = createFinalQualityFormSchema.parse(processedData);
     
 
-    const result = await insertFormData(maintenanceFormConfiguration, validatedData);
+    const result = await insertFormData(finalQualityFormConfiguration, validatedData);
     
 
-    revalidatePath('/maintenance_form');
+    revalidatePath('/final_quality_form');
     
     return {
       success: true,
-      data: result as unknown as maintenanceForm, // Cast to maintenanceForm type
+      data: result as unknown as finalQualityForm, // Cast to finalQualityForm type
     };
   } catch (error) {
-    console.error('Error creating maintenance_form:', error);
+    console.error('Error creating final_quality_form:', error);
     
     if (error instanceof z.ZodError) {
       return {
@@ -92,15 +92,15 @@ export async function createMaintenanceFormRecord(
 }
 
 /**
- * Get maintenance_form entries with pagination and filtering
+ * Get final_quality_form entries with pagination and filtering
  */
-export async function getMaintenanceFormList(options: {
+export async function getFinalQualityFormList(options: {
   limit?: number;
   offset?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   filters?: Record<string, unknown>;
-} = {}): Promise<{ success: boolean; data?: maintenanceForm[]; total?: number; error?: string }> {
+} = {}): Promise<{ success: boolean; data?: finalQualityForm[]; total?: number; error?: string }> {
   try {
     const {
       limit = 50,
@@ -110,7 +110,7 @@ export async function getMaintenanceFormList(options: {
       filters = {},
     } = options;
 
-    const result = await getFormData(maintenanceFormConfiguration, {
+    const result = await getFormData(finalQualityFormConfiguration, {
       limit,
       offset,
       sortBy,
@@ -120,11 +120,11 @@ export async function getMaintenanceFormList(options: {
 
     return {
       success: true,
-      data: result.data as unknown as maintenanceForm[], // Cast to maintenanceForm[] type
+      data: result.data as unknown as finalQualityForm[], // Cast to finalQualityForm[] type
       total: result.total,
     };
   } catch (error) {
-    console.error('Error fetching maintenance_form list:', error);
+    console.error('Error fetching final_quality_form list:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -133,13 +133,13 @@ export async function getMaintenanceFormList(options: {
 }
 
 /**
- * Get a single maintenance_form entry by ID
+ * Get a single final_quality_form entry by ID
  */
-export async function getMaintenanceFormRecordById(
+export async function getFinalQualityFormRecordById(
   id: string
-): Promise<{ success: boolean; data?: maintenanceForm; error?: string }> {
+): Promise<{ success: boolean; data?: finalQualityForm; error?: string }> {
   try {
-    const result = await getFormData(maintenanceFormConfiguration, {
+    const result = await getFormData(finalQualityFormConfiguration, {
       filters: { id },
       limit: 1,
       offset: 0,
@@ -148,16 +148,16 @@ export async function getMaintenanceFormRecordById(
     if (!result.data || result.data.length === 0) {
       return {
         success: false,
-        error: `No maintenance_form found with id '${id}'`,
+        error: `No final_quality_form found with id '${id}'`,
       };
     }
 
     return {
       success: true,
-      data: result.data[0] as unknown as maintenanceForm, // Cast to maintenanceForm type
+      data: result.data[0] as unknown as finalQualityForm, // Cast to finalQualityForm type
     };
   } catch (error) {
-    console.error('Error fetching maintenance_form by ID:', error);
+    console.error('Error fetching final_quality_form by ID:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -166,28 +166,28 @@ export async function getMaintenanceFormRecordById(
 }
 
 /**
- * Update a maintenance_form entry
+ * Update a final_quality_form entry
  */
-export async function updateMaintenanceFormRecord(
+export async function updateFinalQualityFormRecord(
   id: string,
-  data: UpdateMaintenanceFormData
-): Promise<{ success: boolean; data?: maintenanceForm; error?: string }> {
+  data: UpdateFinalQualityFormData
+): Promise<{ success: boolean; data?: finalQualityForm; error?: string }> {
   try {
 
-    const validatedData = updateMaintenanceFormSchema.parse(data);
+    const validatedData = updateFinalQualityFormSchema.parse(data);
     
 
-    const result = await updateFormData(maintenanceFormConfiguration, id, validatedData);
+    const result = await updateFormData(finalQualityFormConfiguration, id, validatedData);
     
 
-    revalidatePath('/maintenance_form');
+    revalidatePath('/final_quality_form');
     
     return {
       success: true,
-      data: result as unknown as maintenanceForm, // Cast to maintenanceForm type
+      data: result as unknown as finalQualityForm, // Cast to finalQualityForm type
     };
   } catch (error) {
-    console.error('Error updating maintenance_form:', error);
+    console.error('Error updating final_quality_form:', error);
     
     if (error instanceof z.ZodError) {
       return {
@@ -204,22 +204,22 @@ export async function updateMaintenanceFormRecord(
 }
 
 /**
- * Delete a maintenance_form entry
+ * Delete a final_quality_form entry
  */
-export async function deleteMaintenanceForm(
+export async function deleteFinalQualityForm(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await deleteFormData(maintenanceFormConfiguration, id);
+    await deleteFormData(finalQualityFormConfiguration, id);
     
 
-    revalidatePath('/maintenance_form');
+    revalidatePath('/final_quality_form');
     
     return {
       success: true,
     };
   } catch (error) {
-    console.error('Error deleting maintenance_form:', error);
+    console.error('Error deleting final_quality_form:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -230,7 +230,7 @@ export async function deleteMaintenanceForm(
 /**
  * Server action for form submission with redirect
  */
-export async function submitMaintenanceForm(
+export async function submitFinalQualityForm(
   formData: FormData
 ): Promise<void> {
   try {
@@ -239,7 +239,7 @@ export async function submitMaintenanceForm(
     
 
     const fieldConfigs = new Map<string, { type: string; multiple?: boolean; pgConfig?: any }>();
-    maintenanceFormConfiguration.sections.forEach(section => {
+    finalQualityFormConfiguration.sections.forEach(section => {
       section.fields.forEach(field => {
         fieldConfigs.set(field.name, { 
           type: field.type, 
@@ -274,12 +274,12 @@ export async function submitMaintenanceForm(
         
         if (fieldConfig.multiple) {
 
-          const filePaths = await saveUploadedFiles(files, 'maintenance_form');
+          const filePaths = await saveUploadedFiles(files, 'final_quality_form');
           data[fieldName] = filePathsToString(filePaths);
         } else {
 
           if (files.length > 0) {
-            const filePath = await saveUploadedFiles(files[0], 'maintenance_form');
+            const filePath = await saveUploadedFiles(files[0], 'final_quality_form');
             data[fieldName] = filePath;
           }
         }
@@ -304,16 +304,16 @@ export async function submitMaintenanceForm(
     }
 
 
-    const result = await createMaintenanceForm(data as maintenanceFormFormData);
+    const result = await createFinalQualityForm(data as finalQualityFormFormData);
     
     if (!result.success) {
-      throw new Error(result.error || 'Failed to create maintenance_form');
+      throw new Error(result.error || 'Failed to create final_quality_form');
     }
     
 
-    redirect('/maintenance_form?success=true');
+    redirect('/final_quality_form?success=true');
   } catch (error) {
-    console.error('Error in submitMaintenanceFormForm:', error);
+    console.error('Error in submitFinalQualityFormForm:', error);
 
     throw error;
   }

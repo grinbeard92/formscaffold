@@ -1,8 +1,8 @@
 'use server';
 
 /**
- * Server Actions for maintenanceForm
- * Generated automatically from FormConfiguration: Annual Maintenance Checklist
+ * Server Actions for generalForm
+ * Generated automatically from FormConfiguration: General Field Service Report
  */
 
 import { revalidatePath } from 'next/cache';
@@ -14,22 +14,23 @@ import {
   updateFormData,
   deleteFormData,
 } from '@/db/generic-db-actions';
-import { maintenanceFormConfiguration } from '@/configurations/maintenanceFormConfiguration';
+import { generalFormConfiguration } from '@/configurations/generalFormConfiguration';
 import { generateZodSchema } from '@/scripts/generate-schema';
-import { maintenanceFormFormData, UpdateMaintenanceFormData, maintenanceForm } from '@/types/maintenanceFormTypes';
+import { generalFormFormData, UpdateGeneralFormData, generalForm } from '@/types/generalFormTypes';
 import { saveUploadedFiles, filePathsToString } from '@/utils/fileUpload';
 
 
-const maintenanceFormFormSchema = generateZodSchema(maintenanceFormConfiguration, false);
+const generalFormFormSchema = generateZodSchema(generalFormConfiguration, false);
 
 
-const maintenanceFormDatabaseSchema = maintenanceFormFormSchema.extend({
-  maintenance_pictures: z.string().nullable().optional(),
-  supporting_documents: z.string().nullable().optional()
+const generalFormDatabaseSchema = generalFormFormSchema.extend({
+  before_service_photos: z.string().nullable().optional(),
+  after_service_photos: z.string().nullable().optional(),
+  customer_documents: z.string().nullable().optional()
 });
 
-const createMaintenanceFormSchema = maintenanceFormDatabaseSchema;
-const updateMaintenanceFormSchema = createMaintenanceFormSchema.partial();
+const createGeneralFormSchema = generalFormDatabaseSchema;
+const updateGeneralFormSchema = createGeneralFormSchema.partial();
 
 /**
  * Process file uploads and convert File objects to file paths
@@ -38,44 +39,49 @@ async function processFileUploads(data: Record<string, unknown>): Promise<Record
   const processedData = { ...data };
   
 
-  if (data.maintenance_pictures instanceof File || Array.isArray(data.maintenance_pictures)) {
-    const filePaths = await saveUploadedFiles(data.maintenance_pictures as File | File[], 'maintenanceform');
-    processedData.maintenance_pictures = filePathsToString(filePaths);
+  if (data.before_service_photos instanceof File || Array.isArray(data.before_service_photos)) {
+    const filePaths = await saveUploadedFiles(data.before_service_photos as File | File[], 'generalform');
+    processedData.before_service_photos = filePathsToString(filePaths);
   }
 
-  if (data.supporting_documents instanceof File || Array.isArray(data.supporting_documents)) {
-    const filePaths = await saveUploadedFiles(data.supporting_documents as File | File[], 'maintenanceform');
-    processedData.supporting_documents = filePathsToString(filePaths);
+  if (data.after_service_photos instanceof File || Array.isArray(data.after_service_photos)) {
+    const filePaths = await saveUploadedFiles(data.after_service_photos as File | File[], 'generalform');
+    processedData.after_service_photos = filePathsToString(filePaths);
+  }
+
+  if (data.customer_documents instanceof File || Array.isArray(data.customer_documents)) {
+    const filePaths = await saveUploadedFiles(data.customer_documents as File | File[], 'generalform');
+    processedData.customer_documents = filePathsToString(filePaths);
   }
   return processedData;
 }
 
 
 /**
- * Create a new maintenanceForm entry
+ * Create a new generalForm entry
  */
-export async function createMaintenanceFormRecord(
-  data: maintenanceFormFormData
-): Promise<{ success: boolean; data?: maintenanceForm; error?: string }> {
+export async function createGeneralFormRecord(
+  data: generalFormFormData
+): Promise<{ success: boolean; data?: generalForm; error?: string }> {
   try {
 
     const processedData = await processFileUploads(data as Record<string, unknown>);
     
 
-    const validatedData = createMaintenanceFormSchema.parse(processedData);
+    const validatedData = createGeneralFormSchema.parse(processedData);
     
 
-    const result = await insertFormData(maintenanceFormConfiguration, validatedData);
+    const result = await insertFormData(generalFormConfiguration, validatedData);
     
 
-    revalidatePath('/maintenance_form');
+    revalidatePath('/general_form');
     
     return {
       success: true,
-      data: result as unknown as maintenanceForm, // Cast to maintenanceForm type
+      data: result as unknown as generalForm, // Cast to generalForm type
     };
   } catch (error) {
-    console.error('Error creating maintenance_form:', error);
+    console.error('Error creating general_form:', error);
     
     if (error instanceof z.ZodError) {
       return {
@@ -92,15 +98,15 @@ export async function createMaintenanceFormRecord(
 }
 
 /**
- * Get maintenance_form entries with pagination and filtering
+ * Get general_form entries with pagination and filtering
  */
-export async function getMaintenanceFormList(options: {
+export async function getGeneralFormList(options: {
   limit?: number;
   offset?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   filters?: Record<string, unknown>;
-} = {}): Promise<{ success: boolean; data?: maintenanceForm[]; total?: number; error?: string }> {
+} = {}): Promise<{ success: boolean; data?: generalForm[]; total?: number; error?: string }> {
   try {
     const {
       limit = 50,
@@ -110,7 +116,7 @@ export async function getMaintenanceFormList(options: {
       filters = {},
     } = options;
 
-    const result = await getFormData(maintenanceFormConfiguration, {
+    const result = await getFormData(generalFormConfiguration, {
       limit,
       offset,
       sortBy,
@@ -120,11 +126,11 @@ export async function getMaintenanceFormList(options: {
 
     return {
       success: true,
-      data: result.data as unknown as maintenanceForm[], // Cast to maintenanceForm[] type
+      data: result.data as unknown as generalForm[], // Cast to generalForm[] type
       total: result.total,
     };
   } catch (error) {
-    console.error('Error fetching maintenance_form list:', error);
+    console.error('Error fetching general_form list:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -133,13 +139,13 @@ export async function getMaintenanceFormList(options: {
 }
 
 /**
- * Get a single maintenance_form entry by ID
+ * Get a single general_form entry by ID
  */
-export async function getMaintenanceFormRecordById(
+export async function getGeneralFormRecordById(
   id: string
-): Promise<{ success: boolean; data?: maintenanceForm; error?: string }> {
+): Promise<{ success: boolean; data?: generalForm; error?: string }> {
   try {
-    const result = await getFormData(maintenanceFormConfiguration, {
+    const result = await getFormData(generalFormConfiguration, {
       filters: { id },
       limit: 1,
       offset: 0,
@@ -148,16 +154,16 @@ export async function getMaintenanceFormRecordById(
     if (!result.data || result.data.length === 0) {
       return {
         success: false,
-        error: `No maintenance_form found with id '${id}'`,
+        error: `No general_form found with id '${id}'`,
       };
     }
 
     return {
       success: true,
-      data: result.data[0] as unknown as maintenanceForm, // Cast to maintenanceForm type
+      data: result.data[0] as unknown as generalForm, // Cast to generalForm type
     };
   } catch (error) {
-    console.error('Error fetching maintenance_form by ID:', error);
+    console.error('Error fetching general_form by ID:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -166,28 +172,28 @@ export async function getMaintenanceFormRecordById(
 }
 
 /**
- * Update a maintenance_form entry
+ * Update a general_form entry
  */
-export async function updateMaintenanceFormRecord(
+export async function updateGeneralFormRecord(
   id: string,
-  data: UpdateMaintenanceFormData
-): Promise<{ success: boolean; data?: maintenanceForm; error?: string }> {
+  data: UpdateGeneralFormData
+): Promise<{ success: boolean; data?: generalForm; error?: string }> {
   try {
 
-    const validatedData = updateMaintenanceFormSchema.parse(data);
+    const validatedData = updateGeneralFormSchema.parse(data);
     
 
-    const result = await updateFormData(maintenanceFormConfiguration, id, validatedData);
+    const result = await updateFormData(generalFormConfiguration, id, validatedData);
     
 
-    revalidatePath('/maintenance_form');
+    revalidatePath('/general_form');
     
     return {
       success: true,
-      data: result as unknown as maintenanceForm, // Cast to maintenanceForm type
+      data: result as unknown as generalForm, // Cast to generalForm type
     };
   } catch (error) {
-    console.error('Error updating maintenance_form:', error);
+    console.error('Error updating general_form:', error);
     
     if (error instanceof z.ZodError) {
       return {
@@ -204,22 +210,22 @@ export async function updateMaintenanceFormRecord(
 }
 
 /**
- * Delete a maintenance_form entry
+ * Delete a general_form entry
  */
-export async function deleteMaintenanceForm(
+export async function deleteGeneralForm(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await deleteFormData(maintenanceFormConfiguration, id);
+    await deleteFormData(generalFormConfiguration, id);
     
 
-    revalidatePath('/maintenance_form');
+    revalidatePath('/general_form');
     
     return {
       success: true,
     };
   } catch (error) {
-    console.error('Error deleting maintenance_form:', error);
+    console.error('Error deleting general_form:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -230,7 +236,7 @@ export async function deleteMaintenanceForm(
 /**
  * Server action for form submission with redirect
  */
-export async function submitMaintenanceForm(
+export async function submitGeneralForm(
   formData: FormData
 ): Promise<void> {
   try {
@@ -239,7 +245,7 @@ export async function submitMaintenanceForm(
     
 
     const fieldConfigs = new Map<string, { type: string; multiple?: boolean; pgConfig?: any }>();
-    maintenanceFormConfiguration.sections.forEach(section => {
+    generalFormConfiguration.sections.forEach(section => {
       section.fields.forEach(field => {
         fieldConfigs.set(field.name, { 
           type: field.type, 
@@ -274,12 +280,12 @@ export async function submitMaintenanceForm(
         
         if (fieldConfig.multiple) {
 
-          const filePaths = await saveUploadedFiles(files, 'maintenance_form');
+          const filePaths = await saveUploadedFiles(files, 'general_form');
           data[fieldName] = filePathsToString(filePaths);
         } else {
 
           if (files.length > 0) {
-            const filePath = await saveUploadedFiles(files[0], 'maintenance_form');
+            const filePath = await saveUploadedFiles(files[0], 'general_form');
             data[fieldName] = filePath;
           }
         }
@@ -304,16 +310,16 @@ export async function submitMaintenanceForm(
     }
 
 
-    const result = await createMaintenanceForm(data as maintenanceFormFormData);
+    const result = await createGeneralForm(data as generalFormFormData);
     
     if (!result.success) {
-      throw new Error(result.error || 'Failed to create maintenance_form');
+      throw new Error(result.error || 'Failed to create general_form');
     }
     
 
-    redirect('/maintenance_form?success=true');
+    redirect('/general_form?success=true');
   } catch (error) {
-    console.error('Error in submitMaintenanceFormForm:', error);
+    console.error('Error in submitGeneralFormForm:', error);
 
     throw error;
   }

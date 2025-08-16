@@ -78,6 +78,7 @@ async function cleanAndCreateExportDir(exportDir: string): Promise<void> {
   const subdirs = [
     'components/form-scaffold/utils',
     'components/ui',
+    'lib/schema',
     'types',
     'actions',
     'app',
@@ -217,7 +218,7 @@ async function copyFormArtifacts(
 
     {
       source: 'src/scripts/generate-schema.ts',
-      destination: 'src/scripts/generate-schema.ts',
+      destination: 'lib/schema/generate-schema.ts',
     },
   ];
 

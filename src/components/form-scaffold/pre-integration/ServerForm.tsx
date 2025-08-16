@@ -1,7 +1,7 @@
-import { ClientForm } from "./ClientForm";
-import { IFormConfiguration } from "@/types/globalFormTypes";
-import { generateZodSchema } from "@/lib/schema/generate-schema";
-import { success } from "zod";
+'use server';
+
+import { ClientForm } from './ClientForm';
+import { IFormConfiguration } from '@/types/globalFormTypes';
 
 function sanitizeConfigurationForClient(config: IFormConfiguration) {
   return {
@@ -18,9 +18,6 @@ function sanitizeConfigurationForClient(config: IFormConfiguration) {
 
 export interface ServerFormProps {
   config: IFormConfiguration;
-  serverAction?: (
-    data: Record<string, unknown>,
-  ) => Promise<{ success: boolean; data?: unknown; error?: string }>;
   onSubmit?: (data: Record<string, unknown>) => void | Promise<void>;
   defaultValues?: Partial<Record<string, unknown>>;
   className?: string;
@@ -29,19 +26,17 @@ export interface ServerFormProps {
   children?: React.ReactNode;
 }
 
-/**
- * Server component that resolves server actions and passes them to the client form
- */
-export async function ServerForm({
+export function ServerForm({
   config,
-  serverAction,
   onSubmit,
   defaultValues,
   className,
   isLoading,
+  autoSaveToDatabase = true,
   children,
 }: ServerFormProps) {
   const clientConfig = sanitizeConfigurationForClient(config);
+
   return (
     <>
       <ClientForm
@@ -56,7 +51,7 @@ export async function ServerForm({
         defaultValues={defaultValues}
         className={className}
         isLoading={isLoading}
-        serverAction={serverAction}
+        autoSaveToDatabase={autoSaveToDatabase}
       />
       {children}
     </>

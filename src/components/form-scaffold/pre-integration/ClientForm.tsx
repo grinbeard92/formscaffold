@@ -1,13 +1,16 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useForm, FieldErrors, Form } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { FormSectionTemplate } from "./FormSectionTemplate";
-import z from "zod";
-import { IFormSectionDefinition } from "../../types/globalFormTypes";
-import { generateZodSchema } from "@/lib/schema/generate-schema";
+import React from 'react';
+import { useForm, FieldErrors } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
+import { FormSectionTemplate } from './FormSectionTemplate';
+import z from 'zod';
+import {
+  IFormConfiguration,
+  IFormSectionDefinition,
+} from '../../../types/globalFormTypes';
+import { generateZodSchema } from '@/scripts/generate-schema';
 
 function convertErrors(
   errors: FieldErrors<Record<string, unknown>>,
@@ -24,8 +27,8 @@ function convertErrors(
 
 export interface ClientFormProps {
   setFormError?: (error: string | null) => void;
-  clientConfig: any;
   title: string;
+  clientConfig: any;
   description?: string;
   sections: IFormSectionDefinition[];
   submitButtonText?: string;
@@ -46,30 +49,28 @@ export function ClientForm({
   title,
   description,
   sections,
-  submitButtonText = "Submit",
-  resetButtonText = "Reset",
+  submitButtonText = 'Submit',
+  resetButtonText = 'Reset',
   showResetButton = true,
   onSubmit,
   defaultValues,
-  className = "",
+  className = '',
   isLoading = false,
   autoSaveToDatabase = true,
-  serverAction,
   setFormError: externalSetFormError,
 }: ClientFormProps) {
   const schema = generateZodSchema(clientConfig, false);
   const {
     control,
     handleSubmit,
-    register,
     reset,
     trigger,
     formState: { errors, isSubmitting },
   } = useForm<Record<string, unknown>>({
     resolver: zodResolver(schema as any),
     defaultValues: defaultValues,
-    mode: "onChange", // Validate on every change
-    reValidateMode: "onChange", // Re-validate on every change
+    mode: 'onChange', // Validate on every change
+    reValidateMode: 'onChange', // Re-validate on every change
     shouldFocusError: true, // Focus on first error field
   });
 
@@ -80,10 +81,23 @@ export function ClientForm({
   const handleReset = () => {
     reset(defaultValues);
     setFormError(null); // Clear any existing errors
-    toast.info("Form has been reset");
+    toast.info('Form has been reset');
   };
 
   const [formError, setFormError] = React.useState<string | null>(null);
+
+  const getErrorMessage = (error: unknown): string => {
+    if (typeof error === 'string') {
+      return error;
+    }
+    if (error instanceof Error) {
+      return error.message;
+    }
+    if (error && typeof error === 'object' && 'message' in error) {
+      return String(error.message);
+    }
+    return 'An unexpected error occurred';
+  };
 
   const handleFormSubmit = async (data: Record<string, unknown>) => {
     try {
@@ -92,34 +106,21 @@ export function ClientForm({
         externalSetFormError(null);
       }
 
-      if (serverAction) {
-        process.env.NODE_ENV === "development" && console.dir(data);
-        const result = await serverAction(data);
-
-        if (!result.success) {
-          throw new Error(result.error || "Failed to submit form");
-        }
-
-        toast.success("Form submitted successfully!");
-        reset(defaultValues);
-      } else if (autoSaveToDatabase && !serverAction) {
-        toast.warning("Server action not available");
-      }
-
       if (onSubmit) {
         await onSubmit(data);
       }
 
       if (!autoSaveToDatabase) {
-        toast.success("Form submitted successfully!");
+        toast.success('Form submitted successfully!');
       }
     } catch (error) {
-      setFormError(error);
+      const errorMessage = getErrorMessage(error);
+      setFormError(errorMessage);
       if (externalSetFormError) {
-        externalSetFormError(error);
+        externalSetFormError(errorMessage);
       }
       toast.error(errorMessage);
-      console.error("Form submission error:", error);
+      console.error('Form submission error:', error);
     }
   };
 
@@ -127,23 +128,24 @@ export function ClientForm({
     <div className={`space-y-6 ${className}`}>
       {/* Form Header */}
       {(title || description) && (
-        <div className="space-y-2 text-center">
+        <div className='space-y-2 text-center'>
           {title && (
-            <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+            <h1 className='text-foreground text-2xl font-bold'>{title}</h1>
           )}
           {description && (
-            <p className="text-muted-foreground">{description}</p>
+            <p className='text-muted-foreground'>{description}</p>
           )}
         </div>
       )}
-      <Form onSubmit={handleSubmit(handleFormSubmit)} control={control}>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit(handleFormSubmit)} className='space-y-6'>
         {/* Form Sections */}
         {sections.map((section, index) => (
           <FormSectionTemplate
             key={`section-${index}`}
             title={section.title}
             description={section.description}
-            register={register}
             control={control}
             fields={section.fields}
             errors={convertErrors(errors)}
@@ -154,31 +156,31 @@ export function ClientForm({
 
         {/* Form Error Display */}
         {formError && (
-          <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-destructive">
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 text-destructive">
+          <div className='bg-destructive/10 border-destructive/20 text-destructive rounded-lg border p-4'>
+            <div className='flex items-start gap-3'>
+              <div className='text-destructive mt-0.5'>
                 <svg
-                  className="h-5 w-5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
+                  className='h-5 w-5'
+                  fill='currentColor'
+                  viewBox='0 0 20 20'
                 >
                   <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
+                    fillRule='evenodd'
+                    d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z'
+                    clipRule='evenodd'
                   />
                 </svg>
               </div>
-              <div className="flex-1">
-                <h4 className="text-sm font-medium text-destructive">
+              <div className='flex-1'>
+                <h4 className='text-destructive text-sm font-medium'>
                   Form Submission Error
                 </h4>
-                <p className="mt-1 text-sm text-destructive/80">{formError}</p>
+                <p className='text-destructive/80 mt-1 text-sm'>{formError}</p>
               </div>
               <button
-                type="button"
+                type='button'
                 onClick={() => setFormError(null)}
-                className="text-sm text-destructive/60 hover:text-destructive"
+                className='text-destructive/60 hover:text-destructive text-sm'
               >
                 ✕
               </button>
@@ -187,11 +189,11 @@ export function ClientForm({
         )}
 
         {/* Form Actions */}
-        <div className="flex justify-end space-x-4 border-t border-border pt-6">
+        <div className='border-border flex justify-end space-x-4 border-t pt-6'>
           {showResetButton && (
             <button
-              type="button"
-              className="active:scale-98 rounded bg-secondary px-4 py-2 text-secondary-foreground outline hover:bg-secondary/80 disabled:cursor-not-allowed disabled:opacity-50"
+              type='button'
+              className='bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded px-4 py-2 outline active:scale-98 disabled:cursor-not-allowed disabled:opacity-50'
               onClick={handleReset}
               disabled={isSubmitting || isLoading}
             >
@@ -199,21 +201,21 @@ export function ClientForm({
             </button>
           )}
           <button
-            type="submit"
+            type='submit'
             onClick={() => {
               if (Object.keys(errors).length > 0) {
                 toast.error(
-                  "Please fix form validation errors before submitting",
+                  'Please fix form validation errors before submitting',
                 );
               }
             }}
             disabled={isSubmitting || isLoading}
-            className="active:scale-98 min-w-32 rounded bg-primary px-4 py-2 text-primary-foreground hover:bg-primary-foreground/80 hover:text-secondary disabled:cursor-not-allowed disabled:opacity-50"
+            className='bg-primary text-primary-foreground hover:bg-primary-foreground/80 hover:text-secondary min-w-32 rounded px-4 py-2 active:scale-98 disabled:cursor-not-allowed disabled:opacity-50'
           >
-            {isSubmitting || isLoading ? "Submitting..." : submitButtonText}
+            {isSubmitting || isLoading ? 'Submitting...' : submitButtonText}
           </button>
         </div>
-      </Form>
+      </form>
     </div>
   );
 }

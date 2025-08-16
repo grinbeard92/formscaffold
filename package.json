@@ -18,7 +18,7 @@
     "db:reset": "docker exec -i formscaffold-postgres bash -c 'for file in /docker-entrypoint-initdb.d/*.sql; do psql -U formscaffold_user -d formscaffold_db < \"$file\"; done'",
     "export": "tsx src/scripts/generate-export.ts",
     "generate:demo": "tsx src/scripts/generate-all-demo.ts",
-    "generate:prod": "tsx src/scripts/generate-export-ssr.ts",
+    "generate:prod": "tsx src/scripts/generate-export-ssr.ts && npm run db:stop && npm run db:start && npm run db:init && npm run dev",
     "generate:all-prod": "tsx src/scripts/generate-all-prod.ts",
     "regenerate": "npm run generate:demo && npm run db:stop && npm run db:start && npm run db:init && npm run dev"
   },

@@ -1,8 +1,8 @@
 'use server';
 
 /**
- * Server Actions for maintenanceForm
- * Generated automatically from FormConfiguration: Annual Maintenance Checklist
+ * Server Actions for inhouseForm
+ * Generated automatically from FormConfiguration: In-House Service Report
  */
 
 import { revalidatePath } from 'next/cache';
@@ -14,22 +14,22 @@ import {
   updateFormData,
   deleteFormData,
 } from '@/db/generic-db-actions';
-import { maintenanceFormConfiguration } from '@/configurations/maintenanceFormConfiguration';
+import { inhouseFormConfiguration } from '@/configurations/inhouseFormConfiguration';
 import { generateZodSchema } from '@/scripts/generate-schema';
-import { maintenanceFormFormData, UpdateMaintenanceFormData, maintenanceForm } from '@/types/maintenanceFormTypes';
+import { inhouseFormFormData, UpdateInhouseFormData, inhouseForm } from '@/types/inhouseFormTypes';
 import { saveUploadedFiles, filePathsToString } from '@/utils/fileUpload';
 
 
-const maintenanceFormFormSchema = generateZodSchema(maintenanceFormConfiguration, false);
+const inhouseFormFormSchema = generateZodSchema(inhouseFormConfiguration, false);
 
 
-const maintenanceFormDatabaseSchema = maintenanceFormFormSchema.extend({
-  maintenance_pictures: z.string().nullable().optional(),
-  supporting_documents: z.string().nullable().optional()
+const inhouseFormDatabaseSchema = inhouseFormFormSchema.extend({
+  service_photos: z.string().nullable().optional(),
+  test_documentation: z.string().nullable().optional()
 });
 
-const createMaintenanceFormSchema = maintenanceFormDatabaseSchema;
-const updateMaintenanceFormSchema = createMaintenanceFormSchema.partial();
+const createInhouseFormSchema = inhouseFormDatabaseSchema;
+const updateInhouseFormSchema = createInhouseFormSchema.partial();
 
 /**
  * Process file uploads and convert File objects to file paths
@@ -38,44 +38,44 @@ async function processFileUploads(data: Record<string, unknown>): Promise<Record
   const processedData = { ...data };
   
 
-  if (data.maintenance_pictures instanceof File || Array.isArray(data.maintenance_pictures)) {
-    const filePaths = await saveUploadedFiles(data.maintenance_pictures as File | File[], 'maintenanceform');
-    processedData.maintenance_pictures = filePathsToString(filePaths);
+  if (data.service_photos instanceof File || Array.isArray(data.service_photos)) {
+    const filePaths = await saveUploadedFiles(data.service_photos as File | File[], 'inhouseform');
+    processedData.service_photos = filePathsToString(filePaths);
   }
 
-  if (data.supporting_documents instanceof File || Array.isArray(data.supporting_documents)) {
-    const filePaths = await saveUploadedFiles(data.supporting_documents as File | File[], 'maintenanceform');
-    processedData.supporting_documents = filePathsToString(filePaths);
+  if (data.test_documentation instanceof File || Array.isArray(data.test_documentation)) {
+    const filePaths = await saveUploadedFiles(data.test_documentation as File | File[], 'inhouseform');
+    processedData.test_documentation = filePathsToString(filePaths);
   }
   return processedData;
 }
 
 
 /**
- * Create a new maintenanceForm entry
+ * Create a new inhouseForm entry
  */
-export async function createMaintenanceFormRecord(
-  data: maintenanceFormFormData
-): Promise<{ success: boolean; data?: maintenanceForm; error?: string }> {
+export async function createInhouseFormRecord(
+  data: inhouseFormFormData
+): Promise<{ success: boolean; data?: inhouseForm; error?: string }> {
   try {
 
     const processedData = await processFileUploads(data as Record<string, unknown>);
     
 
-    const validatedData = createMaintenanceFormSchema.parse(processedData);
+    const validatedData = createInhouseFormSchema.parse(processedData);
     
 
-    const result = await insertFormData(maintenanceFormConfiguration, validatedData);
+    const result = await insertFormData(inhouseFormConfiguration, validatedData);
     
 
-    revalidatePath('/maintenance_form');
+    revalidatePath('/inhouse_form');
     
     return {
       success: true,
-      data: result as unknown as maintenanceForm, // Cast to maintenanceForm type
+      data: result as unknown as inhouseForm, // Cast to inhouseForm type
     };
   } catch (error) {
-    console.error('Error creating maintenance_form:', error);
+    console.error('Error creating inhouse_form:', error);
     
     if (error instanceof z.ZodError) {
       return {
@@ -92,15 +92,15 @@ export async function createMaintenanceFormRecord(
 }
 
 /**
- * Get maintenance_form entries with pagination and filtering
+ * Get inhouse_form entries with pagination and filtering
  */
-export async function getMaintenanceFormList(options: {
+export async function getInhouseFormList(options: {
   limit?: number;
   offset?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   filters?: Record<string, unknown>;
-} = {}): Promise<{ success: boolean; data?: maintenanceForm[]; total?: number; error?: string }> {
+} = {}): Promise<{ success: boolean; data?: inhouseForm[]; total?: number; error?: string }> {
   try {
     const {
       limit = 50,
@@ -110,7 +110,7 @@ export async function getMaintenanceFormList(options: {
       filters = {},
     } = options;
 
-    const result = await getFormData(maintenanceFormConfiguration, {
+    const result = await getFormData(inhouseFormConfiguration, {
       limit,
       offset,
       sortBy,
@@ -120,11 +120,11 @@ export async function getMaintenanceFormList(options: {
 
     return {
       success: true,
-      data: result.data as unknown as maintenanceForm[], // Cast to maintenanceForm[] type
+      data: result.data as unknown as inhouseForm[], // Cast to inhouseForm[] type
       total: result.total,
     };
   } catch (error) {
-    console.error('Error fetching maintenance_form list:', error);
+    console.error('Error fetching inhouse_form list:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -133,13 +133,13 @@ export async function getMaintenanceFormList(options: {
 }
 
 /**
- * Get a single maintenance_form entry by ID
+ * Get a single inhouse_form entry by ID
  */
-export async function getMaintenanceFormRecordById(
+export async function getInhouseFormRecordById(
   id: string
-): Promise<{ success: boolean; data?: maintenanceForm; error?: string }> {
+): Promise<{ success: boolean; data?: inhouseForm; error?: string }> {
   try {
-    const result = await getFormData(maintenanceFormConfiguration, {
+    const result = await getFormData(inhouseFormConfiguration, {
       filters: { id },
       limit: 1,
       offset: 0,
@@ -148,16 +148,16 @@ export async function getMaintenanceFormRecordById(
     if (!result.data || result.data.length === 0) {
       return {
         success: false,
-        error: `No maintenance_form found with id '${id}'`,
+        error: `No inhouse_form found with id '${id}'`,
       };
     }
 
     return {
       success: true,
-      data: result.data[0] as unknown as maintenanceForm, // Cast to maintenanceForm type
+      data: result.data[0] as unknown as inhouseForm, // Cast to inhouseForm type
     };
   } catch (error) {
-    console.error('Error fetching maintenance_form by ID:', error);
+    console.error('Error fetching inhouse_form by ID:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -166,28 +166,28 @@ export async function getMaintenanceFormRecordById(
 }
 
 /**
- * Update a maintenance_form entry
+ * Update a inhouse_form entry
  */
-export async function updateMaintenanceFormRecord(
+export async function updateInhouseFormRecord(
   id: string,
-  data: UpdateMaintenanceFormData
-): Promise<{ success: boolean; data?: maintenanceForm; error?: string }> {
+  data: UpdateInhouseFormData
+): Promise<{ success: boolean; data?: inhouseForm; error?: string }> {
   try {
 
-    const validatedData = updateMaintenanceFormSchema.parse(data);
+    const validatedData = updateInhouseFormSchema.parse(data);
     
 
-    const result = await updateFormData(maintenanceFormConfiguration, id, validatedData);
+    const result = await updateFormData(inhouseFormConfiguration, id, validatedData);
     
 
-    revalidatePath('/maintenance_form');
+    revalidatePath('/inhouse_form');
     
     return {
       success: true,
-      data: result as unknown as maintenanceForm, // Cast to maintenanceForm type
+      data: result as unknown as inhouseForm, // Cast to inhouseForm type
     };
   } catch (error) {
-    console.error('Error updating maintenance_form:', error);
+    console.error('Error updating inhouse_form:', error);
     
     if (error instanceof z.ZodError) {
       return {
@@ -204,22 +204,22 @@ export async function updateMaintenanceFormRecord(
 }
 
 /**
- * Delete a maintenance_form entry
+ * Delete a inhouse_form entry
  */
-export async function deleteMaintenanceForm(
+export async function deleteInhouseForm(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await deleteFormData(maintenanceFormConfiguration, id);
+    await deleteFormData(inhouseFormConfiguration, id);
     
 
-    revalidatePath('/maintenance_form');
+    revalidatePath('/inhouse_form');
     
     return {
       success: true,
     };
   } catch (error) {
-    console.error('Error deleting maintenance_form:', error);
+    console.error('Error deleting inhouse_form:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -230,7 +230,7 @@ export async function deleteMaintenanceForm(
 /**
  * Server action for form submission with redirect
  */
-export async function submitMaintenanceForm(
+export async function submitInhouseForm(
   formData: FormData
 ): Promise<void> {
   try {
@@ -239,7 +239,7 @@ export async function submitMaintenanceForm(
     
 
     const fieldConfigs = new Map<string, { type: string; multiple?: boolean; pgConfig?: any }>();
-    maintenanceFormConfiguration.sections.forEach(section => {
+    inhouseFormConfiguration.sections.forEach(section => {
       section.fields.forEach(field => {
         fieldConfigs.set(field.name, { 
           type: field.type, 
@@ -274,12 +274,12 @@ export async function submitMaintenanceForm(
         
         if (fieldConfig.multiple) {
 
-          const filePaths = await saveUploadedFiles(files, 'maintenance_form');
+          const filePaths = await saveUploadedFiles(files, 'inhouse_form');
           data[fieldName] = filePathsToString(filePaths);
         } else {
 
           if (files.length > 0) {
-            const filePath = await saveUploadedFiles(files[0], 'maintenance_form');
+            const filePath = await saveUploadedFiles(files[0], 'inhouse_form');
             data[fieldName] = filePath;
           }
         }
@@ -304,16 +304,16 @@ export async function submitMaintenanceForm(
     }
 
 
-    const result = await createMaintenanceForm(data as maintenanceFormFormData);
+    const result = await createInhouseForm(data as inhouseFormFormData);
     
     if (!result.success) {
-      throw new Error(result.error || 'Failed to create maintenance_form');
+      throw new Error(result.error || 'Failed to create inhouse_form');
     }
     
 
-    redirect('/maintenance_form?success=true');
+    redirect('/inhouse_form?success=true');
   } catch (error) {
-    console.error('Error in submitMaintenanceFormForm:', error);
+    console.error('Error in submitInhouseFormForm:', error);
 
     throw error;
   }

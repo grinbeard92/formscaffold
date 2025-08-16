@@ -1,16 +1,16 @@
 import { ServerForm } from '../../components/form-scaffold/ServerForm';
 import sql from '../../db/postgres-js';
-import { maintenanceFormConfiguration } from '@/configurations/maintenanceFormConfiguration';
-import { createMaintenanceFormRecord } from '@/actions/maintenanceForm
+import { systemIntakeFormConfiguration } from '@/configurations/systemIntakeFormConfiguration';
+import { createSystemIntakeFormRecord } from '@/actions/systemIntakeForm
 
-export default function MaintenanceFormPage() {
+export default function SystemIntakeFormPage() {
   return (
     <div className='container mx-auto max-w-4xl px-2 py-4 md:px-4 md:py-8'>
       <div className='bg-card rounded-lg border shadow-sm'>
           <div className='p-6'>
-            <form action={createMaintenanceFormRecord}>
+            <form action={createSystemIntakeFormRecord}>
             <ServerForm
-              config={maintenanceFormConfiguration}
+              config={systemIntakeFormConfiguration}
               autoSaveToDatabase={true}
             />
             </form>

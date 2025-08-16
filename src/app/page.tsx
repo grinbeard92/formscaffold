@@ -7,24 +7,16 @@ import {
   CodeIcon,
   FileIcon,
   Pencil2Icon,
+  CheckCircledIcon,
+  CrossCircledIcon,
 } from '@radix-ui/react-icons';
 import { FeatureCard } from '@/components/FeatureCard';
 import SubHeader from '@/components/SubHeader';
+import { getFormPreviewsForServer } from '@/lib/server-form-discovery';
 
 async function getFormConfigurations() {
   try {
-    const configurations = [
-      {
-        name: 'Demo Form',
-        path: '/demo',
-        description: 'Comprehensive demonstration of all field types',
-      },
-      {
-        name: 'Maintenance Checklist',
-        path: '/maintenance',
-        description: 'Annual maintenance checklist form',
-      },
-    ];
+    const configurations = await getFormPreviewsForServer();
     return configurations;
   } catch (error) {
     console.error('Error loading configurations:', error);
@@ -97,20 +89,45 @@ export default async function HomePage() {
                 <div className='grid gap-4'>
                   {configurations.map((config) => (
                     <Card.Root
-                      key={config.path}
+                      key={config.tableName}
                       className='transition-shadow hover:shadow-md'
                     >
                       <Card.Header>
                         <div className='flex items-center justify-between'>
-                          <div>
-                            <Card.Title>{config.name}</Card.Title>
+                          <div className='flex-1'>
+                            <div className='flex items-center gap-2'>
+                              <Card.Title>{config.title}</Card.Title>
+                              <div className='flex gap-1'>
+                                {config.hasFileUploads && (
+                                  <div
+                                    className='rounded-full bg-blue-500/10 p-1 text-blue-600'
+                                    title='File uploads supported'
+                                  >
+                                    <FileIcon className='h-3 w-3' />
+                                  </div>
+                                )}
+                                {config.hasSignatures && (
+                                  <div
+                                    className='rounded-full bg-purple-500/10 p-1 text-purple-600'
+                                    title='Digital signatures supported'
+                                  >
+                                    <Pencil2Icon className='h-3 w-3' />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                             <p className='text-muted-foreground mt-1 text-sm'>
                               {config.description}
                             </p>
+                            <div className='text-muted-foreground mt-2 flex gap-4 text-xs'>
+                              <span>{config.sectionCount} sections</span>
+                              <span>{config.fieldCount} fields</span>
+                              <span>Table: {config.tableName}</span>
+                            </div>
                           </div>
                           <div className='flex gap-2'>
                             <Link
-                              href={config.path}
+                              href={config.formPath}
                               className='bg-primary text-primary-foreground hover:bg-primary/80 rounded-md px-3 py-1 text-sm transition-colors'
                             >
                               View Form

@@ -60,6 +60,7 @@ export function generateServerActionsContent(
 ): string {
   const tableName = config.postgresTableName;
   const reactTableName = reactifyLowercase(tableName);
+  const capsReactTableName = reactifyName(tableName);
 
   let configImportPath: string;
   let configVariableName: string;
@@ -91,17 +92,17 @@ import {
 } from '@/db/generic-db-actions';
 import { ${configVariableName} } from '${configImportPath}';
 import { generateZodSchema } from '@/scripts/generate-schema';
-import { ${reactTableName}FormData, Update${reactTableName}Data, ${reactTableName} } from '@/types/${reactTableName}Types';
+import { ${reactTableName}FormData, Update${capsReactTableName}Data, ${reactTableName} } from '@/types/${reactTableName}Types';
 import { saveUploadedFiles, filePathsToString } from '@/utils/fileUpload';
 
 
-const ${reactTableName}FormSchema = generateZodSchema(${configVariableName}); // For form validation (with File objects)
+const ${reactTableName}FormSchema = generateZodSchema(${configVariableName}, false);
 
 
 const ${reactTableName}DatabaseSchema = ${reactTableName}FormSchema.extend({${generateFileFieldOverrides(config)}});
 
-const create${reactTableName}Schema = ${reactTableName}DatabaseSchema;
-const update${reactTableName}Schema = create${reactTableName}Schema.partial();
+const create${capsReactTableName}Schema = ${reactTableName}DatabaseSchema;
+const update${capsReactTableName}Schema = create${capsReactTableName}Schema.partial();
 
 /**
  * Process file uploads and convert File objects to file paths
@@ -116,7 +117,7 @@ async function processFileUploads(data: Record<string, unknown>): Promise<Record
 /**
  * Create a new ${reactTableName} entry
  */
-export async function create${reactTableName}Record(
+export async function create${capsReactTableName}Record(
   data: ${reactTableName}FormData
 ): Promise<{ success: boolean; data?: ${reactTableName}; error?: string }> {
   try {
@@ -124,13 +125,13 @@ export async function create${reactTableName}Record(
     const processedData = await processFileUploads(data as Record<string, unknown>);
     
 
-    const validatedData = create${reactTableName}Schema.parse(processedData);
+    const validatedData = create${capsReactTableName}Schema.parse(processedData);
     
 
     const result = await insertFormData(${configVariableName}, validatedData);
     
 
-    revalidatePath('/${reactTableName}');
+    revalidatePath('/${tableName}');
     
     return {
       success: true,
@@ -156,7 +157,7 @@ export async function create${reactTableName}Record(
 /**
  * Get ${tableName} entries with pagination and filtering
  */
-export async function get${reactTableName}List(options: {
+export async function get${capsReactTableName}List(options: {
   limit?: number;
   offset?: number;
   sortBy?: string;
@@ -197,7 +198,7 @@ export async function get${reactTableName}List(options: {
 /**
  * Get a single ${tableName} entry by ID
  */
-export async function get${reactTableName}RecordById(
+export async function get${capsReactTableName}RecordById(
   id: string
 ): Promise<{ success: boolean; data?: ${reactTableName}; error?: string }> {
   try {
@@ -230,13 +231,13 @@ export async function get${reactTableName}RecordById(
 /**
  * Update a ${tableName} entry
  */
-export async function update${reactTableName}Record(
+export async function update${capsReactTableName}Record(
   id: string,
-  data: Update${reactTableName}Data
+  data: Update${capsReactTableName}Data
 ): Promise<{ success: boolean; data?: ${reactTableName}; error?: string }> {
   try {
 
-    const validatedData = update${reactTableName}Schema.parse(data);
+    const validatedData = update${capsReactTableName}Schema.parse(data);
     
 
     const result = await updateFormData(${configVariableName}, id, validatedData);
@@ -268,7 +269,7 @@ export async function update${reactTableName}Record(
 /**
  * Delete a ${tableName} entry
  */
-export async function delete${reactTableName}(
+export async function delete${capsReactTableName}(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
@@ -292,7 +293,7 @@ export async function delete${reactTableName}(
 /**
  * Server action for form submission with redirect
  */
-export async function submit${reactTableName}Form(
+export async function submit${capsReactTableName}(
   formData: FormData
 ): Promise<void> {
   try {
@@ -366,7 +367,7 @@ export async function submit${reactTableName}Form(
     }
 
 
-    const result = await create${reactTableName}(data as ${reactTableName}FormData);
+    const result = await create${capsReactTableName}(data as ${reactTableName}FormData);
     
     if (!result.success) {
       throw new Error(result.error || 'Failed to create ${tableName}');
@@ -375,7 +376,7 @@ export async function submit${reactTableName}Form(
 
     redirect('/${tableName}?success=true');
   } catch (error) {
-    console.error('Error in submit${reactTableName}Form:', error);
+    console.error('Error in submit${capsReactTableName}Form:', error);
 
     throw error;
   }

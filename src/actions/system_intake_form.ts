@@ -1,8 +1,8 @@
 'use server';
 
 /**
- * Server Actions for maintenanceForm
- * Generated automatically from FormConfiguration: Annual Maintenance Checklist
+ * Server Actions for systemIntakeForm
+ * Generated automatically from FormConfiguration: System Intake Form
  */
 
 import { revalidatePath } from 'next/cache';
@@ -14,22 +14,22 @@ import {
   updateFormData,
   deleteFormData,
 } from '@/db/generic-db-actions';
-import { maintenanceFormConfiguration } from '@/configurations/maintenanceFormConfiguration';
+import { systemIntakeFormConfiguration } from '@/configurations/systemIntakeFormConfiguration';
 import { generateZodSchema } from '@/scripts/generate-schema';
-import { maintenanceFormFormData, UpdateMaintenanceFormData, maintenanceForm } from '@/types/maintenanceFormTypes';
+import { systemIntakeFormFormData, UpdateSystemIntakeFormData, systemIntakeForm } from '@/types/systemIntakeFormTypes';
 import { saveUploadedFiles, filePathsToString } from '@/utils/fileUpload';
 
 
-const maintenanceFormFormSchema = generateZodSchema(maintenanceFormConfiguration, false);
+const systemIntakeFormFormSchema = generateZodSchema(systemIntakeFormConfiguration, false);
 
 
-const maintenanceFormDatabaseSchema = maintenanceFormFormSchema.extend({
-  maintenance_pictures: z.string().nullable().optional(),
+const systemIntakeFormDatabaseSchema = systemIntakeFormFormSchema.extend({
+  equipment_photos: z.string().nullable().optional(),
   supporting_documents: z.string().nullable().optional()
 });
 
-const createMaintenanceFormSchema = maintenanceFormDatabaseSchema;
-const updateMaintenanceFormSchema = createMaintenanceFormSchema.partial();
+const createSystemIntakeFormSchema = systemIntakeFormDatabaseSchema;
+const updateSystemIntakeFormSchema = createSystemIntakeFormSchema.partial();
 
 /**
  * Process file uploads and convert File objects to file paths
@@ -38,13 +38,13 @@ async function processFileUploads(data: Record<string, unknown>): Promise<Record
   const processedData = { ...data };
   
 
-  if (data.maintenance_pictures instanceof File || Array.isArray(data.maintenance_pictures)) {
-    const filePaths = await saveUploadedFiles(data.maintenance_pictures as File | File[], 'maintenanceform');
-    processedData.maintenance_pictures = filePathsToString(filePaths);
+  if (data.equipment_photos instanceof File || Array.isArray(data.equipment_photos)) {
+    const filePaths = await saveUploadedFiles(data.equipment_photos as File | File[], 'systemintakeform');
+    processedData.equipment_photos = filePathsToString(filePaths);
   }
 
   if (data.supporting_documents instanceof File || Array.isArray(data.supporting_documents)) {
-    const filePaths = await saveUploadedFiles(data.supporting_documents as File | File[], 'maintenanceform');
+    const filePaths = await saveUploadedFiles(data.supporting_documents as File | File[], 'systemintakeform');
     processedData.supporting_documents = filePathsToString(filePaths);
   }
   return processedData;
@@ -52,30 +52,30 @@ async function processFileUploads(data: Record<string, unknown>): Promise<Record
 
 
 /**
- * Create a new maintenanceForm entry
+ * Create a new systemIntakeForm entry
  */
-export async function createMaintenanceFormRecord(
-  data: maintenanceFormFormData
-): Promise<{ success: boolean; data?: maintenanceForm; error?: string }> {
+export async function createSystemIntakeFormRecord(
+  data: systemIntakeFormFormData
+): Promise<{ success: boolean; data?: systemIntakeForm; error?: string }> {
   try {
 
     const processedData = await processFileUploads(data as Record<string, unknown>);
     
 
-    const validatedData = createMaintenanceFormSchema.parse(processedData);
+    const validatedData = createSystemIntakeFormSchema.parse(processedData);
     
 
-    const result = await insertFormData(maintenanceFormConfiguration, validatedData);
+    const result = await insertFormData(systemIntakeFormConfiguration, validatedData);
     
 
-    revalidatePath('/maintenance_form');
+    revalidatePath('/system_intake_form');
     
     return {
       success: true,
-      data: result as unknown as maintenanceForm, // Cast to maintenanceForm type
+      data: result as unknown as systemIntakeForm, // Cast to systemIntakeForm type
     };
   } catch (error) {
-    console.error('Error creating maintenance_form:', error);
+    console.error('Error creating system_intake_form:', error);
     
     if (error instanceof z.ZodError) {
       return {
@@ -92,15 +92,15 @@ export async function createMaintenanceFormRecord(
 }
 
 /**
- * Get maintenance_form entries with pagination and filtering
+ * Get system_intake_form entries with pagination and filtering
  */
-export async function getMaintenanceFormList(options: {
+export async function getSystemIntakeFormList(options: {
   limit?: number;
   offset?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   filters?: Record<string, unknown>;
-} = {}): Promise<{ success: boolean; data?: maintenanceForm[]; total?: number; error?: string }> {
+} = {}): Promise<{ success: boolean; data?: systemIntakeForm[]; total?: number; error?: string }> {
   try {
     const {
       limit = 50,
@@ -110,7 +110,7 @@ export async function getMaintenanceFormList(options: {
       filters = {},
     } = options;
 
-    const result = await getFormData(maintenanceFormConfiguration, {
+    const result = await getFormData(systemIntakeFormConfiguration, {
       limit,
       offset,
       sortBy,
@@ -120,11 +120,11 @@ export async function getMaintenanceFormList(options: {
 
     return {
       success: true,
-      data: result.data as unknown as maintenanceForm[], // Cast to maintenanceForm[] type
+      data: result.data as unknown as systemIntakeForm[], // Cast to systemIntakeForm[] type
       total: result.total,
     };
   } catch (error) {
-    console.error('Error fetching maintenance_form list:', error);
+    console.error('Error fetching system_intake_form list:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -133,13 +133,13 @@ export async function getMaintenanceFormList(options: {
 }
 
 /**
- * Get a single maintenance_form entry by ID
+ * Get a single system_intake_form entry by ID
  */
-export async function getMaintenanceFormRecordById(
+export async function getSystemIntakeFormRecordById(
   id: string
-): Promise<{ success: boolean; data?: maintenanceForm; error?: string }> {
+): Promise<{ success: boolean; data?: systemIntakeForm; error?: string }> {
   try {
-    const result = await getFormData(maintenanceFormConfiguration, {
+    const result = await getFormData(systemIntakeFormConfiguration, {
       filters: { id },
       limit: 1,
       offset: 0,
@@ -148,16 +148,16 @@ export async function getMaintenanceFormRecordById(
     if (!result.data || result.data.length === 0) {
       return {
         success: false,
-        error: `No maintenance_form found with id '${id}'`,
+        error: `No system_intake_form found with id '${id}'`,
       };
     }
 
     return {
       success: true,
-      data: result.data[0] as unknown as maintenanceForm, // Cast to maintenanceForm type
+      data: result.data[0] as unknown as systemIntakeForm, // Cast to systemIntakeForm type
     };
   } catch (error) {
-    console.error('Error fetching maintenance_form by ID:', error);
+    console.error('Error fetching system_intake_form by ID:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -166,28 +166,28 @@ export async function getMaintenanceFormRecordById(
 }
 
 /**
- * Update a maintenance_form entry
+ * Update a system_intake_form entry
  */
-export async function updateMaintenanceFormRecord(
+export async function updateSystemIntakeFormRecord(
   id: string,
-  data: UpdateMaintenanceFormData
-): Promise<{ success: boolean; data?: maintenanceForm; error?: string }> {
+  data: UpdateSystemIntakeFormData
+): Promise<{ success: boolean; data?: systemIntakeForm; error?: string }> {
   try {
 
-    const validatedData = updateMaintenanceFormSchema.parse(data);
+    const validatedData = updateSystemIntakeFormSchema.parse(data);
     
 
-    const result = await updateFormData(maintenanceFormConfiguration, id, validatedData);
+    const result = await updateFormData(systemIntakeFormConfiguration, id, validatedData);
     
 
-    revalidatePath('/maintenance_form');
+    revalidatePath('/system_intake_form');
     
     return {
       success: true,
-      data: result as unknown as maintenanceForm, // Cast to maintenanceForm type
+      data: result as unknown as systemIntakeForm, // Cast to systemIntakeForm type
     };
   } catch (error) {
-    console.error('Error updating maintenance_form:', error);
+    console.error('Error updating system_intake_form:', error);
     
     if (error instanceof z.ZodError) {
       return {
@@ -204,22 +204,22 @@ export async function updateMaintenanceFormRecord(
 }
 
 /**
- * Delete a maintenance_form entry
+ * Delete a system_intake_form entry
  */
-export async function deleteMaintenanceForm(
+export async function deleteSystemIntakeForm(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await deleteFormData(maintenanceFormConfiguration, id);
+    await deleteFormData(systemIntakeFormConfiguration, id);
     
 
-    revalidatePath('/maintenance_form');
+    revalidatePath('/system_intake_form');
     
     return {
       success: true,
     };
   } catch (error) {
-    console.error('Error deleting maintenance_form:', error);
+    console.error('Error deleting system_intake_form:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -230,7 +230,7 @@ export async function deleteMaintenanceForm(
 /**
  * Server action for form submission with redirect
  */
-export async function submitMaintenanceForm(
+export async function submitSystemIntakeForm(
   formData: FormData
 ): Promise<void> {
   try {
@@ -239,7 +239,7 @@ export async function submitMaintenanceForm(
     
 
     const fieldConfigs = new Map<string, { type: string; multiple?: boolean; pgConfig?: any }>();
-    maintenanceFormConfiguration.sections.forEach(section => {
+    systemIntakeFormConfiguration.sections.forEach(section => {
       section.fields.forEach(field => {
         fieldConfigs.set(field.name, { 
           type: field.type, 
@@ -274,12 +274,12 @@ export async function submitMaintenanceForm(
         
         if (fieldConfig.multiple) {
 
-          const filePaths = await saveUploadedFiles(files, 'maintenance_form');
+          const filePaths = await saveUploadedFiles(files, 'system_intake_form');
           data[fieldName] = filePathsToString(filePaths);
         } else {
 
           if (files.length > 0) {
-            const filePath = await saveUploadedFiles(files[0], 'maintenance_form');
+            const filePath = await saveUploadedFiles(files[0], 'system_intake_form');
             data[fieldName] = filePath;
           }
         }
@@ -304,16 +304,16 @@ export async function submitMaintenanceForm(
     }
 
 
-    const result = await createMaintenanceForm(data as maintenanceFormFormData);
+    const result = await createSystemIntakeForm(data as systemIntakeFormFormData);
     
     if (!result.success) {
-      throw new Error(result.error || 'Failed to create maintenance_form');
+      throw new Error(result.error || 'Failed to create system_intake_form');
     }
     
 
-    redirect('/maintenance_form?success=true');
+    redirect('/system_intake_form?success=true');
   } catch (error) {
-    console.error('Error in submitMaintenanceFormForm:', error);
+    console.error('Error in submitSystemIntakeFormForm:', error);
 
     throw error;
   }
